@@ -9,13 +9,22 @@ import (
 	"context"
 )
 
-const getSportsmen = `-- name: GetSportsmen :many
-SELECT id, name, birth_date, height_cm, weight_kg, club_id, created_at
-FROM sportsmen
+const getSportsmenBySportID = `-- name: GetSportsmenBySportID :many
+SELECT sm.id, sm.name, sm.birth_date, sm.height_cm, sm.weight_kg, sm.club_id, sm.created_at
+FROM sportsman_sports ss
+JOIN sportsmen sm ON sm.id = ss.sportsman_id
+WHERE
+	ss.sport_id = $1
+	AND ($2::SMALLINT IS NULL OR ss.rank = $2)
 `
 
-func (q *Queries) GetSportsmen(ctx context.Context) ([]Sportsman, error) {
-	rows, err := q.db.Query(ctx, getSportsmen)
+type GetSportsmenBySportIDParams struct {
+	SportID int64
+	Rank    int16
+}
+
+func (q *Queries) GetSportsmenBySportID(ctx context.Context, arg GetSportsmenBySportIDParams) ([]Sportsman, error) {
+	rows, err := q.db.Query(ctx, getSportsmenBySportID, arg.SportID, arg.Rank)
 	if err != nil {
 		return nil, err
 	}

@@ -15,17 +15,10 @@ BEGIN
 	END IF;
 
 	IF TG_TABLE_NAME <> required_table_name THEN
-		RAISE EXCEPTION 'attributes of place with ID % must be in % table', NEW.place_id, attributes_table_name;
+		RAISE EXCEPTION 'attributes of place with ID % must be in % table', NEW.place_id, required_table_name;
 	END IF;
 
-	FOR place_type IN SELECT attributes_table_name FROM place_types LOOP
-		EXECUTE format('SELECT COUNT(*) FROM %I WHERE place_id = $1', place_type.attributes_table_name)
-		INTO place_ids_count USING NEW.place_id;
-
-		IF place_ids_count > 0 THEN
-			RAISE EXCEPTION 'place_id % already specified in table %', NEW.place_id, place_type.attributes_table_name;
-		END IF;
-	END LOOP;
+	RETURN NEW;
 END;
 $$ LANGUAGE plpgsql;
 
