@@ -14,12 +14,16 @@ import (
 const getArenaPlaces = `-- name: GetArenaPlaces :many
 SELECT p.id, p.name, p.location, p.type_id, p.created_at
 FROM places p
-JOIN place_types pt ON pt.id = p.type_id
 JOIN arena_attributes aa ON aa.place_id = p.id
 WHERE
-	pt.attributes_table_name = 'arena_attributes'
-	AND (aa.referees_count >= $1 OR $1 IS NULL)
-	AND (aa.treadmill_length_cm >= $2 OR $2 IS NULL)
+	(
+		aa.referees_count >= $1
+		OR $1 IS NULL
+	)
+	AND (
+		aa.treadmill_length_cm >= $2
+		OR $2 IS NULL
+	)
 `
 
 type GetArenaPlacesParams struct {
@@ -54,7 +58,7 @@ func (q *Queries) GetArenaPlaces(ctx context.Context, arg GetArenaPlacesParams) 
 	return items, nil
 }
 
-const getClubCompetitorCountsForPeriod = `-- name: GetClubCompetitorCountsForPeriod :many
+const getClubActiveSportsmenCountsForPeriod = `-- name: GetClubActiveSportsmenCountsForPeriod :many
 SELECT
 	c.id, c.name, c.created_at,
 	COUNT(s.id)
@@ -67,12 +71,12 @@ WHERE t.start_at BETWEEN $1 AND $2
 GROUP BY c.id
 `
 
-type GetClubCompetitorCountsForPeriodParams struct {
+type GetClubActiveSportsmenCountsForPeriodParams struct {
 	StartAt pgtype.Timestamptz
 	EndAt   pgtype.Timestamptz
 }
 
-type GetClubCompetitorCountsForPeriodRow struct {
+type GetClubActiveSportsmenCountsForPeriodRow struct {
 	ID        int64
 	Name      string
 	CreatedAt pgtype.Timestamptz
@@ -80,15 +84,15 @@ type GetClubCompetitorCountsForPeriodRow struct {
 }
 
 // Query #9
-func (q *Queries) GetClubCompetitorCountsForPeriod(ctx context.Context, arg GetClubCompetitorCountsForPeriodParams) ([]GetClubCompetitorCountsForPeriodRow, error) {
-	rows, err := q.db.Query(ctx, getClubCompetitorCountsForPeriod, arg.StartAt, arg.EndAt)
+func (q *Queries) GetClubActiveSportsmenCountsForPeriod(ctx context.Context, arg GetClubActiveSportsmenCountsForPeriodParams) ([]GetClubActiveSportsmenCountsForPeriodRow, error) {
+	rows, err := q.db.Query(ctx, getClubActiveSportsmenCountsForPeriod, arg.StartAt, arg.EndAt)
 	if err != nil {
 		return nil, err
 	}
 	defer rows.Close()
-	var items []GetClubCompetitorCountsForPeriodRow
+	var items []GetClubActiveSportsmenCountsForPeriodRow
 	for rows.Next() {
-		var i GetClubCompetitorCountsForPeriodRow
+		var i GetClubActiveSportsmenCountsForPeriodRow
 		if err := rows.Scan(
 			&i.ID,
 			&i.Name,
@@ -105,31 +109,134 @@ func (q *Queries) GetClubCompetitorCountsForPeriod(ctx context.Context, arg GetC
 	return items, nil
 }
 
-const getSportsmanIDsInvolvedInSeveralSports = `-- name: GetSportsmanIDsInvolvedInSeveralSports :many
-SELECT
-	sportsman_id,
-	ARRAY_AGG(sport_id)::BIGINT[] AS sport_ids
-FROM sportsman_sports
-GROUP BY sportsman_id
-HAVING COUNT(*) > 1
+const getInactiveSportsmenForPeriod = `-- name: GetInactiveSportsmenForPeriod :many
+SELECT sm.id, sm.name, sm.birth_date, sm.height_cm, sm.weight_kg, sm.club_id, sm.created_at
+FROM sportsmen sm
+WHERE NOT EXISTS (
+	SELECT 1
+	FROM participations p
+	JOIN tournament_sports ts ON ts.id = p.tournament_sport_id
+	JOIN tournaments t ON t.id = ts.tournament_id
+	WHERE
+		t.start_at BETWEEN $1 AND $2
+		AND p.sportsman_id = sm.id
+)
 `
 
-type GetSportsmanIDsInvolvedInSeveralSportsRow struct {
-	SportsmanID int64
-	SportIds    []int64
+type GetInactiveSportsmenForPeriodParams struct {
+	StartAt pgtype.Timestamptz
+	EndAt   pgtype.Timestamptz
 }
 
-// Query #4
-func (q *Queries) GetSportsmanIDsInvolvedInSeveralSports(ctx context.Context) ([]GetSportsmanIDsInvolvedInSeveralSportsRow, error) {
-	rows, err := q.db.Query(ctx, getSportsmanIDsInvolvedInSeveralSports)
+// Query: #11
+func (q *Queries) GetInactiveSportsmenForPeriod(ctx context.Context, arg GetInactiveSportsmenForPeriodParams) ([]Sportsman, error) {
+	rows, err := q.db.Query(ctx, getInactiveSportsmenForPeriod, arg.StartAt, arg.EndAt)
 	if err != nil {
 		return nil, err
 	}
 	defer rows.Close()
-	var items []GetSportsmanIDsInvolvedInSeveralSportsRow
+	var items []Sportsman
 	for rows.Next() {
-		var i GetSportsmanIDsInvolvedInSeveralSportsRow
-		if err := rows.Scan(&i.SportsmanID, &i.SportIds); err != nil {
+		var i Sportsman
+		if err := rows.Scan(
+			&i.ID,
+			&i.Name,
+			&i.BirthDate,
+			&i.HeightCm,
+			&i.WeightKg,
+			&i.ClubID,
+			&i.CreatedAt,
+		); err != nil {
+			return nil, err
+		}
+		items = append(items, i)
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
+}
+
+const getOrganizerTournamentCountsForPeriod = `-- name: GetOrganizerTournamentCountsForPeriod :many
+SELECT
+	o.id, o.name, o.location, o.created_at,
+	COUNT(t.*)
+FROM organizers o
+JOIN tournaments t ON t.organizer_id = o.id
+GROUP BY o.id
+`
+
+type GetOrganizerTournamentCountsForPeriodRow struct {
+	ID        int64
+	Name      string
+	Location  pgtype.Text
+	CreatedAt pgtype.Timestamptz
+	Count     int64
+}
+
+// Query: #12
+func (q *Queries) GetOrganizerTournamentCountsForPeriod(ctx context.Context) ([]GetOrganizerTournamentCountsForPeriodRow, error) {
+	rows, err := q.db.Query(ctx, getOrganizerTournamentCountsForPeriod)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	var items []GetOrganizerTournamentCountsForPeriodRow
+	for rows.Next() {
+		var i GetOrganizerTournamentCountsForPeriodRow
+		if err := rows.Scan(
+			&i.ID,
+			&i.Name,
+			&i.Location,
+			&i.CreatedAt,
+			&i.Count,
+		); err != nil {
+			return nil, err
+		}
+		items = append(items, i)
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
+}
+
+const getPlaceTournamentDatesForPeriod = `-- name: GetPlaceTournamentDatesForPeriod :many
+SELECT
+	p.id, p.name, p.location, p.type_id, p.created_at,
+	ARRAY_AGG(t.start_at)::TIMESTAMPTZ[] as dates
+FROM places p
+JOIN tournaments t ON t.place_id = p.id
+GROUP BY p.id
+`
+
+type GetPlaceTournamentDatesForPeriodRow struct {
+	ID        int64
+	Name      string
+	Location  string
+	TypeID    int64
+	CreatedAt pgtype.Timestamptz
+	Dates     []pgtype.Timestamptz
+}
+
+// Query: #13
+func (q *Queries) GetPlaceTournamentDatesForPeriod(ctx context.Context) ([]GetPlaceTournamentDatesForPeriodRow, error) {
+	rows, err := q.db.Query(ctx, getPlaceTournamentDatesForPeriod)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	var items []GetPlaceTournamentDatesForPeriodRow
+	for rows.Next() {
+		var i GetPlaceTournamentDatesForPeriodRow
+		if err := rows.Scan(
+			&i.ID,
+			&i.Name,
+			&i.Location,
+			&i.TypeID,
+			&i.CreatedAt,
+			&i.Dates,
+		); err != nil {
 			return nil, err
 		}
 		items = append(items, i)
@@ -146,7 +253,10 @@ FROM sportsmen sm
 JOIN sportsman_sports ss ON ss.sportsman_id = sm.id
 WHERE
 	ss.sport_id = $1
-	AND (ss.rank = $2 OR $2 IS NULL)
+	AND (
+		ss.rank = $2
+		OR $2 IS NULL
+	)
 `
 
 type GetSportsmenBySportIDParams struct {
@@ -192,7 +302,7 @@ WHERE ts.tournament_id = $1
 `
 
 // Query #7
-func (q *Queries) GetSportsmenByTournamentID(ctx context.Context, tournamentID pgtype.Int8) ([]Sportsman, error) {
+func (q *Queries) GetSportsmenByTournamentID(ctx context.Context, tournamentID int64) ([]Sportsman, error) {
 	rows, err := q.db.Query(ctx, getSportsmenByTournamentID, tournamentID)
 	if err != nil {
 		return nil, err
@@ -227,11 +337,14 @@ JOIN sportsman_sports ss ON ss.sportsman_id = sm.id
 JOIN sportsman_sport_trainers sst ON sst.sportsman_sport_id = ss.id
 WHERE
 	sst.trainer_id = $1
-	AND (ss.rank = $2 OR $2 IS NULL)
+	AND (
+		ss.rank = $2
+		OR $2 IS NULL
+	)
 `
 
 type GetSportsmenByTrainerIDParams struct {
-	TrainerID pgtype.Int8
+	TrainerID int64
 	Rank      pgtype.Int2
 }
 
@@ -264,18 +377,82 @@ func (q *Queries) GetSportsmenByTrainerID(ctx context.Context, arg GetSportsmenB
 	return items, nil
 }
 
+const getSportsmenInvolvedInSeveralSports = `-- name: GetSportsmenInvolvedInSeveralSports :many
+SELECT
+	sm.id, sm.name, sm.birth_date, sm.height_cm, sm.weight_kg, sm.club_id, sm.created_at,
+	ARRAY_AGG(ss.sport_id)::BIGINT[] AS sport_ids
+FROM sportsmen sm
+JOIN sportsman_sports ss ON ss.sportsman_id = sm.id
+GROUP BY sm.id
+HAVING COUNT(ss.id) > 1
+`
+
+type GetSportsmenInvolvedInSeveralSportsRow struct {
+	ID        int64
+	Name      string
+	BirthDate pgtype.Date
+	HeightCm  int16
+	WeightKg  pgtype.Numeric
+	ClubID    int64
+	CreatedAt pgtype.Timestamptz
+	SportIds  []int64
+}
+
+// Query #4
+func (q *Queries) GetSportsmenInvolvedInSeveralSports(ctx context.Context) ([]GetSportsmenInvolvedInSeveralSportsRow, error) {
+	rows, err := q.db.Query(ctx, getSportsmenInvolvedInSeveralSports)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	var items []GetSportsmenInvolvedInSeveralSportsRow
+	for rows.Next() {
+		var i GetSportsmenInvolvedInSeveralSportsRow
+		if err := rows.Scan(
+			&i.ID,
+			&i.Name,
+			&i.BirthDate,
+			&i.HeightCm,
+			&i.WeightKg,
+			&i.ClubID,
+			&i.CreatedAt,
+			&i.SportIds,
+		); err != nil {
+			return nil, err
+		}
+		items = append(items, i)
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
+}
+
 const getStadiumPlaces = `-- name: GetStadiumPlaces :many
 SELECT p.id, p.name, p.location, p.type_id, p.created_at
 FROM places p
-JOIN place_types pt ON pt.id = p.type_id
 JOIN stadium_attributes sa ON sa.place_id = p.id
 WHERE
-	pt.attributes_table_name = 'stadium_attributes'
-	AND (sa.width_cm >= $1 OR $1 IS NULL)
-	AND (sa.length_cm >= $2 OR $2 IS NULL)
-	AND (sa.max_spectators >= $3 OR $3 IS NULL)
-	AND (sa.is_outdoor = $4 OR $4 IS NULL)
-	AND (sa.coating = $5 OR $5 IS NULL)
+	(
+		sa.width_cm >= $1
+		OR $1 IS NULL
+	)
+	AND (
+		sa.length_cm >= $2
+		OR $2 IS NULL
+	)
+	AND (
+		sa.max_spectators >= $3
+		OR $3 IS NULL
+	)
+	AND (
+		sa.is_outdoor = $4
+		OR $4 IS NULL
+	)
+	AND (
+		sa.coating = $5
+		OR $5 IS NULL
+	)
 `
 
 type GetStadiumPlacesParams struct {

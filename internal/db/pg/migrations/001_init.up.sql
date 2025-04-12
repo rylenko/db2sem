@@ -42,7 +42,7 @@ CREATE TABLE IF NOT EXISTS organizers (
 
 CREATE TABLE IF NOT EXISTS sports (
 	id         BIGSERIAL    PRIMARY KEY,
-	name       VARCHAR(255) UNIQUE,
+	name       VARCHAR(255) NOT NULL UNIQUE,
 	created_at TIMESTAMPTZ  NOT NULL DEFAULT NOW()
 );
 
@@ -56,8 +56,8 @@ CREATE TABLE IF NOT EXISTS tournaments (
 
 CREATE TABLE IF NOT EXISTS tournament_sports (
 	id            BIGSERIAL PRIMARY KEY,
-	tournament_id BIGINT    REFERENCES tournaments(id),
-	sport_id      BIGINT    REFERENCES sports(id),
+	tournament_id BIGINT    NOT NULL REFERENCES tournaments(id),
+	sport_id      BIGINT    NOT NULL REFERENCES sports(id),
 	UNIQUE (tournament_id, sport_id)
 );
 
@@ -73,8 +73,8 @@ CREATE TABLE IF NOT EXISTS sportsmen (
 
 CREATE TABLE IF NOT EXISTS participations (
 	id                  BIGSERIAL PRIMARY KEY,
-	tournament_sport_id BIGINT    REFERENCES tournament_sports(id),
-	sportsman_id        BIGINT    REFERENCES sportsmen(id),
+	tournament_sport_id BIGINT    NOT NULL REFERENCES tournament_sports(id),
+	sportsman_id        BIGINT    NOT NULL REFERENCES sportsmen(id),
 	rank                SMALLINT  NOT NULL CHECK (rank >= 0),
 	results             TEXT,
 	UNIQUE (tournament_sport_id, sportsman_id)
@@ -96,7 +96,7 @@ CREATE TABLE IF NOT EXISTS trainers (
 
 CREATE TABLE IF NOT EXISTS sportsman_sport_trainers (
 	id                 BIGSERIAL PRIMARY KEY,
-	sportsman_sport_id BIGINT    REFERENCES sportsman_sports(id),
-	trainer_id         BIGINT    REFERENCES trainers(id),
+	sportsman_sport_id BIGINT    NOT NULL REFERENCES sportsman_sports(id),
+	trainer_id         BIGINT    NOT NULL REFERENCES trainers(id),
 	UNIQUE (sportsman_sport_id, trainer_id)
 );

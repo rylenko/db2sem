@@ -29,8 +29,8 @@ type Organizer struct {
 
 type Participation struct {
 	ID                int64
-	TournamentSportID pgtype.Int8
-	SportsmanID       pgtype.Int8
+	TournamentSportID int64
+	SportsmanID       int64
 	Rank              int16
 	Results           pgtype.Text
 }
@@ -51,7 +51,7 @@ type PlaceType struct {
 
 type Sport struct {
 	ID        int64
-	Name      pgtype.Text
+	Name      string
 	CreatedAt pgtype.Timestamptz
 }
 
@@ -74,8 +74,8 @@ type SportsmanSport struct {
 
 type SportsmanSportTrainer struct {
 	ID               int64
-	SportsmanSportID pgtype.Int8
-	TrainerID        pgtype.Int8
+	SportsmanSportID int64
+	TrainerID        int64
 }
 
 type StadiumAttribute struct {
@@ -97,8 +97,8 @@ type Tournament struct {
 
 type TournamentSport struct {
 	ID           int64
-	TournamentID pgtype.Int8
-	SportID      pgtype.Int8
+	TournamentID int64
+	SportID      int64
 }
 
 type Trainer struct {
