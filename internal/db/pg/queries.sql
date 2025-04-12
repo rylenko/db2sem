@@ -59,6 +59,44 @@ JOIN sportsman_sport_trainers sst ON sst.trainer_id = t.id
 JOIN sportsman_sports ss ON ss.id = sst.sportsman_sport_id
 WHERE ss.sportsman_id = $1;
 
+-- Query #6
+-- name: GetTournamentsForPeriod :many
+SELECT *
+FROM tournaments
+WHERE
+	start_at BETWEEN @start_at AND @end_at
+	AND (organizer_id = sqlc.narg('organizer_id') OR sqlc.narg('organizer_id') IS NULL);
+
+-- Query #7
+-- name: GetSportsmenByTournamentID :many
+SELECT sm.*
+FROM sportsmen sm
+JOIN participations p ON p.sportsman_id = sm.id
+JOIN tournament_sports ts ON ts.id = p.tournament_sport_id
+WHERE ts.tournament_id = $1;
+
+-- Query #8
+-- name: GetTournamentsByPlaceID :many
+SELECT t.*
+FROM tournaments t
+JOIN tournament_sports ts ON ts.tournament_id = t.id
+WHERE
+	t.place_id = $1
+	AND (ts.sport_id = sqlc.narg('sport_id') OR sqlc.narg('sport_id') IS NULL);
+
+-- Query #9
+-- name: GetClubCompetitorCountsForPeriod :many
+SELECT
+	c.*,
+	COUNT(s.id)
+FROM clubs c
+JOIN sportsmen s ON s.club_id = c.id
+JOIN participations p ON p.sportsman_id = s.id
+JOIN tournament_sports ts ON ts.id = p.tournament_sport_id
+JOIN tournaments t ON t.id = ts.tournament_id
+WHERE t.start_at BETWEEN @start_at AND @end_at
+GROUP BY c.id;
+
 -- Query #10
 -- name: GetTrainersBySportID :many
 SELECT t.*
