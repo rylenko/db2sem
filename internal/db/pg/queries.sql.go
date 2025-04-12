@@ -18,8 +18,8 @@ JOIN place_types pt ON pt.id = p.type_id
 JOIN arena_attributes aa ON aa.place_id = p.id
 WHERE
 	pt.attributes_table_name = 'arena_attributes'
-	AND (aa.referees_count = $1 OR $1 IS NULL)
-	AND (aa.treadmill_length_cm = $2 OR $2 IS NULL)
+	AND (aa.referees_count >= $1 OR $1 IS NULL)
+	AND (aa.treadmill_length_cm >= $2 OR $2 IS NULL)
 `
 
 type GetArenaPlacesParams struct {
@@ -183,9 +183,9 @@ JOIN place_types pt ON pt.id = p.type_id
 JOIN stadium_attributes sa ON sa.place_id = p.id
 WHERE
 	pt.attributes_table_name = 'stadium_attributes'
-	AND (sa.width_cm = $1 OR $1 IS NULL)
-	AND (sa.length_cm = $2 OR $2 IS NULL)
-	AND (sa.max_spectators = $3 OR $3 IS NULL)
+	AND (sa.width_cm >= $1 OR $1 IS NULL)
+	AND (sa.length_cm >= $2 OR $2 IS NULL)
+	AND (sa.max_spectators >= $3 OR $3 IS NULL)
 	AND (sa.is_outdoor = $4 OR $4 IS NULL)
 	AND (sa.coating = $5 OR $5 IS NULL)
 `

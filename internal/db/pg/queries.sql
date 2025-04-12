@@ -6,8 +6,8 @@ JOIN place_types pt ON pt.id = p.type_id
 JOIN arena_attributes aa ON aa.place_id = p.id
 WHERE
 	pt.attributes_table_name = 'arena_attributes'
-	AND (aa.referees_count = sqlc.narg('referees_count') OR sqlc.narg('referees_count') IS NULL)
-	AND (aa.treadmill_length_cm = sqlc.narg('treadmill_length_cm') OR sqlc.narg('treadmill_length_cm') IS NULL);
+	AND (aa.referees_count >= sqlc.narg('referees_count') OR sqlc.narg('referees_count') IS NULL)
+	AND (aa.treadmill_length_cm >= sqlc.narg('treadmill_length_cm') OR sqlc.narg('treadmill_length_cm') IS NULL);
 
 -- Query #1.2
 -- name: GetStadiumPlaces :many
@@ -17,9 +17,9 @@ JOIN place_types pt ON pt.id = p.type_id
 JOIN stadium_attributes sa ON sa.place_id = p.id
 WHERE
 	pt.attributes_table_name = 'stadium_attributes'
-	AND (sa.width_cm = sqlc.narg('width_cm') OR sqlc.narg('width_cm') IS NULL)
-	AND (sa.length_cm = sqlc.narg('length_cm') OR sqlc.narg('length_cm') IS NULL)
-	AND (sa.max_spectators = sqlc.narg('max_spectators') OR sqlc.narg('max_spectators') IS NULL)
+	AND (sa.width_cm >= sqlc.narg('width_cm') OR sqlc.narg('width_cm') IS NULL)
+	AND (sa.length_cm >= sqlc.narg('length_cm') OR sqlc.narg('length_cm') IS NULL)
+	AND (sa.max_spectators >= sqlc.narg('max_spectators') OR sqlc.narg('max_spectators') IS NULL)
 	AND (sa.is_outdoor = sqlc.narg('is_outdoor') OR sqlc.narg('is_outdoor') IS NULL)
 	AND (sa.coating = sqlc.narg('coating') OR sqlc.narg('coating') IS NULL);
 
