@@ -9,3 +9,14 @@ bin/sqlc: | bin/
 .PHONY: sqlc
 sqlc: | bin/sqlc
 	./bin/sqlc generate -f internal/db/pg/sqlc.yaml
+
+bin/golangci-lint: | bin/
+	curl -sSfL https://raw.githubusercontent.com/golangci/golangci-lint/master/install.sh | sh
+
+.PHONY: lint
+lint: bin/golangci-lint
+	go list -f '{{.Dir}}/...' -m | xargs ./bin/golangci-lint run --fix
+
+.PHONY: run
+run:
+	go run ./cmd

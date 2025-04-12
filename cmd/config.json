@@ -1,0 +1,3 @@
+{
+	"PostgresDSN": "postgresql://user:password@localhost:5432/db2sem"
+}
