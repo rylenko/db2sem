@@ -13,13 +13,13 @@ CREATE TABLE IF NOT EXISTS places (
 );
 
 CREATE TABLE IF NOT EXISTS arena_attributes (
-	place_id            BIGINT    PRIMARY KEY REFERENCES places(id),
+	place_id            BIGINT    PRIMARY KEY REFERENCES places(id) ON DELETE CASCADE,
 	referees_count      SMALLINT  NOT NULL CHECK (referees_count >= 0),
 	treadmill_length_cm BIGINT    NOT NULL CHECK (treadmill_length_cm > 0)
 );
 
 CREATE TABLE IF NOT EXISTS stadium_attributes (
-	place_id       BIGINT       PRIMARY KEY REFERENCES places(id),
+	place_id       BIGINT       PRIMARY KEY REFERENCES places(id) ON DELETE CASCADE,
 	width_cm       BIGINT       NOT NULL CHECK (width_cm > 0),
 	length_cm      BIGINT       NOT NULL CHECK (length_cm > 0),
 	max_spectators SMALLINT     NOT NULL CHECK (max_spectators >= 0),

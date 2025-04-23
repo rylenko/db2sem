@@ -1,4 +1,5 @@
-CREATE OR REPLACE FUNCTION validate_attributes()
+-- Проверяет, что сооружение с идентификатором place_id находится в верной таблице атрибутов.
+CREATE OR REPLACE FUNCTION validate_place_id_in_correct_attributes_table()
 RETURNS TRIGGER AS $$
 DECLARE
 	required_table_name TEXT;
@@ -22,7 +23,8 @@ BEGIN
 END;
 $$ LANGUAGE plpgsql;
 
-CREATE OR REPLACE FUNCTION add_attributes_validator()
+-- Триггер, который добавляет триггер валидации place_id таблицы атрибутов для новой записи типа сооружений.
+CREATE OR REPLACE FUNCTION add_validate_place_id_in_correct_attributes_table()
 RETURNS TRIGGER AS $$
 DECLARE
 	query TEXT;
@@ -30,7 +32,7 @@ BEGIN
 	query := format(
 		'CREATE OR REPLACE TRIGGER validate_%I_trigger
 		 BEFORE INSERT OR UPDATE ON %I
-		 FOR EACH ROW EXECUTE FUNCTION validate_attributes();',
+		 FOR EACH ROW EXECUTE FUNCTION validate_place_id_in_correct_attributes_table();',
 		NEW.attributes_table_name,
 		NEW.attributes_table_name
 	);
@@ -40,6 +42,6 @@ BEGIN
 END;
 $$ LANGUAGE plpgsql;
 
-CREATE OR REPLACE TRIGGER add_attributes_validator_trigger
+CREATE OR REPLACE TRIGGER add_validate_place_id_in_correct_attributes_table_trigger
 BEFORE INSERT OR UPDATE ON place_types
-FOR EACH ROW EXECUTE FUNCTION add_attributes_validator();
+FOR EACH ROW EXECUTE FUNCTION add_validate_place_id_in_correct_attributes_table();

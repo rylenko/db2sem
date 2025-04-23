@@ -1,6 +1,13 @@
 -- Query #1.1
+--
+-- Получить перечень спортивных сооружений указанного типа в целом или
+-- удовлетворяющих заданным характеристикам (например, стадионы, вмещающие не менее
+-- указанного числа зрителей).
+--
 -- name: GetArenaPlaces :many
-SELECT p.*
+SELECT
+	p.name,
+	p.location
 FROM places p
 JOIN arena_attributes aa ON aa.place_id = p.id
 WHERE
@@ -14,8 +21,15 @@ WHERE
 	);
 
 -- Query #1.2
+--
+-- Получить перечень спортивных сооружений указанного типа в целом или
+-- удовлетворяющих заданным характеристикам (например, стадионы, вмещающие не менее
+-- указанного числа зрителей).
+--
 -- name: GetStadiumPlaces :many
-SELECT p.*
+SELECT
+	p.name,
+	p.location
 FROM places p
 JOIN stadium_attributes sa ON sa.place_id = p.id
 WHERE
@@ -41,77 +55,147 @@ WHERE
 	);
 
 -- Query #2
+--
+-- Получить список спортсменов, занимающихся указанным видом спорта в целом либо не
+-- ниже определенного разряда.
+--
 -- name: GetSportsmenBySportID :many
-SELECT sm.*
+SELECT
+	sm.name,
+	sm.birth_date,
+	sm.height_cm,
+	sm.weight_kg
 FROM sportsmen sm
 JOIN sportsman_sports ss ON ss.sportsman_id = sm.id
 WHERE
 	ss.sport_id = @sport_id
 	AND (
-		ss.rank = sqlc.narg('rank')
+		ss.rank >= sqlc.narg('rank')
 		OR sqlc.narg('rank') IS NULL
 	);
 
 -- Query #3
+--
+-- Получить список спортсменов, тренирующихся у некого тренера в целом либо не ниже
+-- определенного разряда.
+--
 -- name: GetSportsmenByTrainerID :many
-SELECT sm.*
+SELECT
+	sm.name,
+	sm.birth_date,
+	sm.height_cm,
+	sm.weight_kg
 FROM sportsmen sm
 JOIN sportsman_sports ss ON ss.sportsman_id = sm.id
 JOIN sportsman_sport_trainers sst ON sst.sportsman_sport_id = ss.id
 WHERE
 	sst.trainer_id = @trainer_id
 	AND (
-		ss.rank = sqlc.narg('rank')
+		ss.rank >= sqlc.narg('rank')
 		OR sqlc.narg('rank') IS NULL
 	);
 
 -- Query #4
+--
+-- Получить список спортсменов, занимающихся более чем одним видом спорта с указанием
+-- этих видов спорта.
+--
 -- name: GetSportsmenInvolvedInSeveralSports :many
 SELECT
-	sm.*,
-	ARRAY_AGG(ss.sport_id)::BIGINT[] AS sport_ids
+	sm.name,
+	sm.birth_date,
+	sm.height_cm,
+	sm.weight_kg,
+	ARRAY_AGG(s.name)::TEXT[] AS sport_names
 FROM sportsmen sm
-JOIN sportsman_sports ss ON ss.sportsman_id = sm.id
-GROUP BY sm.id
-HAVING COUNT(ss.id) > 1;
+JOIN sportsman_sports sms ON sms.sportsman_id = sm.id
+JOIN sports s ON sports.id = sms.sport_id
+GROUP BY
+	sm.id,
+	sm.name,
+	sm.birth_date,
+	sm.height_cm,
+	sm.weight_kg
+HAVING COUNT(sms.id) > 1;
 
 -- Query #5
+--
+-- Получить список тренеров указанного спортсмена.
+--
 -- name: GetTrainersBySportsmanID :many
-SELECT t.*
+SELECT t.name
 FROM trainers t
 JOIN sportsman_sport_trainers sst ON sst.trainer_id = t.id
 JOIN sportsman_sports ss ON ss.id = sst.sportsman_sport_id
 WHERE ss.sportsman_id = $1;
 
 -- Query #6
+--
+-- Получить перечень соревнований, проведенных в течение заданного периода времени в
+-- целом либо указанным организатором.
+--
 -- name: GetTournamentsForPeriod :many
-SELECT *
-FROM tournaments
+SELECT
+	p.name,
+	o.name,
+	t.start_at
+FROM tournaments t
+JOIN places p ON p.id = t.place_id
+JOIN organizers o ON o.id = t.organizer_id
 WHERE
-	start_at BETWEEN @start_at AND @end_at
-	AND (organizer_id = sqlc.narg('organizer_id') OR sqlc.narg('organizer_id') IS NULL);
+	t.start_at BETWEEN @start_at AND @end_at
+	AND (
+		t.organizer_id = sqlc.narg('organizer_id')
+		OR sqlc.narg('organizer_id') IS NULL
+	);
 
 -- Query #7
+--
+-- Получить список призеров указанного соревнования.
+--
 -- name: GetSportsmenByTournamentID :many
-SELECT sm.*
+SELECT
+	sm.name,
+	sm.birth_date,
+	sm.height_cm,
+	sm.weight_kg
 FROM sportsmen sm
 JOIN participations p ON p.sportsman_id = sm.id
 JOIN tournament_sports ts ON ts.id = p.tournament_sport_id
-WHERE ts.tournament_id = $1;
+WHERE
+	ts.tournament_id = $1
+	AND p.rank <= 3
+ORDER BY p.rank;
 
 -- Query #8
+--
+-- Получить перечень соревнований, проведенных в указанном спортивном сооружении в
+-- целом либо по определенному виду спорта.
+--
 -- name: GetTournamentsByPlaceID :many
-SELECT t.*
+SELECT
+	p.name,
+	o.name,
+	t.start_at
 FROM tournaments t
+JOIN places p ON p.id = t.place_id
+JOIN organizers o ON o.id = t.organizer_id
 JOIN tournament_sports ts ON ts.tournament_id = t.id
 WHERE
 	t.place_id = $1
-	AND (ts.sport_id = sqlc.narg('sport_id') OR sqlc.narg('sport_id') IS NULL);
+	AND (
+		ts.sport_id = sqlc.narg('sport_id')
+		OR sqlc.narg('sport_id') IS NULL
+	);
 
 -- Query #9
+--
+-- Получить перечень спортивных клубов и число спортсменов этих клубов, участвовавших в
+-- спортивных соревнованиях в течение заданного интервала времени.
+--
 -- name: GetClubActiveSportsmenCountsForPeriod :many
 SELECT
-	c.*,
+	c.name,
 	COUNT(s.id)
 FROM clubs c
 JOIN sportsmen s ON s.club_id = c.id
@@ -119,19 +203,32 @@ JOIN participations p ON p.sportsman_id = s.id
 JOIN tournament_sports ts ON ts.id = p.tournament_sport_id
 JOIN tournaments t ON t.id = ts.tournament_id
 WHERE t.start_at BETWEEN @start_at AND @end_at
-GROUP BY c.id;
+GROUP BY
+	c.id,
+	c.name;
 
 -- Query #10
+--
+-- Получить список тренеров по определенному виду спорта.
+--
 -- name: GetTrainersBySportID :many
-SELECT t.*
+SELECT t.name
 FROM trainers t
 JOIN sportsman_sport_trainers sst ON sst.trainer_id = t.id
 JOIN sportsman_sports ss ON ss.id = sst.sportsman_sport_id
 WHERE ss.sport_id = $1;
 
 -- Query: #11
+--
+-- Получить список спортсменов, не участвовавших ни в каких соревнованиях в течение
+-- определенного периода времени.
+--
 -- name: GetInactiveSportsmenForPeriod :many
-SELECT sm.*
+SELECT
+	sm.name,
+	sm.birth_date,
+	sm.height_cm,
+	sm.weight_kg
 FROM sportsmen sm
 WHERE NOT EXISTS (
 	SELECT 1
@@ -144,19 +241,70 @@ WHERE NOT EXISTS (
 );
 
 -- Query: #12
+--
+-- Получить список организаторов соревнований и число проведенных ими соревнований в
+-- течение определенного периода времени.
+--
 -- name: GetOrganizerTournamentCountsForPeriod :many
 SELECT
-	o.*,
-	COUNT(t.*)
+	o.name,
+	o.location,
+	COUNT(t.id)
 FROM organizers o
 JOIN tournaments t ON t.organizer_id = o.id
-GROUP BY o.id;
+GROUP BY
+	o.id,
+	o.name,
+	o.location;
 
 -- Query: #13
+--
+-- Получить перечень спортивных сооружений и даты проведения на них соревнований в
+-- течение определенного периода времени.
+--
 -- name: GetPlaceTournamentDatesForPeriod :many
 SELECT
-	p.*,
+	p.name,
+	p.location,
 	ARRAY_AGG(t.start_at)::TIMESTAMPTZ[] as dates
 FROM places p
 JOIN tournaments t ON t.place_id = p.id
-GROUP BY p.id;
+WHERE t.start_at BETWEEN @start_at AND @end_at
+GROUP BY
+	p.id,
+	p.name,
+	p.location;
+
+-- Query: #14 (custom)
+--
+-- Создаёт манеж  и задаёт для него аттрибуты.
+--
+-- name: InsertArena :exec
+WITH
+place_type AS (
+	SELECT id FROM place_types WHERE name = 'arena_attributes'
+),
+place AS (
+	INSERT INTO places (name, location, type_id)
+	VALUES (@name, @location, place_type.id)
+	RETURNING id
+)
+INSERT INTO arena_attributes (referees_count, treadmill_length_cm)
+VALUES (@referees_count, @treadmill_length_cm);
+
+-- Query: #15 (custom)
+--
+-- Создаёт стадион  и задаёт для него аттрибуты.
+--
+-- name: InsertStadium :exec
+WITH
+place_type AS (
+	SELECT id FROM place_types WHERE attributes_table_name = 'stadium_attributes'
+),
+place AS (
+	INSERT INTO places (name, location, type_id)
+	VALUES (@name, @location, place_type.id)
+	RETURNING id
+)
+INSERT INTO stadium_attributes (width_cm, length_cm, max_spectators, is_outdoor, coating)
+VALUES (@width_cm, @length_cm, @max_spectators, @is_outdoor, @coating);
