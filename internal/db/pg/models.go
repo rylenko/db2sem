@@ -20,6 +20,20 @@ type Club struct {
 	CreatedAt pgtype.Timestamptz
 }
 
+type CourtAttribute struct {
+	PlaceID   int64
+	WidthCm   int64
+	LengthCm  int64
+	IsOutdoor bool
+}
+
+type GymAttribute struct {
+	PlaceID        int64
+	TrainersCount  int16
+	DumbbellsCount int16
+	HasBathhouse   bool
+}
+
 type Organizer struct {
 	ID        int64
 	Name      string

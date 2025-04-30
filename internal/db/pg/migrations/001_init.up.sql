@@ -18,6 +18,20 @@ CREATE TABLE IF NOT EXISTS arena_attributes (
 	treadmill_length_cm BIGINT    NOT NULL CHECK (treadmill_length_cm > 0)
 );
 
+CREATE TABLE IF NOT EXISTS court_attributes (
+	place_id   BIGINT  PRIMARY KEY REFERENCES places(id) ON DELETE CASCADE,
+	width_cm   BIGINT  NOT NULL CHECK (width_cm > 0),
+	length_cm  BIGINT  NOT NULL CHECK (length_cm > 0),
+	is_outdoor BOOLEAN NOT NULL
+);
+
+CREATE TABLE IF NOT EXISTS gym_attributes (
+	place_id        BIGINT   PRIMARY KEY REFERENCES places(id) ON DELETE CASCADE,
+	trainers_count  SMALLINT NOT NULL CHECK (trainers_count >= 0),
+	dumbbells_count SMALLINT NOT NULL CHECK (dumbbells_count >= 0),
+	has_bathhouse   BOOLEAN  NOT NULL
+);
+
 CREATE TABLE IF NOT EXISTS stadium_attributes (
 	place_id       BIGINT       PRIMARY KEY REFERENCES places(id) ON DELETE CASCADE,
 	width_cm       BIGINT       NOT NULL CHECK (width_cm > 0),

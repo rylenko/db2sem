@@ -54,6 +54,58 @@ WHERE
 		OR sqlc.narg('coating') IS NULL
 	);
 
+-- Query #1.3
+--
+-- Получить перечень спортивных сооружений указанного типа в целом или
+-- удовлетворяющих заданным характеристикам (например, стадионы, вмещающие не менее
+-- указанного числа зрителей).
+--
+-- name: GetCourtPlaces :many
+SELECT
+	p.name,
+	p.location
+FROM places p
+JOIN court_attributes ca ON ca.place_id = p.id
+WHERE
+	(
+		ca.width_cm >= sqlc.narg('width_cm')
+		OR sqlc.narg('width_cm') IS NULL
+	)
+	AND (
+		ca.length_cm >= sqlc.narg('length_cm')
+		OR sqlc.narg('length_cm') IS NULL
+	)
+	AND (
+		ca.is_outdoor = sqlc.narg('is_outdoor')
+		OR sqlc.narg('is_outdoor') IS NULL
+	);
+
+-- Query #1.4
+--
+-- Получить перечень спортивных сооружений указанного типа в целом или
+-- удовлетворяющих заданным характеристикам (например, стадионы, вмещающие не менее
+-- указанного числа зрителей).
+--
+-- name: GetGymPlaces :many
+SELECT
+	p.name,
+	p.location
+FROM places p
+JOIN gym_attributes ga ON ga.place_id = p.id
+WHERE
+	(
+		ga.trainers_count >= sqlc.narg('trainers_count')
+		OR sqlc.narg('trainers_count') IS NULL
+	)
+	AND (
+		ga.dumbbells_count >= sqlc.narg('dumbbells_count')
+		OR sqlc.narg('dumbbells_count') IS NULL
+	)
+	AND (
+		ga.has_bathhouse = sqlc.narg('has_bathhouse')
+		OR sqlc.narg('has_bathhouse') IS NULL
+	);
+
 -- Query #2
 --
 -- Получить список спортсменов, занимающихся указанным видом спорта в целом либо не
@@ -282,19 +334,19 @@ GROUP BY
 -- name: InsertArena :exec
 WITH
 place_type AS (
-	SELECT id FROM place_types WHERE name = 'arena_attributes'
+	SELECT id FROM place_types WHERE attributes_table_name = 'arena_attributes'
 ),
 place AS (
 	INSERT INTO places (name, location, type_id)
-	VALUES (@name, @location, place_type.id)
+	VALUES (@name, @location, (SELECT id FROM place_type))
 	RETURNING id
 )
-INSERT INTO arena_attributes (referees_count, treadmill_length_cm)
-VALUES (@referees_count, @treadmill_length_cm);
+INSERT INTO arena_attributes (place_id, referees_count, treadmill_length_cm)
+VALUES ((SELECT id FROM place), @referees_count, @treadmill_length_cm);
 
 -- Query: #15 (custom)
 --
--- Создаёт стадион  и задаёт для него аттрибуты.
+-- Создаёт стадион и задаёт для него аттрибуты.
 --
 -- name: InsertStadium :exec
 WITH
@@ -306,5 +358,39 @@ place AS (
 	VALUES (@name, @location, place_type.id)
 	RETURNING id
 )
-INSERT INTO stadium_attributes (width_cm, length_cm, max_spectators, is_outdoor, coating)
-VALUES (@width_cm, @length_cm, @max_spectators, @is_outdoor, @coating);
+INSERT INTO stadium_attributes (place_id, width_cm, length_cm, max_spectators, is_outdoor, coating)
+VALUES ((SELECT id FROM place), @width_cm, @length_cm, @max_spectators, @is_outdoor, @coating);
+
+-- Query: #16 (custom)
+--
+-- Создаёт корт и задаёт для него аттрибуты.
+--
+-- name: InsertCourt :exec
+WITH
+place_type AS (
+	SELECT id FROM place_types WHERE attributes_table_name = 'court_attributes'
+),
+place AS (
+	INSERT INTO places (name, location, type_id)
+	VALUES (@name, @location, place_type.id)
+	RETURNING id
+)
+INSERT INTO court_attributes (place_id, width_cm, length_cm, is_outdoor)
+VALUES ((SELECT id FROM place), @width_cm, @length_cm, @is_outdoor);
+
+-- Query: #17 (custom)
+--
+-- Создаёт зал и задаёт для него аттрибуты.
+--
+-- name: InsertGym :exec
+WITH
+place_type AS (
+	SELECT id FROM place_types WHERE attributes_table_name = 'gym_attributes'
+),
+place AS (
+	INSERT INTO places (name, location, type_id)
+	VALUES (@name, @location, place_type.id)
+	RETURNING id
+)
+INSERT INTO gym_attributes (place_id, trainers_count, dumbbells_count, has_bathhouse)
+VALUES ((SELECT id FROM place), @trainers_count, @dumbbells_count, @has_bathhouse);

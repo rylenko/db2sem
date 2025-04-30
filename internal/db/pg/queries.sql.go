@@ -112,6 +112,120 @@ func (q *Queries) GetClubActiveSportsmenCountsForPeriod(ctx context.Context, arg
 	return items, nil
 }
 
+const getCourtPlaces = `-- name: GetCourtPlaces :many
+SELECT
+	p.name,
+	p.location
+FROM places p
+JOIN court_attributes ca ON ca.place_id = p.id
+WHERE
+	(
+		ca.width_cm >= $1
+		OR $1 IS NULL
+	)
+	AND (
+		ca.length_cm >= $2
+		OR $2 IS NULL
+	)
+	AND (
+		ca.is_outdoor = $3
+		OR $3 IS NULL
+	)
+`
+
+type GetCourtPlacesParams struct {
+	WidthCm   pgtype.Int8
+	LengthCm  pgtype.Int8
+	IsOutdoor pgtype.Bool
+}
+
+type GetCourtPlacesRow struct {
+	Name     string
+	Location string
+}
+
+// Query #1.3
+//
+// Получить перечень спортивных сооружений указанного типа в целом или
+// удовлетворяющих заданным характеристикам (например, стадионы, вмещающие не менее
+// указанного числа зрителей).
+func (q *Queries) GetCourtPlaces(ctx context.Context, arg GetCourtPlacesParams) ([]GetCourtPlacesRow, error) {
+	rows, err := q.db.Query(ctx, getCourtPlaces, arg.WidthCm, arg.LengthCm, arg.IsOutdoor)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	var items []GetCourtPlacesRow
+	for rows.Next() {
+		var i GetCourtPlacesRow
+		if err := rows.Scan(&i.Name, &i.Location); err != nil {
+			return nil, err
+		}
+		items = append(items, i)
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
+}
+
+const getGymPlaces = `-- name: GetGymPlaces :many
+SELECT
+	p.name,
+	p.location
+FROM places p
+JOIN gym_attributes ga ON ga.place_id = p.id
+WHERE
+	(
+		ga.trainers_count >= $1
+		OR $1 IS NULL
+	)
+	AND (
+		ga.dumbbells_count >= $2
+		OR $2 IS NULL
+	)
+	AND (
+		ga.has_bathhouse = $3
+		OR $3 IS NULL
+	)
+`
+
+type GetGymPlacesParams struct {
+	TrainersCount  pgtype.Int2
+	DumbbellsCount pgtype.Int2
+	HasBathhouse   pgtype.Bool
+}
+
+type GetGymPlacesRow struct {
+	Name     string
+	Location string
+}
+
+// Query #1.4
+//
+// Получить перечень спортивных сооружений указанного типа в целом или
+// удовлетворяющих заданным характеристикам (например, стадионы, вмещающие не менее
+// указанного числа зрителей).
+func (q *Queries) GetGymPlaces(ctx context.Context, arg GetGymPlacesParams) ([]GetGymPlacesRow, error) {
+	rows, err := q.db.Query(ctx, getGymPlaces, arg.TrainersCount, arg.DumbbellsCount, arg.HasBathhouse)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	var items []GetGymPlacesRow
+	for rows.Next() {
+		var i GetGymPlacesRow
+		if err := rows.Scan(&i.Name, &i.Location); err != nil {
+			return nil, err
+		}
+		items = append(items, i)
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
+}
+
 const getInactiveSportsmenForPeriod = `-- name: GetInactiveSportsmenForPeriod :many
 SELECT
 	sm.name,
@@ -727,15 +841,15 @@ func (q *Queries) GetTrainersBySportsmanID(ctx context.Context, sportsmanID int6
 const insertArena = `-- name: InsertArena :exec
 WITH
 place_type AS (
-	SELECT id FROM place_types WHERE name = 'arena_attributes'
+	SELECT id FROM place_types WHERE attributes_table_name = 'arena_attributes'
 ),
 place AS (
 	INSERT INTO places (name, location, type_id)
-	VALUES ($3, $4, place_type.id)
+	VALUES ($3, $4, (SELECT id FROM place_type))
 	RETURNING id
 )
-INSERT INTO arena_attributes (referees_count, treadmill_length_cm)
-VALUES ($1, $2)
+INSERT INTO arena_attributes (place_id, referees_count, treadmill_length_cm)
+VALUES ((SELECT id FROM place), $1, $2)
 `
 
 type InsertArenaParams struct {
@@ -758,6 +872,78 @@ func (q *Queries) InsertArena(ctx context.Context, arg InsertArenaParams) error 
 	return err
 }
 
+const insertCourt = `-- name: InsertCourt :exec
+WITH
+place_type AS (
+	SELECT id FROM place_types WHERE attributes_table_name = 'court_attributes'
+),
+place AS (
+	INSERT INTO places (name, location, type_id)
+	VALUES ($4, $5, place_type.id)
+	RETURNING id
+)
+INSERT INTO court_attributes (place_id, width_cm, length_cm, is_outdoor)
+VALUES ((SELECT id FROM place), $1, $2, $3)
+`
+
+type InsertCourtParams struct {
+	WidthCm   int64
+	LengthCm  int64
+	IsOutdoor bool
+	Name      string
+	Location  string
+}
+
+// Query: #16 (custom)
+//
+// Создаёт корт и задаёт для него аттрибуты.
+func (q *Queries) InsertCourt(ctx context.Context, arg InsertCourtParams) error {
+	_, err := q.db.Exec(ctx, insertCourt,
+		arg.WidthCm,
+		arg.LengthCm,
+		arg.IsOutdoor,
+		arg.Name,
+		arg.Location,
+	)
+	return err
+}
+
+const insertGym = `-- name: InsertGym :exec
+WITH
+place_type AS (
+	SELECT id FROM place_types WHERE attributes_table_name = 'gym_attributes'
+),
+place AS (
+	INSERT INTO places (name, location, type_id)
+	VALUES ($4, $5, place_type.id)
+	RETURNING id
+)
+INSERT INTO gym_attributes (place_id, trainers_count, dumbbells_count, has_bathhouse)
+VALUES ((SELECT id FROM place), $1, $2, $3)
+`
+
+type InsertGymParams struct {
+	TrainersCount  int16
+	DumbbellsCount int16
+	HasBathhouse   bool
+	Name           string
+	Location       string
+}
+
+// Query: #17 (custom)
+//
+// Создаёт зал и задаёт для него аттрибуты.
+func (q *Queries) InsertGym(ctx context.Context, arg InsertGymParams) error {
+	_, err := q.db.Exec(ctx, insertGym,
+		arg.TrainersCount,
+		arg.DumbbellsCount,
+		arg.HasBathhouse,
+		arg.Name,
+		arg.Location,
+	)
+	return err
+}
+
 const insertStadium = `-- name: InsertStadium :exec
 WITH
 place_type AS (
@@ -768,8 +954,8 @@ place AS (
 	VALUES ($6, $7, place_type.id)
 	RETURNING id
 )
-INSERT INTO stadium_attributes (width_cm, length_cm, max_spectators, is_outdoor, coating)
-VALUES ($1, $2, $3, $4, $5)
+INSERT INTO stadium_attributes (place_id, width_cm, length_cm, max_spectators, is_outdoor, coating)
+VALUES ((SELECT id FROM place), $1, $2, $3, $4, $5)
 `
 
 type InsertStadiumParams struct {
@@ -784,7 +970,7 @@ type InsertStadiumParams struct {
 
 // Query: #15 (custom)
 //
-// Создаёт стадион  и задаёт для него аттрибуты.
+// Создаёт стадион и задаёт для него аттрибуты.
 func (q *Queries) InsertStadium(ctx context.Context, arg InsertStadiumParams) error {
 	_, err := q.db.Exec(ctx, insertStadium,
 		arg.WidthCm,
