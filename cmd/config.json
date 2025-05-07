@@ -1,3 +1,17 @@
 {
-	"PostgresDSN": "postgresql://user:password@localhost:5432/db2sem"
+	"ShutdownTimeoutSeconds": 10,
+	"PostgresDSN": "user='user' password='password' host='db' port=5432 dbname='db2sem' sslmode=disable",
+	"Delivery": {
+		"Server": {
+			"ReadTimeoutSeconds": 10,
+			"WriteTimeoutSeconds": 10
+		},
+		"Cors": {
+			"AllowOrigins": "*",
+			"AllowHeaders": "Authorization"
+		},
+		"Serve": {
+			"Address": ":8000"
+		}
+	}
 }

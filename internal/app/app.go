@@ -3,20 +3,64 @@ package app
 import (
 	"context"
 	"fmt"
+	"log"
+	"sync"
 
 	"github.com/jackc/pgx/v5/pgxpool"
 
 	"db2sem/internal/config"
 	"db2sem/internal/db/pg"
+	"db2sem/internal/delivery"
+	"db2sem/internal/repo"
+	"db2sem/internal/service"
+	"db2sem/internal/transport"
+	"db2sem/internal/utils/request"
 )
 
 func Run(ctx context.Context, cfg config.Config) error {
-	_, err := getDBConn(ctx, cfg.PostgresDSN)
+	conn, err := getDBConn(ctx, cfg.PostgresDSN)
 	if err != nil {
 		return fmt.Errorf("getDBConn(%q): %w", cfg.PostgresDSN, err)
 	}
 
-	fmt.Println("connected.")
+	defer conn.Close()
+
+	requestReader := request.NewReader()
+
+	repo := repo.New(conn)
+	service := service.New(repo)
+	transport := transport.New(requestReader, service)
+	delivery := delivery.New(cfg.Delivery, transport)
+
+	if err := runDelivery(ctx, cfg, delivery); err != nil {
+		return fmt.Errorf("run delivery: %w", err)
+	}
+
+	return nil
+}
+
+func runDelivery(ctx context.Context, cfg config.Config, delivery *delivery.Delivery) error {
+	var wg sync.WaitGroup
+	defer wg.Wait()
+
+	wg.Add(1)
+
+	go func() {
+		defer wg.Done()
+
+		if err := delivery.Listen(); err != nil {
+			log.Printf("delivery listen failed: %v", err)
+		}
+	}()
+
+	<-ctx.Done()
+
+	shutdownCtx, cancelShutdownCtx := context.WithTimeout(context.Background(), cfg.ShutdownTimeoutSeconds.Duration)
+	defer cancelShutdownCtx()
+
+	if err := delivery.Shutdown(shutdownCtx); err != nil {
+		return fmt.Errorf("shutdown: %w", err)
+	}
 
 	return nil
 }

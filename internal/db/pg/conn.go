@@ -11,6 +11,7 @@ import (
 )
 
 type Conn interface {
+	Close()
 	Queries(ctx context.Context) *Queries
 	WithTx(ctx context.Context, txFunc func(ctx context.Context) error) error
 }
@@ -25,6 +26,18 @@ func NewConn(pool *pgxpool.Pool) Conn {
 		pool:    pool,
 		queries: New(pool),
 	}
+}
+
+func (c *defaultConn) Close() {
+	c.pool.Close()
+}
+
+func (c *defaultConn) Queries(ctx context.Context) *Queries {
+	if tx := extractTx(ctx); tx != nil {
+		return c.queries.WithTx(tx)
+	}
+
+	return c.queries
 }
 
 func (c *defaultConn) WithTx(ctx context.Context, txFunc func(ctx context.Context) error) error {
@@ -48,12 +61,4 @@ func (c *defaultConn) WithTx(ctx context.Context, txFunc func(ctx context.Contex
 	}
 
 	return nil
-}
-
-func (c *defaultConn) Queries(ctx context.Context) *Queries {
-	if tx := extractTx(ctx); tx != nil {
-		return c.queries.WithTx(tx)
-	}
-
-	return c.queries
 }

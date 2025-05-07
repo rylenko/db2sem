@@ -11,7 +11,7 @@ import (
 	"db2sem/internal/config"
 )
 
-const configPath = "cmd/config.json"
+const configPath = "config.json"
 
 func run() error {
 	ctx, stopCtx := signal.NotifyContext(context.Background(), syscall.SIGINT, syscall.SIGTERM)

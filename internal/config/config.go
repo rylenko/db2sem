@@ -8,10 +8,16 @@ import (
 
 	"github.com/creasty/defaults"
 	"github.com/go-playground/validator/v10"
+
+	"db2sem/internal/delivery"
+	"db2sem/internal/utils/duration"
 )
 
 type Config struct {
-	PostgresDSN string `validate:"required" default:""`
+	ShutdownTimeoutSeconds duration.Seconds `validate:"required"`
+	PostgresDSN            string           `validate:"required"`
+
+	Delivery delivery.Config `validate:"required"`
 }
 
 func Load(path string) (Config, error) {
