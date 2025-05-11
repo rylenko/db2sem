@@ -3,6 +3,7 @@ package delivery
 import (
 	"github.com/gofiber/fiber/v2"
 	"github.com/gofiber/fiber/v2/middleware/cors"
+	"github.com/gofiber/template/html/v2"
 
 	"db2sem/internal/utils/duration"
 )
@@ -20,7 +21,7 @@ type CorsConfig struct {
 	AllowCredentials bool
 }
 
-func (cfg *CorsConfig) convertToForeign() cors.Config {
+func (cfg CorsConfig) convertToForeign() cors.Config {
 	return cors.Config{
 		AllowOrigins:     cfg.AllowOrigins,
 		AllowHeaders:     cfg.AllowHeaders,
@@ -38,13 +39,15 @@ type ServerConfig struct {
 	ReadTimeoutSeconds    duration.Seconds `validate:"required"`
 	WriteTimeoutSeconds   duration.Seconds `validate:"required"`
 	DisableStartupMessage bool
+	ViewsDir              string `validate:"required" default:"./views"`
 }
 
-func (cfg *ServerConfig) convertToForeign() fiber.Config {
+func (cfg ServerConfig) convertToForeign() fiber.Config {
 	return fiber.Config{
 		ProxyHeader:           cfg.ProxyHeader,
 		ReadTimeout:           cfg.ReadTimeoutSeconds.Duration,
 		WriteTimeout:          cfg.WriteTimeoutSeconds.Duration,
 		DisableStartupMessage: cfg.DisableStartupMessage,
+		Views:                 html.New(cfg.ViewsDir, ".html"),
 	}
 }

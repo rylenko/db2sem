@@ -21,8 +21,10 @@ services:
       - pgdata:/var/lib/postgresql/data
     expose:
       - "5432"
+    ports:
+      - "5432:5432"
     healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U user"]
+      test: ["CMD-SHELL", "pg_isready -U user -d db2sem"]
       interval: 5s
       timeout: 5s
       retries: 5

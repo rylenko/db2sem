@@ -1,10 +1,11 @@
 {
 	"ShutdownTimeoutSeconds": 10,
-	"PostgresDSN": "user='user' password='password' host='db' port=5432 dbname='db2sem' sslmode=disable",
+	"PostgresDSN": "user='user' password='password' host='pg' port=5432 dbname='db2sem' sslmode=disable",
 	"Delivery": {
 		"Server": {
 			"ReadTimeoutSeconds": 10,
-			"WriteTimeoutSeconds": 10
+			"WriteTimeoutSeconds": 10,
+			"ViewsDir": "/app/views"
 		},
 		"Cors": {
 			"AllowOrigins": "*",
