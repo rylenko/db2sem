@@ -154,6 +154,7 @@ WHERE
 --
 -- name: GetSportsmenInvolvedInSeveralSports :many
 SELECT
+	sm.id,
 	sm.name,
 	sm.birth_date,
 	sm.height_cm,
@@ -161,14 +162,15 @@ SELECT
 	ARRAY_AGG(s.name)::TEXT[] AS sport_names
 FROM sportsmen sm
 JOIN sportsman_sports sms ON sms.sportsman_id = sm.id
-JOIN sports s ON sports.id = sms.sport_id
+JOIN sports s ON s.id = sms.sport_id
 GROUP BY
 	sm.id,
 	sm.name,
 	sm.birth_date,
 	sm.height_cm,
 	sm.weight_kg
-HAVING COUNT(sms.id) > 1;
+HAVING COUNT(sms.id) > 1
+ORDER BY sm.id;
 
 -- Query #5
 --
@@ -394,3 +396,65 @@ place AS (
 )
 INSERT INTO gym_attributes (place_id, trainers_count, dumbbells_count, has_bathhouse)
 VALUES ((SELECT id FROM place), @trainers_count, @dumbbells_count, @has_bathhouse);
+
+-- Query: #18 (custom)
+--
+-- Получает спортсмена по идентификатору.
+--
+-- name: GetSportsmanByID :one
+SELECT
+	sm.id,
+	sm.name,
+	sm.birth_date,
+	sm.height_cm,
+	sm.weight_kg,
+	ARRAY_AGG(s.name)::TEXT[] AS sport_names
+FROM sportsmen sm
+JOIN sportsman_sports sms ON sms.sportsman_id = sm.id
+JOIN sports s ON s.id = sms.sport_id
+WHERE sm.id = $1
+GROUP BY
+	sm.id,
+	sm.name,
+	sm.birth_date,
+	sm.height_cm,
+	sm.weight_kg;
+
+-- Query: #19 (custom)
+--
+-- Получает названия всех спортов.
+--
+-- name: GetSportNames :many
+SELECT name
+FROM sports;
+
+-- Query: #20 (custom)
+--
+-- Удаляет спортсмена по ID.
+--
+-- name: DeleteSportsmanByID :exec
+DELETE FROM sportsmen
+WHERE id = $1;
+
+-- Query: #21 (custom)
+--
+-- Получает всех спортсменов.
+--
+-- name: GetSportsmen :many
+SELECT
+	sm.id,
+	sm.name,
+	sm.birth_date,
+	sm.height_cm,
+	sm.weight_kg,
+	ARRAY_AGG(s.name)::TEXT[] AS sport_names
+FROM sportsmen sm
+JOIN sportsman_sports sms ON sms.sportsman_id = sm.id
+JOIN sports s ON s.id = sms.sport_id
+GROUP BY
+	sm.id,
+	sm.name,
+	sm.birth_date,
+	sm.height_cm,
+	sm.weight_kg
+ORDER BY sm.id;

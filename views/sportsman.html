@@ -1,0 +1,49 @@
+{{ $SportsmanSportNames := .Sportsman.SportNames }}
+
+<!DOCTYPE html>
+<html>
+<head>
+	<title>{{ .Sportsman.Name }}</title>
+</head>
+<body>
+	<h1><a href="/">Главная</a></h1>
+	<form action="/sportsmen/{{ .Sportsman.ID }}/update" method="POST">
+		<label for="name">Имя:</label>
+		<input type="text" id="name" name="name" value="{{ .Sportsman.Name }}" required>
+
+		<br/>
+
+		<label for="birthdate">Дата рождения:</label>
+		<input type="date" id="birthdate" name="birth_date" value="{{ .Sportsman.BirthDateString }}" required>
+
+		<br/>
+
+		<label for="height_cm">Рост (см):</label>
+		<input type="number" id="height_cm" name="height_cm" min="50" max="300" value="{{ .Sportsman.HeightCm }}" required>
+
+		<br/>
+
+		<label for="weight">Вес (кг):</label>
+		<input type="number" id="weight" name="weight" step="0.1" min="1" max="300" value="{{ .Sportsman.WeightKg }}" required>
+
+		<br/>
+
+		<label for="sport_names">Виды спорта:</label>
+		<select id="sport_names" name="sport_names" multiple>
+			{{ range .SportNames }}
+				<option value="{{ . }}" {{ if ContainsString $SportsmanSportNames . }}selected{{ end }}>{{ . }}</option>
+			{{ end }}
+		</select>
+
+		<br/>
+
+		<button type="submit">Сохранить</button>
+	</form>
+
+	<br/>
+
+	<form action="/sportsmen/{{ .Sportsman.ID }}/delete" method="POST">
+		<button type="submit">Удалить</button>
+	</form>
+</body>
+</html>

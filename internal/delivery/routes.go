@@ -7,5 +7,21 @@ import (
 
 func registerRoutes(app *fiber.App, transport transport) {
 	app.Use(recover.New())
+
 	app.Get("/", transport.RenderIndexPage)
+
+	queries := app.Group("queries")
+	{
+		queries.Get("/", transport.RenderQueriesPage)
+		queries.Get("/sportsmen-involved-in-several-sports", transport.RenderSportsmenInvolvedInSeveralSportsPage)
+	}
+
+	sportsmen := app.Group("sportsmen")
+	{
+		sportsmen.Get("/", transport.RenderSportsmenPage)
+		// sportsmen.Post("/", transport.CreateSportsman)
+		sportsmen.Get("/:id", transport.RenderSportsmanPage)
+		// sportsmen.Post("/:id/update", transport.UpdateSportsman)
+		sportsmen.Post("/:id/delete", transport.DeleteSportsman)
+	}
 }

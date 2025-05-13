@@ -11,6 +11,19 @@ import (
 	"github.com/jackc/pgx/v5/pgtype"
 )
 
+const deleteSportsmanByID = `-- name: DeleteSportsmanByID :exec
+DELETE FROM sportsmen
+WHERE id = $1
+`
+
+// Query: #20 (custom)
+//
+// Удаляет спортсмена по ID.
+func (q *Queries) DeleteSportsmanByID(ctx context.Context, id int64) error {
+	_, err := q.db.Exec(ctx, deleteSportsmanByID, id)
+	return err
+}
+
 const getArenaPlaces = `-- name: GetArenaPlaces :many
 SELECT
 	p.name,
@@ -377,6 +390,139 @@ func (q *Queries) GetPlaceTournamentDatesForPeriod(ctx context.Context, arg GetP
 	return items, nil
 }
 
+const getSportNames = `-- name: GetSportNames :many
+SELECT name
+FROM sports
+`
+
+// Query: #19 (custom)
+//
+// Получает названия всех спортов.
+func (q *Queries) GetSportNames(ctx context.Context) ([]string, error) {
+	rows, err := q.db.Query(ctx, getSportNames)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	var items []string
+	for rows.Next() {
+		var name string
+		if err := rows.Scan(&name); err != nil {
+			return nil, err
+		}
+		items = append(items, name)
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
+}
+
+const getSportsmanByID = `-- name: GetSportsmanByID :one
+SELECT
+	sm.id,
+	sm.name,
+	sm.birth_date,
+	sm.height_cm,
+	sm.weight_kg,
+	ARRAY_AGG(s.name)::TEXT[] AS sport_names
+FROM sportsmen sm
+JOIN sportsman_sports sms ON sms.sportsman_id = sm.id
+JOIN sports s ON s.id = sms.sport_id
+WHERE sm.id = $1
+GROUP BY
+	sm.id,
+	sm.name,
+	sm.birth_date,
+	sm.height_cm,
+	sm.weight_kg
+`
+
+type GetSportsmanByIDRow struct {
+	ID         int64
+	Name       string
+	BirthDate  pgtype.Date
+	HeightCm   int16
+	WeightKg   pgtype.Numeric
+	SportNames []string
+}
+
+// Query: #18 (custom)
+//
+// Получает спортсмена по идентификатору.
+func (q *Queries) GetSportsmanByID(ctx context.Context, id int64) (GetSportsmanByIDRow, error) {
+	row := q.db.QueryRow(ctx, getSportsmanByID, id)
+	var i GetSportsmanByIDRow
+	err := row.Scan(
+		&i.ID,
+		&i.Name,
+		&i.BirthDate,
+		&i.HeightCm,
+		&i.WeightKg,
+		&i.SportNames,
+	)
+	return i, err
+}
+
+const getSportsmen = `-- name: GetSportsmen :many
+SELECT
+	sm.id,
+	sm.name,
+	sm.birth_date,
+	sm.height_cm,
+	sm.weight_kg,
+	ARRAY_AGG(s.name)::TEXT[] AS sport_names
+FROM sportsmen sm
+JOIN sportsman_sports sms ON sms.sportsman_id = sm.id
+JOIN sports s ON s.id = sms.sport_id
+GROUP BY
+	sm.id,
+	sm.name,
+	sm.birth_date,
+	sm.height_cm,
+	sm.weight_kg
+ORDER BY sm.id
+`
+
+type GetSportsmenRow struct {
+	ID         int64
+	Name       string
+	BirthDate  pgtype.Date
+	HeightCm   int16
+	WeightKg   pgtype.Numeric
+	SportNames []string
+}
+
+// Query: #21 (custom)
+//
+// Получает всех спортсменов.
+func (q *Queries) GetSportsmen(ctx context.Context) ([]GetSportsmenRow, error) {
+	rows, err := q.db.Query(ctx, getSportsmen)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	var items []GetSportsmenRow
+	for rows.Next() {
+		var i GetSportsmenRow
+		if err := rows.Scan(
+			&i.ID,
+			&i.Name,
+			&i.BirthDate,
+			&i.HeightCm,
+			&i.WeightKg,
+			&i.SportNames,
+		); err != nil {
+			return nil, err
+		}
+		items = append(items, i)
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
+}
+
 const getSportsmenBySportID = `-- name: GetSportsmenBySportID :many
 SELECT
 	sm.name,
@@ -544,6 +690,7 @@ func (q *Queries) GetSportsmenByTrainerID(ctx context.Context, arg GetSportsmenB
 
 const getSportsmenInvolvedInSeveralSports = `-- name: GetSportsmenInvolvedInSeveralSports :many
 SELECT
+	sm.id,
 	sm.name,
 	sm.birth_date,
 	sm.height_cm,
@@ -551,7 +698,7 @@ SELECT
 	ARRAY_AGG(s.name)::TEXT[] AS sport_names
 FROM sportsmen sm
 JOIN sportsman_sports sms ON sms.sportsman_id = sm.id
-JOIN sports s ON sports.id = sms.sport_id
+JOIN sports s ON s.id = sms.sport_id
 GROUP BY
 	sm.id,
 	sm.name,
@@ -559,9 +706,11 @@ GROUP BY
 	sm.height_cm,
 	sm.weight_kg
 HAVING COUNT(sms.id) > 1
+ORDER BY sm.id
 `
 
 type GetSportsmenInvolvedInSeveralSportsRow struct {
+	ID         int64
 	Name       string
 	BirthDate  pgtype.Date
 	HeightCm   int16
@@ -583,6 +732,7 @@ func (q *Queries) GetSportsmenInvolvedInSeveralSports(ctx context.Context) ([]Ge
 	for rows.Next() {
 		var i GetSportsmenInvolvedInSeveralSportsRow
 		if err := rows.Scan(
+			&i.ID,
 			&i.Name,
 			&i.BirthDate,
 			&i.HeightCm,

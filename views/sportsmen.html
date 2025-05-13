@@ -1,0 +1,20 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<title>Спортсмены</title>
+</head>
+<body>
+	<h1><a href="/">Главная</a></h1>
+	<h1>Список спорстменов</h1>
+
+	{{ range .Sportsmen }}
+		<p>* <a href="/sportsmen/{{ .ID }}">{{ .Name }}</a></p>
+		<p>Дата рождения: {{ .BirthDateString }}</p>
+		<p>Рост: {{ .HeightCm }} см.</p>
+		<p>Вес: {{ .WeightKg }} кг.</p>
+		<p>Виды спорта: {{ .SportNamesString }}.</p>
+
+		<hr/>
+	{{ end }}
+</body>
+</html>

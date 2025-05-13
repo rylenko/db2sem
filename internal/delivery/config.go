@@ -5,6 +5,7 @@ import (
 	"github.com/gofiber/fiber/v2/middleware/cors"
 	"github.com/gofiber/template/html/v2"
 
+	"db2sem/internal/transport/viewutils"
 	"db2sem/internal/utils/duration"
 )
 
@@ -43,11 +44,16 @@ type ServerConfig struct {
 }
 
 func (cfg ServerConfig) convertToForeign() fiber.Config {
+	viewsEngine := html.New(cfg.ViewsDir, ".html")
+	viewsEngine.AddFuncMap(map[string]any{
+		"ContainsString": viewutils.ContainsString,
+	})
+
 	return fiber.Config{
 		ProxyHeader:           cfg.ProxyHeader,
 		ReadTimeout:           cfg.ReadTimeoutSeconds.Duration,
 		WriteTimeout:          cfg.WriteTimeoutSeconds.Duration,
 		DisableStartupMessage: cfg.DisableStartupMessage,
-		Views:                 html.New(cfg.ViewsDir, ".html"),
+		Views:                 viewsEngine,
 	}
 }
