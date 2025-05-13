@@ -252,10 +252,10 @@ SELECT
 	c.name,
 	COUNT(s.id)
 FROM clubs c
-JOIN sportsmen s ON s.club_id = c.id
-JOIN participations p ON p.sportsman_id = s.id
-JOIN tournament_sports ts ON ts.id = p.tournament_sport_id
-JOIN tournaments t ON t.id = ts.tournament_id
+LEFT JOIN sportsmen s ON s.club_id = c.id
+LEFT JOIN participations p ON p.sportsman_id = s.id
+LEFT JOIN tournament_sports ts ON ts.id = p.tournament_sport_id
+LEFT JOIN tournaments t ON t.id = ts.tournament_id
 WHERE t.start_at BETWEEN @start_at AND @end_at
 GROUP BY
 	c.id,
@@ -305,7 +305,7 @@ SELECT
 	o.location,
 	COUNT(t.id)
 FROM organizers o
-JOIN tournaments t ON t.organizer_id = o.id
+LEFT JOIN tournaments t ON t.organizer_id = o.id
 GROUP BY
 	o.id,
 	o.name,
@@ -322,7 +322,7 @@ SELECT
 	p.location,
 	ARRAY_AGG(t.start_at)::TIMESTAMPTZ[] as dates
 FROM places p
-JOIN tournaments t ON t.place_id = p.id
+LEFT JOIN tournaments t ON t.place_id = p.id
 WHERE t.start_at BETWEEN @start_at AND @end_at
 GROUP BY
 	p.id,
@@ -331,7 +331,7 @@ GROUP BY
 
 -- Query: #14 (custom)
 --
--- Создаёт манеж  и задаёт для него аттрибуты.
+-- Создаёт манеж и задаёт для него аттрибуты.
 --
 -- name: InsertArena :exec
 WITH
@@ -408,10 +408,10 @@ SELECT
 	sm.birth_date,
 	sm.height_cm,
 	sm.weight_kg,
-	ARRAY_AGG(s.name)::TEXT[] AS sport_names
+	(ARRAY_AGG(s.name) FILTER (WHERE s.name IS NOT NULL))::TEXT[] AS sport_names
 FROM sportsmen sm
-JOIN sportsman_sports sms ON sms.sportsman_id = sm.id
-JOIN sports s ON s.id = sms.sport_id
+LEFT JOIN sportsman_sports sms ON sms.sportsman_id = sm.id
+LEFT JOIN sports s ON s.id = sms.sport_id
 WHERE sm.id = $1
 GROUP BY
 	sm.id,
@@ -447,10 +447,10 @@ SELECT
 	sm.birth_date,
 	sm.height_cm,
 	sm.weight_kg,
-	ARRAY_AGG(s.name)::TEXT[] AS sport_names
+	(ARRAY_AGG(s.name) FILTER (WHERE s.name IS NOT NULL))::TEXT[] AS sport_names
 FROM sportsmen sm
-JOIN sportsman_sports sms ON sms.sportsman_id = sm.id
-JOIN sports s ON s.id = sms.sport_id
+LEFT JOIN sportsman_sports sms ON sms.sportsman_id = sm.id
+LEFT JOIN sports s ON s.id = sms.sport_id
 GROUP BY
 	sm.id,
 	sm.name,
@@ -458,3 +458,27 @@ GROUP BY
 	sm.height_cm,
 	sm.weight_kg
 ORDER BY sm.id;
+
+-- Query: #22 (custom)
+--
+-- Обновляет спортсмена по идентификатору.
+--
+-- name: UpdateSportsmanByID :exec
+WITH old_sportsman_sports AS (
+	DELETE FROM sportsman_sports
+	WHERE sportsman_id = $1
+),
+new_sportsman_sports AS (
+	INSERT INTO sportsman_sports (sportsman_id, sport_id)
+	SELECT $1, s.id
+	FROM UNNEST(@sport_names::TEXT[]) as sport_name
+	JOIN sports s ON s.name = sport_name
+	ON CONFLICT (sportsman_id, sport_id) DO NOTHING
+)
+UPDATE sportsmen AS sm
+SET
+	name = $2,
+	birth_date = $3,
+	height_cm = $4,
+	weight_kg = $5
+WHERE sm.id = $1;

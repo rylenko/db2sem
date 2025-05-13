@@ -3,6 +3,9 @@ package transport
 import (
 	"fmt"
 	"strconv"
+	"time"
+
+	servicedto "db2sem/internal/service/dto"
 
 	"github.com/gofiber/fiber/v2"
 )
@@ -92,4 +95,47 @@ func (t *Transport) RenderSportsmenInvolvedInSeveralSportsPage(fiberCtx *fiber.C
 	return fiberCtx.Render("queries/sportsmen_involved_in_several_sports", fiber.Map{
 		"Sportsmen": sportsmen,
 	})
+}
+
+func (t *Transport) UpdateSportsman(fiberCtx *fiber.Ctx) error {
+	sportsmanID, err := strconv.ParseInt(fiberCtx.Params("id"), 10, 64)
+	if err != nil {
+		return fmt.Errorf("parse sportsman ID: %w", err)
+	}
+
+	var form updateSportsmanForm
+	if err := fiberCtx.BodyParser(&form); err != nil {
+		return fmt.Errorf("parse body: %w", err)
+	}
+
+	birthDate, err := time.Parse("2006-01-02", form.BirthDate)
+	if err != nil {
+		return fmt.Errorf("parse birth date: %w", err)
+	}
+
+	heightCm, err := strconv.ParseUint(form.HeightCm, 10, 16)
+	if err != nil {
+		return fmt.Errorf("parse height cm: %w", err)
+	}
+
+	weightKg, err := strconv.ParseFloat(form.WeightKg, 64)
+	if err != nil {
+		return fmt.Errorf("parse weight kg: %w", err)
+	}
+
+	fmt.Println(form.SportNames)
+
+	err = t.service.UpdateSportsmanByID(fiberCtx.Context(), servicedto.UpdateSportsmanByIDRequest{
+		ID:         sportsmanID,
+		Name:       form.Name,
+		BirthDate:  birthDate,
+		HeightCm:   uint16(heightCm),
+		WeightKg:   weightKg,
+		SportNames: form.SportNames,
+	})
+	if err != nil {
+		return fmt.Errorf("service: %w", err)
+	}
+
+	return fiberCtx.Redirect(fmt.Sprintf("/sportsmen/%d", sportsmanID), fiber.StatusFound)
 }

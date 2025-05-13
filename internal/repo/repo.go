@@ -9,6 +9,7 @@ import (
 
 	"db2sem/internal/db/pg"
 	"db2sem/internal/domain"
+	"db2sem/internal/repo/dto"
 )
 
 type Repo struct {
@@ -142,4 +143,25 @@ func (r *Repo) GetSportNames(ctx context.Context) ([]string, error) {
 	}
 
 	return sportNames, nil
+}
+
+func (r *Repo) UpdateSportsmanByID(ctx context.Context, req dto.UpdateSportsmanByIDRequest) error {
+	weightKg, err := convertToPgNumeric(req.WeightKg)
+	if err != nil {
+		return fmt.Errorf("convert weight kg: %w", err)
+	}
+
+	err = r.conn.Queries(ctx).UpdateSportsmanByID(ctx, pg.UpdateSportsmanByIDParams{
+		ID:         req.ID,
+		Name:       req.Name,
+		BirthDate:  convertToPgDate(req.BirthDate),
+		HeightCm:   int16(req.HeightCm),
+		WeightKg:   weightKg,
+		SportNames: req.SportNames,
+	})
+	if err != nil {
+		return fmt.Errorf("query: %w", err)
+	}
+
+	return nil
 }

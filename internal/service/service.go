@@ -4,6 +4,8 @@ import (
 	"context"
 
 	"db2sem/internal/domain"
+	repodto "db2sem/internal/repo/dto"
+	"db2sem/internal/service/dto"
 )
 
 type Service struct {
@@ -32,4 +34,15 @@ func (s *Service) GetSportsmenInvolvedInSeveralSports(ctx context.Context) ([]do
 
 func (s *Service) GetSportNames(ctx context.Context) ([]string, error) {
 	return s.repo.GetSportNames(ctx)
+}
+
+func (s *Service) UpdateSportsmanByID(ctx context.Context, req dto.UpdateSportsmanByIDRequest) error {
+	return s.repo.UpdateSportsmanByID(ctx, repodto.UpdateSportsmanByIDRequest{
+		ID:         req.ID,
+		Name:       req.Name,
+		HeightCm:   req.HeightCm,
+		BirthDate:  req.BirthDate,
+		WeightKg:   req.WeightKg,
+		SportNames: req.SportNames,
+	})
 }

@@ -9,4 +9,5 @@ type transport interface {
 	RenderSportsmanPage(fibercCtx *fiber.Ctx) error
 	RenderSportsmenPage(fibercCtx *fiber.Ctx) error
 	RenderSportsmenInvolvedInSeveralSportsPage(fibercCtx *fiber.Ctx) error
+	UpdateSportsman(fiberCtx *fiber.Ctx) error
 }

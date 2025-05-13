@@ -38,3 +38,11 @@ func convertFromServiceSportsman(serviceSportsman domain.Sportsman) Sportsman {
 		SportNamesString: strings.Join(serviceSportsman.SportNames, ", "),
 	}
 }
+
+type updateSportsmanForm struct {
+	Name       string   `form:"name"`
+	BirthDate  string   `form:"birth_date"`
+	HeightCm   string   `form:"height_cm"`
+	WeightKg   string   `form:"weight_kg"`
+	SportNames []string `form:"sport_names"`
+}

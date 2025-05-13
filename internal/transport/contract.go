@@ -6,6 +6,7 @@ import (
 	"github.com/gofiber/fiber/v2"
 
 	"db2sem/internal/domain"
+	servicedto "db2sem/internal/service/dto"
 )
 
 type requestReader interface {
@@ -18,4 +19,5 @@ type service interface {
 	GetSportsmen(ctx context.Context) ([]domain.Sportsman, error)
 	GetSportsmenInvolvedInSeveralSports(ctx context.Context) ([]domain.Sportsman, error)
 	GetSportNames(ctx context.Context) ([]string, error)
+	UpdateSportsmanByID(ctx context.Context, req servicedto.UpdateSportsmanByIDRequest) error
 }

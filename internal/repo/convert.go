@@ -32,3 +32,19 @@ func convertFromPgNumeric(numeric pgtype.Numeric) (float64, error) {
 
 	return convertFromPgFloat8(float8)
 }
+
+func convertToPgNumeric(number float64) (pgtype.Numeric, error) {
+	var numeric pgtype.Numeric
+	if err := numeric.Scan(fmt.Sprintf("%f", number)); err != nil {
+		return numeric, fmt.Errorf("scan: %w", err)
+	}
+
+	return numeric, nil
+}
+
+func convertToPgDate(date time.Time) pgtype.Date {
+	return pgtype.Date{
+		Valid: true,
+		Time:  date,
+	}
+}
