@@ -1,4 +1,5 @@
-{{ $SportsmanSportNames := .Sportsman.SportNames }}
+{{ $SportsmanSports := .Sportsman.Sports }}
+{{ $SportsmanClub := .Sportsman.Club }}
 
 <!DOCTYPE html>
 <html>
@@ -28,10 +29,17 @@
 
 		<br/>
 
-		<label for="sport_names">Виды спорта:</label>
-		<select id="sport_names" name="sport_names" multiple>
-			{{ range .SportNames }}
-				<option value="{{ . }}" {{ if ContainsString $SportsmanSportNames . }}selected{{ end }}>{{ . }}</option>
+		<label for="club_id">Клуб:</label>
+		<select id="club_id" name="club_id">
+			{{ range .Clubs }}
+				<option value="{{ .ID }}" {{ if ContainsClub $SportsmanClub . }}selected{{ end }}>{{ .Name }}</option>
+			{{ end }}
+		</select>
+
+		<label for="sport_ids">Виды спорта:</label>
+		<select id="sport_ids" name="sport_ids" multiple>
+			{{ range .Sports }}
+				<option value="{{ .ID }}" {{ if ContainsSport $SportsmanSports . }}selected{{ end }}>{{ .Name }}</option>
 			{{ end }}
 		</select>
 

@@ -20,6 +20,10 @@ func (s *Service) DeleteSportsmanByID(ctx context.Context, sportsmanID int64) er
 	return s.repo.DeleteSportsmanByID(ctx, sportsmanID)
 }
 
+func (s *Service) GetClubs(ctx context.Context) ([]domain.Club, error) {
+	return s.repo.GetClubs(ctx)
+}
+
 func (s *Service) GetSportsmanByID(ctx context.Context, sportsmanID int64) (*domain.Sportsman, error) {
 	return s.repo.GetSportsmanByID(ctx, sportsmanID)
 }
@@ -32,17 +36,17 @@ func (s *Service) GetSportsmenInvolvedInSeveralSports(ctx context.Context) ([]do
 	return s.repo.GetSportsmenInvolvedInSeveralSports(ctx)
 }
 
-func (s *Service) GetSportNames(ctx context.Context) ([]string, error) {
-	return s.repo.GetSportNames(ctx)
+func (s *Service) GetSports(ctx context.Context) ([]domain.Sport, error) {
+	return s.repo.GetSports(ctx)
 }
 
 func (s *Service) UpdateSportsmanByID(ctx context.Context, req dto.UpdateSportsmanByIDRequest) error {
 	return s.repo.UpdateSportsmanByID(ctx, repodto.UpdateSportsmanByIDRequest{
-		ID:         req.ID,
-		Name:       req.Name,
-		HeightCm:   req.HeightCm,
-		BirthDate:  req.BirthDate,
-		WeightKg:   req.WeightKg,
-		SportNames: req.SportNames,
+		ID:        req.ID,
+		Name:      req.Name,
+		HeightCm:  req.HeightCm,
+		BirthDate: req.BirthDate,
+		WeightKg:  req.WeightKg,
+		SportIDs:  req.SportIDs,
 	})
 }

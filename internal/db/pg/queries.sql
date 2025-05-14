@@ -159,8 +159,10 @@ SELECT
 	sm.birth_date,
 	sm.height_cm,
 	sm.weight_kg,
-	ARRAY_AGG(s.name)::TEXT[] AS sport_names
+	c.id AS club_id,
+	c.name AS club_name
 FROM sportsmen sm
+JOIN clubs c ON c.id = sm.club_id
 JOIN sportsman_sports sms ON sms.sportsman_id = sm.id
 JOIN sports s ON s.id = sms.sport_id
 GROUP BY
@@ -170,7 +172,7 @@ GROUP BY
 	sm.height_cm,
 	sm.weight_kg
 HAVING COUNT(sms.id) > 1
-ORDER BY sm.id;
+ORDER BY sm.id DESC;
 
 -- Query #5
 --
@@ -408,27 +410,43 @@ SELECT
 	sm.birth_date,
 	sm.height_cm,
 	sm.weight_kg,
-	(ARRAY_AGG(s.name) FILTER (WHERE s.name IS NOT NULL))::TEXT[] AS sport_names
+	c.id AS club_id,
+	c.name AS club_name
 FROM sportsmen sm
-LEFT JOIN sportsman_sports sms ON sms.sportsman_id = sm.id
-LEFT JOIN sports s ON s.id = sms.sport_id
+JOIN clubs c ON c.id = sm.club_id
 WHERE sm.id = $1
 GROUP BY
 	sm.id,
 	sm.name,
 	sm.birth_date,
 	sm.height_cm,
-	sm.weight_kg;
+	sm.weight_kg,
+	c.id,
+	c.name;
 
 -- Query: #19 (custom)
 --
--- Получает названия всех спортов.
+-- Получение видов спорта, которыми занимается спортсмен.
 --
--- name: GetSportNames :many
-SELECT name
-FROM sports;
+-- name: GetSportsBySportsmanID :many
+SELECT
+	s.id,
+	s.name
+FROM sports s
+JOIN sportsman_sports sms ON sms.sport_id = s.id
+WHERE sms.sportsman_id = $1;
 
 -- Query: #20 (custom)
+--
+-- Получает все виды спорта.
+--
+-- name: GetSports :many
+SELECT
+	id,
+	name
+FROM sports;
+
+-- Query: #21 (custom)
 --
 -- Удаляет спортсмена по ID.
 --
@@ -436,7 +454,7 @@ FROM sports;
 DELETE FROM sportsmen
 WHERE id = $1;
 
--- Query: #21 (custom)
+-- Query: #22 (custom)
 --
 -- Получает всех спортсменов.
 --
@@ -447,8 +465,10 @@ SELECT
 	sm.birth_date,
 	sm.height_cm,
 	sm.weight_kg,
-	(ARRAY_AGG(s.name) FILTER (WHERE s.name IS NOT NULL))::TEXT[] AS sport_names
+	c.id AS club_id,
+	c.name AS club_name
 FROM sportsmen sm
+JOIN clubs c ON c.id = sm.club_id
 LEFT JOIN sportsman_sports sms ON sms.sportsman_id = sm.id
 LEFT JOIN sports s ON s.id = sms.sport_id
 GROUP BY
@@ -457,28 +477,62 @@ GROUP BY
 	sm.birth_date,
 	sm.height_cm,
 	sm.weight_kg
-ORDER BY sm.id;
+ORDER BY sm.id DESC;
 
--- Query: #22 (custom)
+-- Query: #23 (custom)
 --
 -- Обновляет спортсмена по идентификатору.
 --
 -- name: UpdateSportsmanByID :exec
-WITH old_sportsman_sports AS (
+WITH deleted_sportsman_sport_ids AS (
 	DELETE FROM sportsman_sports
-	WHERE sportsman_id = $1
+	WHERE
+		sportsman_id = $1
+		AND NOT (sport_id = ANY(@sport_ids::BIGINT[]))
+	RETURNING id
 ),
-new_sportsman_sports AS (
+inserted_sportsman_sport_ids AS (
 	INSERT INTO sportsman_sports (sportsman_id, sport_id)
-	SELECT $1, s.id
-	FROM UNNEST(@sport_names::TEXT[]) as sport_name
-	JOIN sports s ON s.name = sport_name
+	SELECT
+		$1,
+		sport_id
+	FROM UNNEST(@sport_ids::BIGINT[]) AS sport_id
 	ON CONFLICT (sportsman_id, sport_id) DO NOTHING
+	RETURNING id
 )
 UPDATE sportsmen AS sm
 SET
 	name = $2,
 	birth_date = $3,
 	height_cm = $4,
-	weight_kg = $5
+	weight_kg = $5,
+	club_id = $6
 WHERE sm.id = $1;
+
+-- Query: #24 (custom)
+--
+-- Получает все клубы.
+--
+-- name: GetClubs :many
+SELECT
+	id,
+	name
+FROM clubs;
+
+-- Query: #25 (custom)
+--
+-- Создаёт спортсмена.
+--
+-- name: InsertSportsman :exec
+WITH sportsman AS (
+	INSERT INTO sportsmen (name, birth_date, height_cm, weight_kg, club_id)
+	VALUES ($1, $2, $3, $4, $5)
+	RETURNING id
+)
+INSERT INTO sportsman_sports (sportsman_id, sport_id)
+SELECT
+	id,
+	sport_id
+FROM
+	sportsman,
+	UNNEST(@sport_ids::BIGINT[]) AS sport_id;

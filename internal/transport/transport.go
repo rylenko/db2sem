@@ -6,6 +6,7 @@ import (
 	"time"
 
 	servicedto "db2sem/internal/service/dto"
+	"db2sem/internal/transport/models"
 
 	"github.com/gofiber/fiber/v2"
 )
@@ -20,6 +21,10 @@ func New(requestReader requestReader, service service) *Transport {
 		requestReader: requestReader,
 		service:       service,
 	}
+}
+
+func (t *Transport) CreateSportsman(fiberCtx *fiber.Ctx) error {
+	return fiberCtx.Redirect("/sportsmen/", fiber.StatusFound)
 }
 
 func (t *Transport) DeleteSportsman(fiberCtx *fiber.Ctx) error {
@@ -58,16 +63,22 @@ func (t *Transport) RenderSportsmanPage(fiberCtx *fiber.Ctx) error {
 		return fiberCtx.Status(fiber.StatusNotFound).SendString("Sportsman not found")
 	}
 
-	sportsman := convertFromServiceSportsman(*serviceSportsman)
+	sportsman := models.ConvertFromServiceSportsman(*serviceSportsman)
 
-	sportNames, err := t.service.GetSportNames(fiberCtx.Context())
+	sports, err := t.service.GetSports(fiberCtx.Context())
 	if err != nil {
 		return fmt.Errorf("get sport names: %w", err)
 	}
 
+	clubs, err := t.service.GetClubs(fiberCtx.Context())
+	if err != nil {
+		return fmt.Errorf("get clubs: %w", err)
+	}
+
 	return fiberCtx.Render("sportsman", fiber.Map{
-		"Sportsman":  sportsman,
-		"SportNames": sportNames,
+		"Sportsman": sportsman,
+		"Clubs":     clubs,
+		"Sports":    sports,
 	})
 }
 
@@ -77,7 +88,7 @@ func (t *Transport) RenderSportsmenPage(fiberCtx *fiber.Ctx) error {
 		return fmt.Errorf("service: %w", err)
 	}
 
-	sportsmen := convertFromServiceSportsmen(serviceSportsmen)
+	sportsmen := models.ConvertFromServiceSportsmen(serviceSportsmen)
 
 	return fiberCtx.Render("sportsmen", fiber.Map{
 		"Sportsmen": sportsmen,
@@ -90,7 +101,7 @@ func (t *Transport) RenderSportsmenInvolvedInSeveralSportsPage(fiberCtx *fiber.C
 		return fmt.Errorf("service: %w", err)
 	}
 
-	sportsmen := convertFromServiceSportsmen(serviceSportsmen)
+	sportsmen := models.ConvertFromServiceSportsmen(serviceSportsmen)
 
 	return fiberCtx.Render("queries/sportsmen_involved_in_several_sports", fiber.Map{
 		"Sportsmen": sportsmen,
@@ -123,15 +134,13 @@ func (t *Transport) UpdateSportsman(fiberCtx *fiber.Ctx) error {
 		return fmt.Errorf("parse weight kg: %w", err)
 	}
 
-	fmt.Println(form.SportNames)
-
 	err = t.service.UpdateSportsmanByID(fiberCtx.Context(), servicedto.UpdateSportsmanByIDRequest{
-		ID:         sportsmanID,
-		Name:       form.Name,
-		BirthDate:  birthDate,
-		HeightCm:   uint16(heightCm),
-		WeightKg:   weightKg,
-		SportNames: form.SportNames,
+		ID:        sportsmanID,
+		Name:      form.Name,
+		BirthDate: birthDate,
+		HeightCm:  uint16(heightCm),
+		WeightKg:  weightKg,
+		SportIDs:  form.SportIDs,
 	})
 	if err != nil {
 		return fmt.Errorf("service: %w", err)

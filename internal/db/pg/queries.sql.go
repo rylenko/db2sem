@@ -16,7 +16,7 @@ DELETE FROM sportsmen
 WHERE id = $1
 `
 
-// Query: #20 (custom)
+// Query: #21 (custom)
 //
 // Удаляет спортсмена по ID.
 func (q *Queries) DeleteSportsmanByID(ctx context.Context, id int64) error {
@@ -115,6 +115,41 @@ func (q *Queries) GetClubActiveSportsmenCountsForPeriod(ctx context.Context, arg
 	for rows.Next() {
 		var i GetClubActiveSportsmenCountsForPeriodRow
 		if err := rows.Scan(&i.Name, &i.Count); err != nil {
+			return nil, err
+		}
+		items = append(items, i)
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
+}
+
+const getClubs = `-- name: GetClubs :many
+SELECT
+	id,
+	name
+FROM clubs
+`
+
+type GetClubsRow struct {
+	ID   int64
+	Name string
+}
+
+// Query: #24 (custom)
+//
+// Получает все клубы.
+func (q *Queries) GetClubs(ctx context.Context) ([]GetClubsRow, error) {
+	rows, err := q.db.Query(ctx, getClubs)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	var items []GetClubsRow
+	for rows.Next() {
+		var i GetClubsRow
+		if err := rows.Scan(&i.ID, &i.Name); err != nil {
 			return nil, err
 		}
 		items = append(items, i)
@@ -390,27 +425,71 @@ func (q *Queries) GetPlaceTournamentDatesForPeriod(ctx context.Context, arg GetP
 	return items, nil
 }
 
-const getSportNames = `-- name: GetSportNames :many
-SELECT name
+const getSports = `-- name: GetSports :many
+SELECT
+	id,
+	name
 FROM sports
 `
 
-// Query: #19 (custom)
+type GetSportsRow struct {
+	ID   int64
+	Name string
+}
+
+// Query: #20 (custom)
 //
-// Получает названия всех спортов.
-func (q *Queries) GetSportNames(ctx context.Context) ([]string, error) {
-	rows, err := q.db.Query(ctx, getSportNames)
+// Получает все виды спорта.
+func (q *Queries) GetSports(ctx context.Context) ([]GetSportsRow, error) {
+	rows, err := q.db.Query(ctx, getSports)
 	if err != nil {
 		return nil, err
 	}
 	defer rows.Close()
-	var items []string
+	var items []GetSportsRow
 	for rows.Next() {
-		var name string
-		if err := rows.Scan(&name); err != nil {
+		var i GetSportsRow
+		if err := rows.Scan(&i.ID, &i.Name); err != nil {
 			return nil, err
 		}
-		items = append(items, name)
+		items = append(items, i)
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
+}
+
+const getSportsBySportsmanID = `-- name: GetSportsBySportsmanID :many
+SELECT
+	s.id,
+	s.name
+FROM sports s
+JOIN sportsman_sports sms ON sms.sport_id = s.id
+WHERE sms.sportsman_id = $1
+`
+
+type GetSportsBySportsmanIDRow struct {
+	ID   int64
+	Name string
+}
+
+// Query: #19 (custom)
+//
+// Получение видов спорта, которыми занимается спортсмен.
+func (q *Queries) GetSportsBySportsmanID(ctx context.Context, sportsmanID int64) ([]GetSportsBySportsmanIDRow, error) {
+	rows, err := q.db.Query(ctx, getSportsBySportsmanID, sportsmanID)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	var items []GetSportsBySportsmanIDRow
+	for rows.Next() {
+		var i GetSportsBySportsmanIDRow
+		if err := rows.Scan(&i.ID, &i.Name); err != nil {
+			return nil, err
+		}
+		items = append(items, i)
 	}
 	if err := rows.Err(); err != nil {
 		return nil, err
@@ -425,26 +504,29 @@ SELECT
 	sm.birth_date,
 	sm.height_cm,
 	sm.weight_kg,
-	(ARRAY_AGG(s.name) FILTER (WHERE s.name IS NOT NULL))::TEXT[] AS sport_names
+	c.id AS club_id,
+	c.name AS club_name
 FROM sportsmen sm
-LEFT JOIN sportsman_sports sms ON sms.sportsman_id = sm.id
-LEFT JOIN sports s ON s.id = sms.sport_id
+JOIN clubs c ON c.id = sm.club_id
 WHERE sm.id = $1
 GROUP BY
 	sm.id,
 	sm.name,
 	sm.birth_date,
 	sm.height_cm,
-	sm.weight_kg
+	sm.weight_kg,
+	c.id,
+	c.name
 `
 
 type GetSportsmanByIDRow struct {
-	ID         int64
-	Name       string
-	BirthDate  pgtype.Date
-	HeightCm   int16
-	WeightKg   pgtype.Numeric
-	SportNames []string
+	ID        int64
+	Name      string
+	BirthDate pgtype.Date
+	HeightCm  int16
+	WeightKg  pgtype.Numeric
+	ClubID    int64
+	ClubName  string
 }
 
 // Query: #18 (custom)
@@ -459,7 +541,8 @@ func (q *Queries) GetSportsmanByID(ctx context.Context, id int64) (GetSportsmanB
 		&i.BirthDate,
 		&i.HeightCm,
 		&i.WeightKg,
-		&i.SportNames,
+		&i.ClubID,
+		&i.ClubName,
 	)
 	return i, err
 }
@@ -471,8 +554,10 @@ SELECT
 	sm.birth_date,
 	sm.height_cm,
 	sm.weight_kg,
-	(ARRAY_AGG(s.name) FILTER (WHERE s.name IS NOT NULL))::TEXT[] AS sport_names
+	c.id AS club_id,
+	c.name AS club_name
 FROM sportsmen sm
+JOIN clubs c ON c.id = sm.club_id
 LEFT JOIN sportsman_sports sms ON sms.sportsman_id = sm.id
 LEFT JOIN sports s ON s.id = sms.sport_id
 GROUP BY
@@ -481,19 +566,20 @@ GROUP BY
 	sm.birth_date,
 	sm.height_cm,
 	sm.weight_kg
-ORDER BY sm.id
+ORDER BY sm.id DESC
 `
 
 type GetSportsmenRow struct {
-	ID         int64
-	Name       string
-	BirthDate  pgtype.Date
-	HeightCm   int16
-	WeightKg   pgtype.Numeric
-	SportNames []string
+	ID        int64
+	Name      string
+	BirthDate pgtype.Date
+	HeightCm  int16
+	WeightKg  pgtype.Numeric
+	ClubID    int64
+	ClubName  string
 }
 
-// Query: #21 (custom)
+// Query: #22 (custom)
 //
 // Получает всех спортсменов.
 func (q *Queries) GetSportsmen(ctx context.Context) ([]GetSportsmenRow, error) {
@@ -511,7 +597,8 @@ func (q *Queries) GetSportsmen(ctx context.Context) ([]GetSportsmenRow, error) {
 			&i.BirthDate,
 			&i.HeightCm,
 			&i.WeightKg,
-			&i.SportNames,
+			&i.ClubID,
+			&i.ClubName,
 		); err != nil {
 			return nil, err
 		}
@@ -695,8 +782,10 @@ SELECT
 	sm.birth_date,
 	sm.height_cm,
 	sm.weight_kg,
-	ARRAY_AGG(s.name)::TEXT[] AS sport_names
+	c.id AS club_id,
+	c.name AS club_name
 FROM sportsmen sm
+JOIN clubs c ON c.id = sm.club_id
 JOIN sportsman_sports sms ON sms.sportsman_id = sm.id
 JOIN sports s ON s.id = sms.sport_id
 GROUP BY
@@ -706,16 +795,17 @@ GROUP BY
 	sm.height_cm,
 	sm.weight_kg
 HAVING COUNT(sms.id) > 1
-ORDER BY sm.id
+ORDER BY sm.id DESC
 `
 
 type GetSportsmenInvolvedInSeveralSportsRow struct {
-	ID         int64
-	Name       string
-	BirthDate  pgtype.Date
-	HeightCm   int16
-	WeightKg   pgtype.Numeric
-	SportNames []string
+	ID        int64
+	Name      string
+	BirthDate pgtype.Date
+	HeightCm  int16
+	WeightKg  pgtype.Numeric
+	ClubID    int64
+	ClubName  string
 }
 
 // Query #4
@@ -737,7 +827,8 @@ func (q *Queries) GetSportsmenInvolvedInSeveralSports(ctx context.Context) ([]Ge
 			&i.BirthDate,
 			&i.HeightCm,
 			&i.WeightKg,
-			&i.SportNames,
+			&i.ClubID,
+			&i.ClubName,
 		); err != nil {
 			return nil, err
 		}
@@ -1094,6 +1185,45 @@ func (q *Queries) InsertGym(ctx context.Context, arg InsertGymParams) error {
 	return err
 }
 
+const insertSportsman = `-- name: InsertSportsman :exec
+WITH sportsman AS (
+	INSERT INTO sportsmen (name, birth_date, height_cm, weight_kg, club_id)
+	VALUES ($1, $2, $3, $4, $5)
+	RETURNING id
+)
+INSERT INTO sportsman_sports (sportsman_id, sport_id)
+SELECT
+	id,
+	sport_id
+FROM
+	sportsman,
+	UNNEST($6::BIGINT[]) AS sport_id
+`
+
+type InsertSportsmanParams struct {
+	Name      string
+	BirthDate pgtype.Date
+	HeightCm  int16
+	WeightKg  pgtype.Numeric
+	ClubID    int64
+	SportIds  []int64
+}
+
+// Query: #25 (custom)
+//
+// Создаёт спортсмена.
+func (q *Queries) InsertSportsman(ctx context.Context, arg InsertSportsmanParams) error {
+	_, err := q.db.Exec(ctx, insertSportsman,
+		arg.Name,
+		arg.BirthDate,
+		arg.HeightCm,
+		arg.WeightKg,
+		arg.ClubID,
+		arg.SportIds,
+	)
+	return err
+}
+
 const insertStadium = `-- name: InsertStadium :exec
 WITH
 place_type AS (
@@ -1135,36 +1265,43 @@ func (q *Queries) InsertStadium(ctx context.Context, arg InsertStadiumParams) er
 }
 
 const updateSportsmanByID = `-- name: UpdateSportsmanByID :exec
-WITH old_sportsman_sports AS (
+WITH deleted_sportsman_sport_ids AS (
 	DELETE FROM sportsman_sports
-	WHERE sportsman_id = $1
+	WHERE
+		sportsman_id = $1
+		AND NOT (sport_id = ANY($7::BIGINT[]))
+	RETURNING id
 ),
-new_sportsman_sports AS (
+inserted_sportsman_sport_ids AS (
 	INSERT INTO sportsman_sports (sportsman_id, sport_id)
-	SELECT $1, s.id
-	FROM UNNEST($6::TEXT[]) as sport_name
-	JOIN sports s ON s.name = sport_name
+	SELECT
+		$1,
+		sport_id
+	FROM UNNEST($7::BIGINT[]) AS sport_id
 	ON CONFLICT (sportsman_id, sport_id) DO NOTHING
+	RETURNING id
 )
 UPDATE sportsmen AS sm
 SET
 	name = $2,
 	birth_date = $3,
 	height_cm = $4,
-	weight_kg = $5
+	weight_kg = $5,
+	club_id = $6
 WHERE sm.id = $1
 `
 
 type UpdateSportsmanByIDParams struct {
-	ID         int64
-	Name       string
-	BirthDate  pgtype.Date
-	HeightCm   int16
-	WeightKg   pgtype.Numeric
-	SportNames []string
+	ID        int64
+	Name      string
+	BirthDate pgtype.Date
+	HeightCm  int16
+	WeightKg  pgtype.Numeric
+	ClubID    int64
+	SportIds  []int64
 }
 
-// Query: #22 (custom)
+// Query: #23 (custom)
 //
 // Обновляет спортсмена по идентификатору.
 func (q *Queries) UpdateSportsmanByID(ctx context.Context, arg UpdateSportsmanByIDParams) error {
@@ -1174,7 +1311,8 @@ func (q *Queries) UpdateSportsmanByID(ctx context.Context, arg UpdateSportsmanBy
 		arg.BirthDate,
 		arg.HeightCm,
 		arg.WeightKg,
-		arg.SportNames,
+		arg.ClubID,
+		arg.SportIds,
 	)
 	return err
 }

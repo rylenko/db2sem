@@ -5,6 +5,49 @@
 </head>
 <body>
 	<h1><a href="/">Главная</a></h1>
+
+	<h1>Создать спортсмена</h1>
+
+	<form method="POST">
+		<label for="name">Имя:</label>
+		<input type="text" id="name" name="name" required>
+
+		<br/>
+
+		<label for="birth_date">Дата рождения:</label>
+		<input type="date" id="birth_date" name="birth_date" required>
+
+		<br/>
+
+		<label for="height_cm">Рост (см):</label>
+		<input type="number" id="height_cm" name="height_cm" min="50" max="300" required>
+
+		<br/>
+
+		<label for="weight_kg">Вес (кг):</label>
+		<input type="number" id="weight_kg" name="weight_kg" step="0.1" min="1" max="300" required>
+
+		<br/>
+
+		<label for="club_id">Клуб:</label>
+		<select id="club_id" name="club_id">
+			{{ range .Clubs }}
+				<option value="{{ .ID }}">{{ .Name }}</option>
+			{{ end }}
+		</select>
+
+		<label for="sport_ids">Виды спорта:</label>
+		<select id="sport_ids" name="sport_ids" multiple>
+			{{ range .Sports }}
+				<option value="{{ .ID }}">{{ .Name }}</option>
+			{{ end }}
+		</select>
+
+		<br/>
+
+		<button type="submit">Создать</button>
+	</form>
+
 	<h1>Список спорстменов</h1>
 
 	{{ range .Sportsmen }}
@@ -12,7 +55,8 @@
 		<p>Дата рождения: {{ .BirthDateString }}</p>
 		<p>Рост: {{ .HeightCm }} см.</p>
 		<p>Вес: {{ .WeightKg }} кг.</p>
-		<p>Виды спорта: {{ .SportNamesString }}.</p>
+		<p>Клуб: {{ .Club.Name }} #{{ .Club.ID }}</p>
+		<p>Виды спорта: {{ .JoinSportsWithComma .Sports }}.</p>
 
 		<hr/>
 	{{ end }}
