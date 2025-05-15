@@ -12,6 +12,10 @@ type getTournamentPrizeWinnersForm struct {
 	TournamentID int64 `validate:"required" form:"tournament_id"`
 }
 
+type createSportForm struct {
+	Name string `validate:"required" form:"name"`
+}
+
 type createSportsmanForm struct {
 	Name      string  `validate:"required" form:"name"`
 	BirthDate string  `validate:"required" form:"birth_date"`
@@ -19,6 +23,10 @@ type createSportsmanForm struct {
 	WeightKg  string  `validate:"required" form:"weight_kg"`
 	ClubID    int64   `validate:"required" form:"club_id"`
 	SportIDs  []int64 `form:"sport_ids"`
+}
+
+type updateSportForm struct {
+	Name string `validate:"required" form:"name"`
 }
 
 type updateSportsmanForm struct {

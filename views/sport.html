@@ -1,0 +1,23 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<title>{{ .Sport.Name }}</title>
+</head>
+<body>
+	<h1><a href="/">Главная</a></h1>
+	<form action="/sports/{{ .Sport.ID }}/update" method="POST">
+		<label for="name">Имя:</label>
+		<input type="text" id="name" name="name" value="{{ .Sport.Name }}" required>
+
+		<br/>
+
+		<button type="submit">Сохранить</button>
+	</form>
+
+	<br/>
+
+	<form action="/sports/{{ .Sport.ID }}/delete" method="POST">
+		<button type="submit">Удалить</button>
+	</form>
+</body>
+</html>

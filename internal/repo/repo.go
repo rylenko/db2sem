@@ -20,6 +20,10 @@ func New(conn pg.Conn) *Repo {
 	return &Repo{conn: conn}
 }
 
+func (r *Repo) DeleteSportByID(ctx context.Context, sportID int64) error {
+	return r.conn.Queries(ctx).DeleteSportByID(ctx, sportID)
+}
+
 func (r *Repo) DeleteSportsmanByID(ctx context.Context, sportsmanID int64) error {
 	return r.conn.Queries(ctx).DeleteSportsmanByID(ctx, sportsmanID)
 }
@@ -327,6 +331,24 @@ func (r *Repo) GetSportsmenInvolvedInSeveralSports(ctx context.Context) ([]domai
 	return sportsmen, nil
 }
 
+func (r *Repo) GetSportByID(ctx context.Context, sportID int64) (*domain.Sport, error) {
+	pgSport, err := r.conn.Queries(ctx).GetSportByID(ctx, sportID)
+	if err != nil {
+		if errors.Is(err, pgx.ErrNoRows) {
+			return nil, nil //nolint:nilnil // must be checked on the top level
+		}
+
+		return nil, fmt.Errorf("query: %w", err)
+	}
+
+	sport := domain.Sport{
+		ID:   pgSport.ID,
+		Name: pgSport.Name,
+	}
+
+	return &sport, nil
+}
+
 func (r *Repo) GetSports(ctx context.Context) ([]domain.Sport, error) {
 	pgSports, err := r.conn.Queries(ctx).GetSports(ctx)
 	if err != nil {
@@ -378,6 +400,10 @@ func (r *Repo) GetTournaments(ctx context.Context) ([]domain.Tournament, error) 
 	return tournaments, nil
 }
 
+func (r *Repo) InsertSport(ctx context.Context, name string) error {
+	return r.conn.Queries(ctx).InsertSport(ctx, name)
+}
+
 func (r *Repo) InsertSportsman(ctx context.Context, req dto.InsertSportsmanRequest) error {
 	weightKg, err := convertToPgNumeric(req.WeightKg)
 	if err != nil {
@@ -397,6 +423,13 @@ func (r *Repo) InsertSportsman(ctx context.Context, req dto.InsertSportsmanReque
 	}
 
 	return nil
+}
+
+func (r *Repo) UpdateSportByID(ctx context.Context, req dto.UpdateSportByIDRequest) error {
+	return r.conn.Queries(ctx).UpdateSportByID(ctx, pg.UpdateSportByIDParams{
+		ID:   req.ID,
+		Name: req.Name,
+	})
 }
 
 func (r *Repo) UpdateSportsmanByID(ctx context.Context, req dto.UpdateSportsmanByIDRequest) error {

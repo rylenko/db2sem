@@ -11,6 +11,19 @@ import (
 	"github.com/jackc/pgx/v5/pgtype"
 )
 
+const deleteSportByID = `-- name: DeleteSportByID :exec
+DELETE FROM sports
+WHERE id = $1
+`
+
+// Query: #28 (custom)
+//
+// Удаляет спорт по идентификатору.
+func (q *Queries) DeleteSportByID(ctx context.Context, id int64) error {
+	_, err := q.db.Exec(ctx, deleteSportByID, id)
+	return err
+}
+
 const deleteSportsmanByID = `-- name: DeleteSportsmanByID :exec
 DELETE FROM sportsmen
 WHERE id = $1
@@ -488,11 +501,35 @@ func (q *Queries) GetPrizeWinnersByTournamentID(ctx context.Context, tournamentI
 	return items, nil
 }
 
+const getSportByID = `-- name: GetSportByID :one
+SELECT
+	id,
+	name
+FROM sports
+WHERE id = $1
+`
+
+type GetSportByIDRow struct {
+	ID   int64
+	Name string
+}
+
+// Query: #27 (custom)
+//
+// Получает спорт по идентификатору.
+func (q *Queries) GetSportByID(ctx context.Context, id int64) (GetSportByIDRow, error) {
+	row := q.db.QueryRow(ctx, getSportByID, id)
+	var i GetSportByIDRow
+	err := row.Scan(&i.ID, &i.Name)
+	return i, err
+}
+
 const getSports = `-- name: GetSports :many
 SELECT
 	id,
 	name
 FROM sports
+ORDER BY id DESC
 `
 
 type GetSportsRow struct {
@@ -1264,6 +1301,19 @@ func (q *Queries) InsertGym(ctx context.Context, arg InsertGymParams) error {
 	return err
 }
 
+const insertSport = `-- name: InsertSport :exec
+INSERT INTO sports (name)
+VALUES ($1)
+`
+
+// Query: #29 (custom)
+//
+// Создаёт вид спорта.
+func (q *Queries) InsertSport(ctx context.Context, name string) error {
+	_, err := q.db.Exec(ctx, insertSport, name)
+	return err
+}
+
 const insertSportsman = `-- name: InsertSportsman :exec
 WITH sportsman AS (
 	INSERT INTO sportsmen (name, birth_date, height_cm, weight_kg, club_id)
@@ -1340,6 +1390,25 @@ func (q *Queries) InsertStadium(ctx context.Context, arg InsertStadiumParams) er
 		arg.Name,
 		arg.Location,
 	)
+	return err
+}
+
+const updateSportByID = `-- name: UpdateSportByID :exec
+UPDATE sports
+SET name = $1
+WHERE id = $2
+`
+
+type UpdateSportByIDParams struct {
+	Name string
+	ID   int64
+}
+
+// Query: #30 (custom)
+//
+// Обновляет вид спорта.
+func (q *Queries) UpdateSportByID(ctx context.Context, arg UpdateSportByIDParams) error {
+	_, err := q.db.Exec(ctx, updateSportByID, arg.Name, arg.ID)
 	return err
 }
 

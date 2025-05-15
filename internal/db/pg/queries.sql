@@ -456,7 +456,8 @@ WHERE sms.sportsman_id = $1;
 SELECT
 	id,
 	name
-FROM sports;
+FROM sports
+ORDER BY id DESC;
 
 -- Query: #21 (custom)
 --
@@ -565,3 +566,39 @@ FROM tournaments t
 JOIN organizers o ON o.id = t.organizer_id
 JOIN places p ON p.id = t.place_id
 ORDER BY t.id DESC;
+
+-- Query: #27 (custom)
+--
+-- Получает спорт по идентификатору.
+--
+-- name: GetSportByID :one
+SELECT
+	id,
+	name
+FROM sports
+WHERE id = $1;
+
+-- Query: #28 (custom)
+--
+-- Удаляет спорт по идентификатору.
+--
+-- name: DeleteSportByID :exec
+DELETE FROM sports
+WHERE id = $1;
+
+-- Query: #29 (custom)
+--
+-- Создаёт вид спорта.
+--
+-- name: InsertSport :exec
+INSERT INTO sports (name)
+VALUES ($1);
+
+-- Query: #30 (custom)
+--
+-- Обновляет вид спорта.
+--
+-- name: UpdateSportByID :exec
+UPDATE sports
+SET name = $1
+WHERE id = $2;

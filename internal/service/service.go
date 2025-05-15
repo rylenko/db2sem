@@ -16,6 +16,10 @@ func New(repo repo) *Service {
 	return &Service{repo: repo}
 }
 
+func (s *Service) CreateSport(ctx context.Context, name string) error {
+	return s.repo.InsertSport(ctx, name)
+}
+
 func (s *Service) CreateSportsman(ctx context.Context, req dto.CreateSportsmanRequest) error {
 	return s.repo.InsertSportsman(ctx, repodto.InsertSportsmanRequest{
 		Name:      req.Name,
@@ -25,6 +29,10 @@ func (s *Service) CreateSportsman(ctx context.Context, req dto.CreateSportsmanRe
 		ClubID:    req.ClubID,
 		SportIDs:  req.SportIDs,
 	})
+}
+
+func (s *Service) DeleteSportByID(ctx context.Context, sportID int64) error {
+	return s.repo.DeleteSportByID(ctx, sportID)
 }
 
 func (s *Service) DeleteSportsmanByID(ctx context.Context, sportsmanID int64) error {
@@ -51,6 +59,10 @@ func (s *Service) GetSportsmenInvolvedInSeveralSports(ctx context.Context) ([]do
 	return s.repo.GetSportsmenInvolvedInSeveralSports(ctx)
 }
 
+func (s *Service) GetSportByID(ctx context.Context, sportID int64) (*domain.Sport, error) {
+	return s.repo.GetSportByID(ctx, sportID)
+}
+
 func (s *Service) GetSports(ctx context.Context) ([]domain.Sport, error) {
 	return s.repo.GetSports(ctx)
 }
@@ -65,6 +77,13 @@ func (s *Service) GetTrainersBySportsmanID(ctx context.Context, sportsmanID int6
 
 func (s *Service) GetTrainersBySportID(ctx context.Context, sportID int64) ([]domain.Trainer, error) {
 	return s.repo.GetTrainersBySportID(ctx, sportID)
+}
+
+func (s *Service) UpdateSportByID(ctx context.Context, req dto.UpdateSportByIDRequest) error {
+	return s.repo.UpdateSportByID(ctx, repodto.UpdateSportByIDRequest{
+		ID:   req.ID,
+		Name: req.Name,
+	})
 }
 
 func (s *Service) UpdateSportsmanByID(ctx context.Context, req dto.UpdateSportsmanByIDRequest) error {

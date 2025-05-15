@@ -3,18 +3,23 @@ package delivery
 import "github.com/gofiber/fiber/v2"
 
 type transport interface {
+	CreateSport(fiberCtx *fiber.Ctx) error
 	CreateSportsman(fiberCtx *fiber.Ctx) error
+	DeleteSport(fiberCtx *fiber.Ctx) error
 	DeleteSportsman(fiberCtx *fiber.Ctx) error
 	RenderIndexPage(fiberCtx *fiber.Ctx) error
 	RenderQueriesPage(fibercCtx *fiber.Ctx) error
 	RenderSportsmanPage(fibercCtx *fiber.Ctx) error
 	RenderSportsmanTrainersGetPage(fiberCtx *fiber.Ctx) error
 	RenderSportsmanTrainersPostPage(fiberCtx *fiber.Ctx) error
+	RenderSportPage(fiberCtx *fiber.Ctx) error
+	RenderSportsPage(fiberCtx *fiber.Ctx) error
 	RenderSportTrainersGetPage(fiberCtx *fiber.Ctx) error
 	RenderSportTrainersPostPage(fiberCtx *fiber.Ctx) error
 	RenderTournamentPrizeWinnersGetPage(fiberCtx *fiber.Ctx) error
 	RenderTournamentPrizeWinnersPostPage(fiberCtx *fiber.Ctx) error
 	RenderSportsmenPage(fibercCtx *fiber.Ctx) error
 	RenderSportsmenInvolvedInSeveralSportsPage(fibercCtx *fiber.Ctx) error
+	UpdateSport(fiberCtx *fiber.Ctx) error
 	UpdateSportsman(fiberCtx *fiber.Ctx) error
 }

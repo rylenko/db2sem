@@ -11,6 +11,11 @@ type CreateSportsmanRequest struct {
 	SportIDs  []int64
 }
 
+type UpdateSportByIDRequest struct {
+	ID   int64
+	Name string
+}
+
 type UpdateSportsmanByIDRequest struct {
 	ID        int64
 	Name      string
