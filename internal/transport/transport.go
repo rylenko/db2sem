@@ -225,6 +225,45 @@ func (t *Transport) RenderSportsmanTrainersPostPage(fiberCtx *fiber.Ctx) error {
 	})
 }
 
+func (t *Transport) RenderSportTrainersGetPage(fiberCtx *fiber.Ctx) error {
+	serviceSports, err := t.service.GetSports(fiberCtx.Context())
+	if err != nil {
+		return fmt.Errorf("service: %w", err)
+	}
+
+	sports := models.ConvertFromServiceSports(serviceSports)
+
+	return fiberCtx.Render("queries/sport_trainers", fiber.Map{
+		"Sports": sports,
+	})
+}
+
+func (t *Transport) RenderSportTrainersPostPage(fiberCtx *fiber.Ctx) error {
+	serviceSports, err := t.service.GetSports(fiberCtx.Context())
+	if err != nil {
+		return fmt.Errorf("service: %w", err)
+	}
+
+	sports := models.ConvertFromServiceSports(serviceSports)
+
+	var form getSportTrainersForm
+	if err := t.requestReader.ReadAndValidateFiberBody(fiberCtx, &form); err != nil {
+		return fmt.Errorf("parse body: %w", err)
+	}
+
+	serviceTrainers, err := t.service.GetTrainersBySportID(fiberCtx.Context(), form.SportID)
+	if err != nil {
+		return fmt.Errorf("get trainers: %w", err)
+	}
+
+	trainers := models.ConvertFromServiceTrainers(serviceTrainers)
+
+	return fiberCtx.Render("queries/sport_trainers", fiber.Map{
+		"Sports":   sports,
+		"Trainers": trainers,
+	})
+}
+
 func (t *Transport) RenderSportsmenInvolvedInSeveralSportsPage(fiberCtx *fiber.Ctx) error {
 	serviceSportsmen, err := t.service.GetSportsmenInvolvedInSeveralSports(fiberCtx.Context())
 	if err != nil {

@@ -277,11 +277,14 @@ GROUP BY
 -- Получить список тренеров по определенному виду спорта.
 --
 -- name: GetTrainersBySportID :many
-SELECT t.name
+SELECT DISTINCT
+	t.id,
+	t.name
 FROM trainers t
 JOIN sportsman_sport_trainers sst ON sst.trainer_id = t.id
 JOIN sportsman_sports ss ON ss.id = sst.sportsman_sport_id
-WHERE ss.sport_id = $1;
+WHERE ss.sport_id = $1
+ORDER BY t.id DESC;
 
 -- Query: #11
 --

@@ -1082,29 +1082,37 @@ func (q *Queries) GetTournamentsForPeriod(ctx context.Context, arg GetTournament
 }
 
 const getTrainersBySportID = `-- name: GetTrainersBySportID :many
-SELECT t.name
+SELECT DISTINCT
+	t.id,
+	t.name
 FROM trainers t
 JOIN sportsman_sport_trainers sst ON sst.trainer_id = t.id
 JOIN sportsman_sports ss ON ss.id = sst.sportsman_sport_id
 WHERE ss.sport_id = $1
+ORDER BY t.id DESC
 `
+
+type GetTrainersBySportIDRow struct {
+	ID   int64
+	Name string
+}
 
 // Query #10
 //
 // Получить список тренеров по определенному виду спорта.
-func (q *Queries) GetTrainersBySportID(ctx context.Context, sportID int64) ([]string, error) {
+func (q *Queries) GetTrainersBySportID(ctx context.Context, sportID int64) ([]GetTrainersBySportIDRow, error) {
 	rows, err := q.db.Query(ctx, getTrainersBySportID, sportID)
 	if err != nil {
 		return nil, err
 	}
 	defer rows.Close()
-	var items []string
+	var items []GetTrainersBySportIDRow
 	for rows.Next() {
-		var name string
-		if err := rows.Scan(&name); err != nil {
+		var i GetTrainersBySportIDRow
+		if err := rows.Scan(&i.ID, &i.Name); err != nil {
 			return nil, err
 		}
-		items = append(items, name)
+		items = append(items, i)
 	}
 	if err := rows.Err(); err != nil {
 		return nil, err

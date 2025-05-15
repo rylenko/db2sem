@@ -1,0 +1,36 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<title>Запрос 10</title>
+</head>
+<body>
+	<h1><a href="/queries">Назад</a></h1>
+
+	<h1>Запрос 10.</h1>
+
+	<p>Получение тренеров по виду спорта.</p>
+
+
+	<h3>Тренеры вида спорта:</h3>
+
+	{{ if .Trainers }}
+
+		{{ range .Trainers }}
+			<p>{{ .Name }}</p>
+		{{ end }}
+	{{ else }}
+		<p><b>-</b></p>
+	{{ end }}
+
+	<form method="POST">
+		<label for="sport_id">Спортсмен:</label>
+		<select id="sport_id" name="sport_id">
+			{{ range .Sports }}
+				<option value="{{ .ID }}">{{ .Name }}</option>
+			{{ end }}
+		</select>
+
+		<button type="submit">Получить тренеров</button>
+	</form>
+</body>
+</html>

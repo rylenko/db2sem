@@ -18,5 +18,6 @@ type repo interface {
 	GetSports(ctx context.Context) ([]domain.Sport, error)
 	GetTournaments(ctx context.Context) ([]domain.Tournament, error)
 	GetTrainersBySportsmanID(ctx context.Context, sportsmanID int64) ([]domain.Trainer, error)
+	GetTrainersBySportID(ctx context.Context, sportID int64) ([]domain.Trainer, error)
 	UpdateSportsmanByID(ctx context.Context, req repodto.UpdateSportsmanByIDRequest) error
 }

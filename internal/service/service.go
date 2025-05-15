@@ -63,6 +63,10 @@ func (s *Service) GetTrainersBySportsmanID(ctx context.Context, sportsmanID int6
 	return s.repo.GetTrainersBySportsmanID(ctx, sportsmanID)
 }
 
+func (s *Service) GetTrainersBySportID(ctx context.Context, sportID int64) ([]domain.Trainer, error) {
+	return s.repo.GetTrainersBySportID(ctx, sportID)
+}
+
 func (s *Service) UpdateSportsmanByID(ctx context.Context, req dto.UpdateSportsmanByIDRequest) error {
 	return s.repo.UpdateSportsmanByID(ctx, repodto.UpdateSportsmanByIDRequest{
 		ID:        req.ID,

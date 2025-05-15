@@ -10,6 +10,8 @@ type transport interface {
 	RenderSportsmanPage(fibercCtx *fiber.Ctx) error
 	RenderSportsmanTrainersGetPage(fiberCtx *fiber.Ctx) error
 	RenderSportsmanTrainersPostPage(fiberCtx *fiber.Ctx) error
+	RenderSportTrainersGetPage(fiberCtx *fiber.Ctx) error
+	RenderSportTrainersPostPage(fiberCtx *fiber.Ctx) error
 	RenderTournamentPrizeWinnersGetPage(fiberCtx *fiber.Ctx) error
 	RenderTournamentPrizeWinnersPostPage(fiberCtx *fiber.Ctx) error
 	RenderSportsmenPage(fibercCtx *fiber.Ctx) error

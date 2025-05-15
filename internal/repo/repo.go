@@ -187,6 +187,30 @@ func (r *Repo) GetTrainersBySportsmanID(ctx context.Context, sportsmanID int64) 
 	return trainers, nil
 }
 
+func (r *Repo) GetTrainersBySportID(ctx context.Context, sportID int64) ([]domain.Trainer, error) {
+	pgTrainers, err := r.conn.Queries(ctx).GetTrainersBySportID(ctx, sportID)
+	if err != nil {
+		if errors.Is(err, pgx.ErrNoRows) {
+			return nil, nil
+		}
+
+		return nil, fmt.Errorf("query: %w", err)
+	}
+
+	trainers := make([]domain.Trainer, 0, len(pgTrainers))
+
+	for _, pgTrainer := range pgTrainers {
+		trainer := domain.Trainer{
+			ID:   pgTrainer.ID,
+			Name: pgTrainer.Name,
+		}
+
+		trainers = append(trainers, trainer)
+	}
+
+	return trainers, nil
+}
+
 func (r *Repo) GetSportsmen(ctx context.Context) ([]domain.Sportsman, error) {
 	pgSportsmen, err := r.conn.Queries(ctx).GetSportsmen(ctx)
 	if err != nil {
