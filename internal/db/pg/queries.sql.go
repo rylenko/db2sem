@@ -433,7 +433,8 @@ SELECT
 	sm.height_cm,
 	sm.weight_kg,
 	c.id AS club_id,
-	c.name AS club_name
+	c.name AS club_name,
+	p.rank
 FROM sportsmen sm
 JOIN clubs c ON c.id = sm.club_id
 JOIN participations p ON p.sportsman_id = sm.id
@@ -452,6 +453,7 @@ type GetPrizeWinnersByTournamentIDRow struct {
 	WeightKg  pgtype.Numeric
 	ClubID    int64
 	ClubName  string
+	Rank      int16
 }
 
 // Query #7
@@ -474,6 +476,7 @@ func (q *Queries) GetPrizeWinnersByTournamentID(ctx context.Context, tournamentI
 			&i.WeightKg,
 			&i.ClubID,
 			&i.ClubName,
+			&i.Rank,
 		); err != nil {
 			return nil, err
 		}
@@ -917,6 +920,53 @@ func (q *Queries) GetStadiumPlaces(ctx context.Context, arg GetStadiumPlacesPara
 	for rows.Next() {
 		var i GetStadiumPlacesRow
 		if err := rows.Scan(&i.Name, &i.Location); err != nil {
+			return nil, err
+		}
+		items = append(items, i)
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
+}
+
+const getTournaments = `-- name: GetTournaments :many
+SELECT
+	t.id,
+	t.start_at,
+	p.name AS place_name,
+	o.name AS organizer_name
+FROM tournaments t
+JOIN organizers o ON o.id = t.organizer_id
+JOIN places p ON p.id = t.place_id
+ORDER BY t.id DESC
+`
+
+type GetTournamentsRow struct {
+	ID            int64
+	StartAt       pgtype.Timestamptz
+	PlaceName     string
+	OrganizerName string
+}
+
+// Query: #26 (custom)
+//
+// Получает все соревнования.
+func (q *Queries) GetTournaments(ctx context.Context) ([]GetTournamentsRow, error) {
+	rows, err := q.db.Query(ctx, getTournaments)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	var items []GetTournamentsRow
+	for rows.Next() {
+		var i GetTournamentsRow
+		if err := rows.Scan(
+			&i.ID,
+			&i.StartAt,
+			&i.PlaceName,
+			&i.OrganizerName,
+		); err != nil {
 			return nil, err
 		}
 		items = append(items, i)

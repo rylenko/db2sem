@@ -221,7 +221,8 @@ SELECT
 	sm.height_cm,
 	sm.weight_kg,
 	c.id AS club_id,
-	c.name AS club_name
+	c.name AS club_name,
+	p.rank
 FROM sportsmen sm
 JOIN clubs c ON c.id = sm.club_id
 JOIN participations p ON p.sportsman_id = sm.id
@@ -546,3 +547,18 @@ SELECT
 FROM
 	sportsman,
 	UNNEST(@sport_ids::BIGINT[]) AS sport_id;
+
+-- Query: #26 (custom)
+--
+-- Получает все соревнования.
+--
+-- name: GetTournaments :many
+SELECT
+	t.id,
+	t.start_at,
+	p.name AS place_name,
+	o.name AS organizer_name
+FROM tournaments t
+JOIN organizers o ON o.id = t.organizer_id
+JOIN places p ON p.id = t.place_id
+ORDER BY t.id DESC;

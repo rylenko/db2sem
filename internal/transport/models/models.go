@@ -25,6 +25,29 @@ func ConvertFromServiceClubs(serviceClubs []domain.Club) []Club {
 	return clubs
 }
 
+type PrizeWinner struct {
+	Sportsman
+	Rank int16
+}
+
+func ConvertFromServicePrizeWinner(serviceWinner domain.PrizeWinner) PrizeWinner {
+	return PrizeWinner{
+		Sportsman: ConvertFromServiceSportsman(serviceWinner.Sportsman),
+		Rank:      serviceWinner.Rank,
+	}
+}
+
+func ConvertFromServicePrizeWinners(serviceWinners []domain.PrizeWinner) []PrizeWinner {
+	winners := make([]PrizeWinner, 0, len(serviceWinners))
+
+	for _, serviceWinner := range serviceWinners {
+		winner := ConvertFromServicePrizeWinner(serviceWinner)
+		winners = append(winners, winner)
+	}
+
+	return winners
+}
+
 type Sport struct {
 	ID   int64
 	Name string
@@ -82,6 +105,33 @@ func ConvertFromServiceSportsman(serviceSportsman domain.Sportsman) Sportsman {
 		Club:            club,
 		Sports:          sports,
 	}
+}
+
+type Tournament struct {
+	ID            int64
+	OrganizerName string
+	PlaceName     string
+	StartAtString string
+}
+
+func ConvertFromServiceTournament(serviceTournament domain.Tournament) Tournament {
+	return Tournament{
+		ID:            serviceTournament.ID,
+		OrganizerName: serviceTournament.OrganizerName,
+		PlaceName:     serviceTournament.PlaceName,
+		StartAtString: serviceTournament.StartAt.Format("02.01.2006 15:04:05"),
+	}
+}
+
+func ConvertFromServiceTournaments(serviceTournaments []domain.Tournament) []Tournament {
+	tournaments := make([]Tournament, 0, len(serviceTournaments))
+
+	for _, serviceTournament := range serviceTournaments {
+		tournament := ConvertFromServiceTournament(serviceTournament)
+		tournaments = append(tournaments, tournament)
+	}
+
+	return tournaments
 }
 
 type Trainer struct {

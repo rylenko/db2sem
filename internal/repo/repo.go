@@ -48,6 +48,69 @@ func (r *Repo) GetClubs(ctx context.Context) ([]domain.Club, error) {
 	return clubs, nil
 }
 
+func (r *Repo) GetPrizeWinnersByTournamentID(ctx context.Context, tournamentID int64) ([]domain.PrizeWinner, error) {
+	pgWinners, err := r.conn.Queries(ctx).GetPrizeWinnersByTournamentID(ctx, tournamentID)
+	if err != nil {
+		if errors.Is(err, pgx.ErrNoRows) {
+			return nil, nil
+		}
+
+		return nil, fmt.Errorf("get sportsman: %w", err)
+	}
+
+	winners := make([]domain.PrizeWinner, 0, len(pgWinners))
+
+	for _, pgWinner := range pgWinners {
+		birthDate, err := convertFromPgDate(pgWinner.BirthDate)
+		if err != nil {
+			return nil, fmt.Errorf("birth date: %w", err)
+		}
+
+		weightKg, err := convertFromPgNumeric(pgWinner.WeightKg)
+		if err != nil {
+			return nil, fmt.Errorf("weight kg: %w", err)
+		}
+
+		pgSports, err := r.conn.Queries(ctx).GetSportsBySportsmanID(ctx, pgWinner.ID)
+		if err != nil && !errors.Is(err, pgx.ErrNoRows) {
+			return nil, fmt.Errorf("get sports: %w", err)
+		}
+
+		sports := make([]domain.Sport, 0, len(pgSports))
+
+		for _, pgSport := range pgSports {
+			sport := domain.Sport{
+				ID:   pgSport.ID,
+				Name: pgSport.Name,
+			}
+
+			sports = append(sports, sport)
+		}
+
+		sportsman := domain.Sportsman{
+			ID:        pgWinner.ID,
+			Name:      pgWinner.Name,
+			BirthDate: birthDate,
+			HeightCm:  uint16(pgWinner.HeightCm),
+			WeightKg:  weightKg,
+			Club: domain.Club{
+				ID:   pgWinner.ClubID,
+				Name: pgWinner.ClubName,
+			},
+			Sports: sports,
+		}
+
+		winner := domain.PrizeWinner{
+			Sportsman: sportsman,
+			Rank:      pgWinner.Rank,
+		}
+
+		winners = append(winners, winner)
+	}
+
+	return winners, nil
+}
+
 func (r *Repo) GetSportsmanByID(ctx context.Context, sportsmanID int64) (*domain.Sportsman, error) {
 	pgSportsman, err := r.conn.Queries(ctx).GetSportsmanByID(ctx, sportsmanID)
 	if err != nil {
@@ -262,6 +325,33 @@ func (r *Repo) GetSports(ctx context.Context) ([]domain.Sport, error) {
 	}
 
 	return sports, nil
+}
+
+func (r *Repo) GetTournaments(ctx context.Context) ([]domain.Tournament, error) {
+	pgTournaments, err := r.conn.Queries(ctx).GetTournaments(ctx)
+	if err != nil {
+		return nil, fmt.Errorf("query: %w", err)
+	}
+
+	tournaments := make([]domain.Tournament, 0, len(pgTournaments))
+
+	for _, pgTournament := range pgTournaments {
+		startAt, err := convertFromPgTimestamptz(pgTournament.StartAt)
+		if err != nil {
+			return nil, fmt.Errorf("convert start at: %w", err)
+		}
+
+		tournament := domain.Tournament{
+			ID:            pgTournament.ID,
+			OrganizerName: pgTournament.OrganizerName,
+			PlaceName:     pgTournament.PlaceName,
+			StartAt:       startAt,
+		}
+
+		tournaments = append(tournaments, tournament)
+	}
+
+	return tournaments, nil
 }
 
 func (r *Repo) InsertSportsman(ctx context.Context, req dto.InsertSportsmanRequest) error {

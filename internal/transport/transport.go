@@ -76,6 +76,45 @@ func (t *Transport) RenderIndexPage(fiberCtx *fiber.Ctx) error {
 	return fiberCtx.Render("index", fiber.Map{})
 }
 
+func (t *Transport) RenderTournamentPrizeWinnersGetPage(fiberCtx *fiber.Ctx) error {
+	serviceTournaments, err := t.service.GetTournaments(fiberCtx.Context())
+	if err != nil {
+		return fmt.Errorf("service: %w", err)
+	}
+
+	tournaments := models.ConvertFromServiceTournaments(serviceTournaments)
+
+	return fiberCtx.Render("queries/tournament_prize_winners", fiber.Map{
+		"Tournaments": tournaments,
+	})
+}
+
+func (t *Transport) RenderTournamentPrizeWinnersPostPage(fiberCtx *fiber.Ctx) error {
+	serviceTournaments, err := t.service.GetTournaments(fiberCtx.Context())
+	if err != nil {
+		return fmt.Errorf("service: %w", err)
+	}
+
+	tournaments := models.ConvertFromServiceTournaments(serviceTournaments)
+
+	var form getTournamentPrizeWinnersForm
+	if err := t.requestReader.ReadAndValidateFiberBody(fiberCtx, &form); err != nil {
+		return fmt.Errorf("parse body: %w", err)
+	}
+
+	serviceWinners, err := t.service.GetPrizeWinnersByTournamentID(fiberCtx.Context(), form.TournamentID)
+	if err != nil {
+		return fmt.Errorf("get trainers: %w", err)
+	}
+
+	winners := models.ConvertFromServicePrizeWinners(serviceWinners)
+
+	return fiberCtx.Render("queries/tournament_prize_winners", fiber.Map{
+		"Tournaments":  tournaments,
+		"PrizeWinners": winners,
+	})
+}
+
 func (t *Transport) RenderQueriesPage(fiberCtx *fiber.Ctx) error {
 	return fiberCtx.Render("queries/index", fiber.Map{})
 }

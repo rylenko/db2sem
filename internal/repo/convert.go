@@ -33,6 +33,14 @@ func convertFromPgNumeric(numeric pgtype.Numeric) (float64, error) {
 	return convertFromPgFloat8(float8)
 }
 
+func convertFromPgTimestamptz(tz pgtype.Timestamptz) (time.Time, error) {
+	if !tz.Valid {
+		return time.Time{}, errors.New("invalid tz")
+	}
+
+	return tz.Time, nil
+}
+
 func convertToPgNumeric(number float64) (pgtype.Numeric, error) {
 	var numeric pgtype.Numeric
 	if err := numeric.Scan(fmt.Sprintf("%f", number)); err != nil {

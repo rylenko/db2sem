@@ -4,6 +4,10 @@ type getSportsmanTrainersForm struct {
 	SportsmanID int64 `validate:"required" form:"sportsman_id"`
 }
 
+type getTournamentPrizeWinnersForm struct {
+	TournamentID int64 `validate:"required" form:"tournament_id"`
+}
+
 type createSportsmanForm struct {
 	Name      string  `validate:"required" form:"name"`
 	BirthDate string  `validate:"required" form:"birth_date"`

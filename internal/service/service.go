@@ -35,6 +35,10 @@ func (s *Service) GetClubs(ctx context.Context) ([]domain.Club, error) {
 	return s.repo.GetClubs(ctx)
 }
 
+func (s *Service) GetPrizeWinnersByTournamentID(ctx context.Context, tournamentID int64) ([]domain.PrizeWinner, error) {
+	return s.repo.GetPrizeWinnersByTournamentID(ctx, tournamentID)
+}
+
 func (s *Service) GetSportsmanByID(ctx context.Context, sportsmanID int64) (*domain.Sportsman, error) {
 	return s.repo.GetSportsmanByID(ctx, sportsmanID)
 }
@@ -49,6 +53,10 @@ func (s *Service) GetSportsmenInvolvedInSeveralSports(ctx context.Context) ([]do
 
 func (s *Service) GetSports(ctx context.Context) ([]domain.Sport, error) {
 	return s.repo.GetSports(ctx)
+}
+
+func (s *Service) GetTournaments(ctx context.Context) ([]domain.Tournament, error) {
+	return s.repo.GetTournaments(ctx)
 }
 
 func (s *Service) GetTrainersBySportsmanID(ctx context.Context, sportsmanID int64) ([]domain.Trainer, error) {
