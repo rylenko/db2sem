@@ -24,6 +24,38 @@ func New(requestReader requestReader, service service) *Transport {
 }
 
 func (t *Transport) CreateSportsman(fiberCtx *fiber.Ctx) error {
+	var form createSportsmanForm
+	if err := t.requestReader.ReadAndValidateFiberBody(fiberCtx, &form); err != nil {
+		return fmt.Errorf("parse body: %w", err)
+	}
+
+	birthDate, err := time.Parse("2006-01-02", form.BirthDate)
+	if err != nil {
+		return fmt.Errorf("parse birth date: %w", err)
+	}
+
+	heightCm, err := strconv.ParseUint(form.HeightCm, 10, 16)
+	if err != nil {
+		return fmt.Errorf("parse height cm: %w", err)
+	}
+
+	weightKg, err := strconv.ParseFloat(form.WeightKg, 64)
+	if err != nil {
+		return fmt.Errorf("parse weight kg: %w", err)
+	}
+
+	err = t.service.CreateSportsman(fiberCtx.Context(), servicedto.CreateSportsmanRequest{
+		Name:      form.Name,
+		BirthDate: birthDate,
+		HeightCm:  uint16(heightCm),
+		WeightKg:  weightKg,
+		ClubID:    form.ClubID,
+		SportIDs:  form.SportIDs,
+	})
+	if err != nil {
+		return fmt.Errorf("service: %w", err)
+	}
+
 	return fiberCtx.Redirect("/sportsmen/", fiber.StatusFound)
 }
 
@@ -65,15 +97,19 @@ func (t *Transport) RenderSportsmanPage(fiberCtx *fiber.Ctx) error {
 
 	sportsman := models.ConvertFromServiceSportsman(*serviceSportsman)
 
-	sports, err := t.service.GetSports(fiberCtx.Context())
+	serviceSports, err := t.service.GetSports(fiberCtx.Context())
 	if err != nil {
 		return fmt.Errorf("get sport names: %w", err)
 	}
 
-	clubs, err := t.service.GetClubs(fiberCtx.Context())
+	sports := models.ConvertFromServiceSports(serviceSports)
+
+	serviceClubs, err := t.service.GetClubs(fiberCtx.Context())
 	if err != nil {
 		return fmt.Errorf("get clubs: %w", err)
 	}
+
+	clubs := models.ConvertFromServiceClubs(serviceClubs)
 
 	return fiberCtx.Render("sportsman", fiber.Map{
 		"Sportsman": sportsman,
@@ -90,8 +126,63 @@ func (t *Transport) RenderSportsmenPage(fiberCtx *fiber.Ctx) error {
 
 	sportsmen := models.ConvertFromServiceSportsmen(serviceSportsmen)
 
+	serviceSports, err := t.service.GetSports(fiberCtx.Context())
+	if err != nil {
+		return fmt.Errorf("get sport names: %w", err)
+	}
+
+	sports := models.ConvertFromServiceSports(serviceSports)
+
+	serviceClubs, err := t.service.GetClubs(fiberCtx.Context())
+	if err != nil {
+		return fmt.Errorf("get clubs: %w", err)
+	}
+
+	clubs := models.ConvertFromServiceClubs(serviceClubs)
+
 	return fiberCtx.Render("sportsmen", fiber.Map{
 		"Sportsmen": sportsmen,
+		"Sports":    sports,
+		"Clubs":     clubs,
+	})
+}
+
+func (t *Transport) RenderSportsmanTrainersGetPage(fiberCtx *fiber.Ctx) error {
+	serviceSportsmen, err := t.service.GetSportsmen(fiberCtx.Context())
+	if err != nil {
+		return fmt.Errorf("service: %w", err)
+	}
+
+	sportsmen := models.ConvertFromServiceSportsmen(serviceSportsmen)
+
+	return fiberCtx.Render("queries/sportsman_trainers", fiber.Map{
+		"Sportsmen": sportsmen,
+	})
+}
+
+func (t *Transport) RenderSportsmanTrainersPostPage(fiberCtx *fiber.Ctx) error {
+	serviceSportsmen, err := t.service.GetSportsmen(fiberCtx.Context())
+	if err != nil {
+		return fmt.Errorf("get sportsman: %w", err)
+	}
+
+	sportsmen := models.ConvertFromServiceSportsmen(serviceSportsmen)
+
+	var form getSportsmanTrainersForm
+	if err := t.requestReader.ReadAndValidateFiberBody(fiberCtx, &form); err != nil {
+		return fmt.Errorf("parse body: %w", err)
+	}
+
+	serviceTrainers, err := t.service.GetTrainersBySportsmanID(fiberCtx.Context(), form.SportsmanID)
+	if err != nil {
+		return fmt.Errorf("get trainers: %w", err)
+	}
+
+	trainers := models.ConvertFromServiceTrainers(serviceTrainers)
+
+	return fiberCtx.Render("queries/sportsman_trainers", fiber.Map{
+		"Sportsmen": sportsmen,
+		"Trainers":  trainers,
 	})
 }
 
@@ -115,7 +206,7 @@ func (t *Transport) UpdateSportsman(fiberCtx *fiber.Ctx) error {
 	}
 
 	var form updateSportsmanForm
-	if err := fiberCtx.BodyParser(&form); err != nil {
+	if err := t.requestReader.ReadAndValidateFiberBody(fiberCtx, &form); err != nil {
 		return fmt.Errorf("parse body: %w", err)
 	}
 
@@ -140,6 +231,7 @@ func (t *Transport) UpdateSportsman(fiberCtx *fiber.Ctx) error {
 		BirthDate: birthDate,
 		HeightCm:  uint16(heightCm),
 		WeightKg:  weightKg,
+		ClubID:    form.ClubID,
 		SportIDs:  form.SportIDs,
 	})
 	if err != nil {

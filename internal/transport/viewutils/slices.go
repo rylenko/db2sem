@@ -31,13 +31,3 @@ func ContainsSport(sports []models.Sport, sport models.Sport) bool {
 
 	return false
 }
-
-func ContainsClub(clubs []models.Club, club models.Club) bool {
-	for _, item := range clubs {
-		if item.ID == club.ID {
-			return true
-		}
-	}
-
-	return false
-}

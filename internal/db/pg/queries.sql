@@ -170,7 +170,9 @@ GROUP BY
 	sm.name,
 	sm.birth_date,
 	sm.height_cm,
-	sm.weight_kg
+	sm.weight_kg,
+	c.id,
+	c.name
 HAVING COUNT(sms.id) > 1
 ORDER BY sm.id DESC;
 
@@ -179,7 +181,9 @@ ORDER BY sm.id DESC;
 -- Получить список тренеров указанного спортсмена.
 --
 -- name: GetTrainersBySportsmanID :many
-SELECT t.name
+SELECT
+	t.id,
+	t.name
 FROM trainers t
 JOIN sportsman_sport_trainers sst ON sst.trainer_id = t.id
 JOIN sportsman_sports ss ON ss.id = sst.sportsman_sport_id
@@ -209,13 +213,17 @@ WHERE
 --
 -- Получить список призеров указанного соревнования.
 --
--- name: GetSportsmenByTournamentID :many
+-- name: GetPrizeWinnersByTournamentID :many
 SELECT
+	sm.id,
 	sm.name,
 	sm.birth_date,
 	sm.height_cm,
-	sm.weight_kg
+	sm.weight_kg,
+	c.id AS club_id,
+	c.name AS club_name
 FROM sportsmen sm
+JOIN clubs c ON c.id = sm.club_id
 JOIN participations p ON p.sportsman_id = sm.id
 JOIN tournament_sports ts ON ts.id = p.tournament_sport_id
 WHERE
@@ -476,7 +484,9 @@ GROUP BY
 	sm.name,
 	sm.birth_date,
 	sm.height_cm,
-	sm.weight_kg
+	sm.weight_kg,
+	c.id,
+	c.name
 ORDER BY sm.id DESC;
 
 -- Query: #23 (custom)

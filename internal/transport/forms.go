@@ -1,19 +1,23 @@
 package transport
 
+type getSportsmanTrainersForm struct {
+	SportsmanID int64 `validate:"required" form:"sportsman_id"`
+}
+
 type createSportsmanForm struct {
-	Name      string  `form:"name"`
-	BirthDate string  `form:"birth_date"`
-	HeightCm  string  `form:"height_cm"`
-	WeightKg  string  `form:"weight_kg"`
-	ClubID    int64   `form:"club_id"`
+	Name      string  `validate:"required" form:"name"`
+	BirthDate string  `validate:"required" form:"birth_date"`
+	HeightCm  string  `validate:"required" form:"height_cm"`
+	WeightKg  string  `validate:"required" form:"weight_kg"`
+	ClubID    int64   `validate:"required" form:"club_id"`
 	SportIDs  []int64 `form:"sport_ids"`
 }
 
 type updateSportsmanForm struct {
-	Name      string  `form:"name"`
-	BirthDate string  `form:"birth_date"`
-	HeightCm  string  `form:"height_cm"`
-	WeightKg  string  `form:"weight_kg"`
-	ClubID    int64   `form:"club_id"`
+	Name      string  `validate:"required" form:"name"`
+	BirthDate string  `validate:"required" form:"birth_date"`
+	HeightCm  string  `validate:"required" form:"height_cm"`
+	WeightKg  string  `validate:"required" form:"weight_kg"`
+	ClubID    int64   `validate:"required" form:"club_id"`
 	SportIDs  []int64 `form:"sport_ids"`
 }

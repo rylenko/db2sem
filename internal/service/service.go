@@ -16,6 +16,17 @@ func New(repo repo) *Service {
 	return &Service{repo: repo}
 }
 
+func (s *Service) CreateSportsman(ctx context.Context, req dto.CreateSportsmanRequest) error {
+	return s.repo.InsertSportsman(ctx, repodto.InsertSportsmanRequest{
+		Name:      req.Name,
+		HeightCm:  req.HeightCm,
+		BirthDate: req.BirthDate,
+		WeightKg:  req.WeightKg,
+		ClubID:    req.ClubID,
+		SportIDs:  req.SportIDs,
+	})
+}
+
 func (s *Service) DeleteSportsmanByID(ctx context.Context, sportsmanID int64) error {
 	return s.repo.DeleteSportsmanByID(ctx, sportsmanID)
 }
@@ -40,6 +51,10 @@ func (s *Service) GetSports(ctx context.Context) ([]domain.Sport, error) {
 	return s.repo.GetSports(ctx)
 }
 
+func (s *Service) GetTrainersBySportsmanID(ctx context.Context, sportsmanID int64) ([]domain.Trainer, error) {
+	return s.repo.GetTrainersBySportsmanID(ctx, sportsmanID)
+}
+
 func (s *Service) UpdateSportsmanByID(ctx context.Context, req dto.UpdateSportsmanByIDRequest) error {
 	return s.repo.UpdateSportsmanByID(ctx, repodto.UpdateSportsmanByIDRequest{
 		ID:        req.ID,
@@ -47,6 +62,7 @@ func (s *Service) UpdateSportsmanByID(ctx context.Context, req dto.UpdateSportsm
 		HeightCm:  req.HeightCm,
 		BirthDate: req.BirthDate,
 		WeightKg:  req.WeightKg,
+		ClubID:    req.ClubID,
 		SportIDs:  req.SportIDs,
 	})
 }

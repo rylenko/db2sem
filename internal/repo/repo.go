@@ -100,6 +100,30 @@ func (r *Repo) GetSportsmanByID(ctx context.Context, sportsmanID int64) (*domain
 	return &sportsman, nil
 }
 
+func (r *Repo) GetTrainersBySportsmanID(ctx context.Context, sportsmanID int64) ([]domain.Trainer, error) {
+	pgTrainers, err := r.conn.Queries(ctx).GetTrainersBySportsmanID(ctx, sportsmanID)
+	if err != nil {
+		if errors.Is(err, pgx.ErrNoRows) {
+			return nil, nil
+		}
+
+		return nil, fmt.Errorf("query: %w", err)
+	}
+
+	trainers := make([]domain.Trainer, 0, len(pgTrainers))
+
+	for _, pgTrainer := range pgTrainers {
+		trainer := domain.Trainer{
+			ID:   pgTrainer.ID,
+			Name: pgTrainer.Name,
+		}
+
+		trainers = append(trainers, trainer)
+	}
+
+	return trainers, nil
+}
+
 func (r *Repo) GetSportsmen(ctx context.Context) ([]domain.Sportsman, error) {
 	pgSportsmen, err := r.conn.Queries(ctx).GetSportsmen(ctx)
 	if err != nil {
@@ -251,6 +275,7 @@ func (r *Repo) InsertSportsman(ctx context.Context, req dto.InsertSportsmanReque
 		BirthDate: convertToPgDate(req.BirthDate),
 		HeightCm:  int16(req.HeightCm),
 		WeightKg:  weightKg,
+		ClubID:    req.ClubID,
 		SportIds:  req.SportIDs,
 	})
 	if err != nil {
@@ -272,6 +297,7 @@ func (r *Repo) UpdateSportsmanByID(ctx context.Context, req dto.UpdateSportsmanB
 		BirthDate: convertToPgDate(req.BirthDate),
 		HeightCm:  int16(req.HeightCm),
 		WeightKg:  weightKg,
+		ClubID:    req.ClubID,
 		SportIds:  req.SportIDs,
 	})
 	if err != nil {

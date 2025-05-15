@@ -425,6 +425,66 @@ func (q *Queries) GetPlaceTournamentDatesForPeriod(ctx context.Context, arg GetP
 	return items, nil
 }
 
+const getPrizeWinnersByTournamentID = `-- name: GetPrizeWinnersByTournamentID :many
+SELECT
+	sm.id,
+	sm.name,
+	sm.birth_date,
+	sm.height_cm,
+	sm.weight_kg,
+	c.id AS club_id,
+	c.name AS club_name
+FROM sportsmen sm
+JOIN clubs c ON c.id = sm.club_id
+JOIN participations p ON p.sportsman_id = sm.id
+JOIN tournament_sports ts ON ts.id = p.tournament_sport_id
+WHERE
+	ts.tournament_id = $1
+	AND p.rank <= 3
+ORDER BY p.rank
+`
+
+type GetPrizeWinnersByTournamentIDRow struct {
+	ID        int64
+	Name      string
+	BirthDate pgtype.Date
+	HeightCm  int16
+	WeightKg  pgtype.Numeric
+	ClubID    int64
+	ClubName  string
+}
+
+// Query #7
+//
+// Получить список призеров указанного соревнования.
+func (q *Queries) GetPrizeWinnersByTournamentID(ctx context.Context, tournamentID int64) ([]GetPrizeWinnersByTournamentIDRow, error) {
+	rows, err := q.db.Query(ctx, getPrizeWinnersByTournamentID, tournamentID)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	var items []GetPrizeWinnersByTournamentIDRow
+	for rows.Next() {
+		var i GetPrizeWinnersByTournamentIDRow
+		if err := rows.Scan(
+			&i.ID,
+			&i.Name,
+			&i.BirthDate,
+			&i.HeightCm,
+			&i.WeightKg,
+			&i.ClubID,
+			&i.ClubName,
+		); err != nil {
+			return nil, err
+		}
+		items = append(items, i)
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
+}
+
 const getSports = `-- name: GetSports :many
 SELECT
 	id,
@@ -565,7 +625,9 @@ GROUP BY
 	sm.name,
 	sm.birth_date,
 	sm.height_cm,
-	sm.weight_kg
+	sm.weight_kg,
+	c.id,
+	c.name
 ORDER BY sm.id DESC
 `
 
@@ -667,56 +729,6 @@ func (q *Queries) GetSportsmenBySportID(ctx context.Context, arg GetSportsmenByS
 	return items, nil
 }
 
-const getSportsmenByTournamentID = `-- name: GetSportsmenByTournamentID :many
-SELECT
-	sm.name,
-	sm.birth_date,
-	sm.height_cm,
-	sm.weight_kg
-FROM sportsmen sm
-JOIN participations p ON p.sportsman_id = sm.id
-JOIN tournament_sports ts ON ts.id = p.tournament_sport_id
-WHERE
-	ts.tournament_id = $1
-	AND p.rank <= 3
-ORDER BY p.rank
-`
-
-type GetSportsmenByTournamentIDRow struct {
-	Name      string
-	BirthDate pgtype.Date
-	HeightCm  int16
-	WeightKg  pgtype.Numeric
-}
-
-// Query #7
-//
-// Получить список призеров указанного соревнования.
-func (q *Queries) GetSportsmenByTournamentID(ctx context.Context, tournamentID int64) ([]GetSportsmenByTournamentIDRow, error) {
-	rows, err := q.db.Query(ctx, getSportsmenByTournamentID, tournamentID)
-	if err != nil {
-		return nil, err
-	}
-	defer rows.Close()
-	var items []GetSportsmenByTournamentIDRow
-	for rows.Next() {
-		var i GetSportsmenByTournamentIDRow
-		if err := rows.Scan(
-			&i.Name,
-			&i.BirthDate,
-			&i.HeightCm,
-			&i.WeightKg,
-		); err != nil {
-			return nil, err
-		}
-		items = append(items, i)
-	}
-	if err := rows.Err(); err != nil {
-		return nil, err
-	}
-	return items, nil
-}
-
 const getSportsmenByTrainerID = `-- name: GetSportsmenByTrainerID :many
 SELECT
 	sm.name,
@@ -793,7 +805,9 @@ GROUP BY
 	sm.name,
 	sm.birth_date,
 	sm.height_cm,
-	sm.weight_kg
+	sm.weight_kg,
+	c.id,
+	c.name
 HAVING COUNT(sms.id) > 1
 ORDER BY sm.id DESC
 `
@@ -1049,29 +1063,36 @@ func (q *Queries) GetTrainersBySportID(ctx context.Context, sportID int64) ([]st
 }
 
 const getTrainersBySportsmanID = `-- name: GetTrainersBySportsmanID :many
-SELECT t.name
+SELECT
+	t.id,
+	t.name
 FROM trainers t
 JOIN sportsman_sport_trainers sst ON sst.trainer_id = t.id
 JOIN sportsman_sports ss ON ss.id = sst.sportsman_sport_id
 WHERE ss.sportsman_id = $1
 `
 
+type GetTrainersBySportsmanIDRow struct {
+	ID   int64
+	Name string
+}
+
 // Query #5
 //
 // Получить список тренеров указанного спортсмена.
-func (q *Queries) GetTrainersBySportsmanID(ctx context.Context, sportsmanID int64) ([]string, error) {
+func (q *Queries) GetTrainersBySportsmanID(ctx context.Context, sportsmanID int64) ([]GetTrainersBySportsmanIDRow, error) {
 	rows, err := q.db.Query(ctx, getTrainersBySportsmanID, sportsmanID)
 	if err != nil {
 		return nil, err
 	}
 	defer rows.Close()
-	var items []string
+	var items []GetTrainersBySportsmanIDRow
 	for rows.Next() {
-		var name string
-		if err := rows.Scan(&name); err != nil {
+		var i GetTrainersBySportsmanIDRow
+		if err := rows.Scan(&i.ID, &i.Name); err != nil {
 			return nil, err
 		}
-		items = append(items, name)
+		items = append(items, i)
 	}
 	if err := rows.Err(); err != nil {
 		return nil, err

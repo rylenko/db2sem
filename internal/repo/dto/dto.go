@@ -7,6 +7,7 @@ type InsertSportsmanRequest struct {
 	BirthDate time.Time
 	HeightCm  uint16
 	WeightKg  float64
+	ClubID    int64
 	SportIDs  []int64
 }
 
@@ -16,5 +17,6 @@ type UpdateSportsmanByIDRequest struct {
 	BirthDate time.Time
 	HeightCm  uint16
 	WeightKg  float64
+	ClubID    int64
 	SportIDs  []int64
 }

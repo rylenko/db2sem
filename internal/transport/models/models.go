@@ -14,6 +14,17 @@ func ConvertFromServiceClub(serviceClub domain.Club) Club {
 	}
 }
 
+func ConvertFromServiceClubs(serviceClubs []domain.Club) []Club {
+	clubs := make([]Club, 0, len(serviceClubs))
+
+	for _, serviceClub := range serviceClubs {
+		club := ConvertFromServiceClub(serviceClub)
+		clubs = append(clubs, club)
+	}
+
+	return clubs
+}
+
 type Sport struct {
 	ID   int64
 	Name string
@@ -71,4 +82,27 @@ func ConvertFromServiceSportsman(serviceSportsman domain.Sportsman) Sportsman {
 		Club:            club,
 		Sports:          sports,
 	}
+}
+
+type Trainer struct {
+	ID   int64
+	Name string
+}
+
+func ConvertFromServiceTrainer(serviceTrainer domain.Trainer) Trainer {
+	return Trainer{
+		ID:   serviceTrainer.ID,
+		Name: serviceTrainer.Name,
+	}
+}
+
+func ConvertFromServiceTrainers(serviceTrainers []domain.Trainer) []Trainer {
+	trainers := make([]Trainer, 0, len(serviceTrainers))
+
+	for _, serviceTrainer := range serviceTrainers {
+		trainer := ConvertFromServiceTrainer(serviceTrainer)
+		trainers = append(trainers, trainer)
+	}
+
+	return trainers
 }

@@ -32,14 +32,16 @@
 		<label for="club_id">Клуб:</label>
 		<select id="club_id" name="club_id">
 			{{ range .Clubs }}
-				<option value="{{ .ID }}" {{ if ContainsClub $SportsmanClub . }}selected{{ end }}>{{ .Name }}</option>
+				<option value="{{ .ID }}" {{ if (eq .ID $SportsmanClub.ID) }}selected{{ end }}>{{ .Name }}</option>
 			{{ end }}
 		</select>
+
+		<br/>
 
 		<label for="sport_ids">Виды спорта:</label>
 		<select id="sport_ids" name="sport_ids" multiple>
 			{{ range .Sports }}
-				<option value="{{ .ID }}" {{ if ContainsSport $SportsmanSports . }}selected{{ end }}>{{ .Name }}</option>
+				<option value="{{ .ID }}" {{ if (ContainsSport $SportsmanSports .) }}selected{{ end }}>{{ .Name }}</option>
 			{{ end }}
 		</select>
 

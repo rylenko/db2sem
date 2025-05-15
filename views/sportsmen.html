@@ -36,6 +36,8 @@
 			{{ end }}
 		</select>
 
+		<br/>
+
 		<label for="sport_ids">Виды спорта:</label>
 		<select id="sport_ids" name="sport_ids" multiple>
 			{{ range .Sports }}
@@ -56,7 +58,7 @@
 		<p>Рост: {{ .HeightCm }} см.</p>
 		<p>Вес: {{ .WeightKg }} кг.</p>
 		<p>Клуб: {{ .Club.Name }} #{{ .Club.ID }}</p>
-		<p>Виды спорта: {{ .JoinSportsWithComma .Sports }}.</p>
+		<p>Виды спорта: {{ JoinSportsWithComma .Sports }}</p>
 
 		<hr/>
 	{{ end }}
