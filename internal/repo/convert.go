@@ -24,6 +24,16 @@ func convertFromPgFloat8(float8 pgtype.Float8) (float64, error) {
 	return float8.Float64, nil
 }
 
+func convertFromPgInt2(int2 pgtype.Int2) *int16 {
+	var value *int16
+
+	if int2.Valid {
+		value = &int2.Int16
+	}
+
+	return value
+}
+
 func convertFromPgNumeric(numeric pgtype.Numeric) (float64, error) {
 	float8, err := numeric.Float64Value()
 	if err != nil {
@@ -39,6 +49,17 @@ func convertFromPgTimestamptz(tz pgtype.Timestamptz) (time.Time, error) {
 	}
 
 	return tz.Time, nil
+}
+
+func convertToPgInt2(value *int16) pgtype.Int2 {
+	var int2 pgtype.Int2
+
+	if value != nil {
+		int2.Int16 = *value
+		int2.Valid = true
+	}
+
+	return int2
 }
 
 func convertToPgNumeric(number float64) (pgtype.Numeric, error) {

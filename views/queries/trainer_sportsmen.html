@@ -1,0 +1,48 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<title>Запрос 3</title>
+</head>
+<body>
+	<h1><a href="/queries">Назад</a></h1>
+
+	<h1>Запрос 3.</h1>
+
+	<p>Получение спортсменов по тренеру. Опционально можно указать минимальный разряд.</p>
+
+	<form method="POST">
+		<label for="trainer_id">Тренер:</label>
+		<select id="trainer_id" name="trainer_id">
+			{{ range .Trainers }}
+				<option value="{{ .ID }}">{{ .Name }}</option>
+			{{ end }}
+		</select>
+
+		<br/>
+
+		<label for="min_rank">Минимальный ранг:</label>
+
+		<br/>
+
+		<button type="submit">Получить спортсменов</button>
+	</form>
+
+	<h3>Спортсмены:</h3>
+
+	{{ if .RankedSportsmen }}
+		{{ range .RankedSportsmen }}
+			<p><a href="/sportsmen/{{ .ID }}">{{ .Name }}</a></p>
+			<p>Дата рождения: {{ .BirthDateString }}</p>
+			<p>Рост: {{ .HeightCm }} см.</p>
+			<p>Вес: {{ .WeightKg }} кг.</p>
+			<p>Виды спорта: {{ JoinSportsWithComma .Sports }}</p>
+
+			<p>Ранг: {{ if .Rank }} {{ .Rank }} {{ else }} - {{ end }}</p>
+
+			<hr/>
+		{{ end }}
+	{{ else }}
+		<p><b>-</b></p>
+	{{ end }}
+</body>
+</html>

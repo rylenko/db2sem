@@ -113,18 +113,24 @@ WHERE
 --
 -- name: GetSportsmenBySportID :many
 SELECT
+	sm.id,
 	sm.name,
 	sm.birth_date,
 	sm.height_cm,
-	sm.weight_kg
+	sm.weight_kg,
+	c.id AS club_id,
+	c.name AS club_name,
+	ss.rank AS rank
 FROM sportsmen sm
+JOIN clubs c ON c.id = sm.club_id
 JOIN sportsman_sports ss ON ss.sportsman_id = sm.id
 WHERE
 	ss.sport_id = @sport_id
 	AND (
-		ss.rank >= sqlc.narg('rank')
-		OR sqlc.narg('rank') IS NULL
-	);
+		ss.rank >= sqlc.narg('min_rank')
+		OR sqlc.narg('min_rank') IS NULL
+	)
+ORDER BY ss.rank DESC;
 
 -- Query #3
 --
@@ -133,19 +139,25 @@ WHERE
 --
 -- name: GetSportsmenByTrainerID :many
 SELECT
+	sm.id,
 	sm.name,
 	sm.birth_date,
 	sm.height_cm,
-	sm.weight_kg
+	sm.weight_kg,
+	c.id AS club_id,
+	c.name AS club_name,
+	ss.rank AS rank
 FROM sportsmen sm
+JOIN clubs c ON c.id = sm.club_id
 JOIN sportsman_sports ss ON ss.sportsman_id = sm.id
 JOIN sportsman_sport_trainers sst ON sst.sportsman_sport_id = ss.id
 WHERE
 	sst.trainer_id = @trainer_id
 	AND (
-		ss.rank >= sqlc.narg('rank')
-		OR sqlc.narg('rank') IS NULL
-	);
+		ss.rank >= sqlc.narg('min_rank')
+		OR sqlc.narg('min_rank') IS NULL
+	)
+ORDER BY ss.rank DESC;
 
 -- Query #4
 --
@@ -602,3 +614,13 @@ VALUES ($1);
 UPDATE sports
 SET name = $1
 WHERE id = $2;
+
+-- Query: #31 (custom)
+--
+-- Получает всех тренеров.
+--
+-- name: GetTrainers :many
+SELECT
+	id,
+	name
+FROM trainers;

@@ -287,6 +287,94 @@ func (t *Transport) RenderSportsmanTrainersPostPage(fiberCtx *fiber.Ctx) error {
 	})
 }
 
+func (t *Transport) RenderSportSportsmenGetPage(fiberCtx *fiber.Ctx) error {
+	serviceSports, err := t.service.GetSports(fiberCtx.Context())
+	if err != nil {
+		return fmt.Errorf("service: %w", err)
+	}
+
+	sports := models.ConvertFromServiceSports(serviceSports)
+
+	return fiberCtx.Render("queries/sport_sportsmen", fiber.Map{
+		"Sports": sports,
+	})
+}
+
+func (t *Transport) RenderSportSportsmenPostPage(fiberCtx *fiber.Ctx) error {
+	serviceSports, err := t.service.GetSports(fiberCtx.Context())
+	if err != nil {
+		return fmt.Errorf("service: %w", err)
+	}
+
+	sports := models.ConvertFromServiceSports(serviceSports)
+
+	var form getSportSportsmenForm
+	if err := t.requestReader.ReadAndValidateFiberBody(fiberCtx, &form); err != nil {
+		return fmt.Errorf("parse body: %w", err)
+	}
+
+	var minRank *int16
+	if form.MinRank > 0 {
+		minRank = &form.MinRank
+	}
+
+	serviceSportsmen, err := t.service.GetSportsmenBySportID(fiberCtx.Context(), form.SportID, minRank)
+	if err != nil {
+		return fmt.Errorf("get trainers: %w", err)
+	}
+
+	rankedSportsmen := models.ConvertFromServiceRankedSportsmen(serviceSportsmen)
+
+	return fiberCtx.Render("queries/sport_sportsmen", fiber.Map{
+		"Sports":          sports,
+		"RankedSportsmen": rankedSportsmen,
+	})
+}
+
+func (t *Transport) RenderTrainerSportsmenGetPage(fiberCtx *fiber.Ctx) error {
+	serviceTrainers, err := t.service.GetTrainers(fiberCtx.Context())
+	if err != nil {
+		return fmt.Errorf("service: %w", err)
+	}
+
+	trainers := models.ConvertFromServiceTrainers(serviceTrainers)
+
+	return fiberCtx.Render("queries/trainer_sportsmen", fiber.Map{
+		"Trainers": trainers,
+	})
+}
+
+func (t *Transport) RenderTrainerSportsmenPostPage(fiberCtx *fiber.Ctx) error {
+	serviceTrainers, err := t.service.GetTrainers(fiberCtx.Context())
+	if err != nil {
+		return fmt.Errorf("service: %w", err)
+	}
+
+	trainers := models.ConvertFromServiceTrainers(serviceTrainers)
+
+	var form getTrainerSportsmenForm
+	if err := t.requestReader.ReadAndValidateFiberBody(fiberCtx, &form); err != nil {
+		return fmt.Errorf("parse body: %w", err)
+	}
+
+	var minRank *int16
+	if form.MinRank > 0 {
+		minRank = &form.MinRank
+	}
+
+	serviceSportsmen, err := t.service.GetSportsmenBySportID(fiberCtx.Context(), form.TrainerID, minRank)
+	if err != nil {
+		return fmt.Errorf("get trainers: %w", err)
+	}
+
+	rankedSportsmen := models.ConvertFromServiceRankedSportsmen(serviceSportsmen)
+
+	return fiberCtx.Render("queries/trainer_sportsmen", fiber.Map{
+		"Trainers":        trainers,
+		"RankedSportsmen": rankedSportsmen,
+	})
+}
+
 func (t *Transport) RenderSportTrainersGetPage(fiberCtx *fiber.Ctx) error {
 	serviceSports, err := t.service.GetSports(fiberCtx.Context())
 	if err != nil {

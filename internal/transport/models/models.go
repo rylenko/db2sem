@@ -71,6 +71,29 @@ func ConvertFromServiceSports(serviceSports []domain.Sport) []Sport {
 	return sports
 }
 
+type RankedSportsman struct {
+	Sportsman
+	Rank *int16
+}
+
+func ConvertFromServiceRankedSportsman(serviceSportsman domain.RankedSportsman) RankedSportsman {
+	return RankedSportsman{
+		Sportsman: ConvertFromServiceSportsman(serviceSportsman.Sportsman),
+		Rank:      serviceSportsman.Rank,
+	}
+}
+
+func ConvertFromServiceRankedSportsmen(serviceSportsmen []domain.RankedSportsman) []RankedSportsman {
+	sportsmen := make([]RankedSportsman, 0, len(serviceSportsmen))
+
+	for _, serviceSportsman := range serviceSportsmen {
+		sportsman := ConvertFromServiceRankedSportsman(serviceSportsman)
+		sportsmen = append(sportsmen, sportsman)
+	}
+
+	return sportsmen
+}
+
 type Sportsman struct {
 	ID              int64
 	Name            string

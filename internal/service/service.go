@@ -55,6 +55,22 @@ func (s *Service) GetSportsmen(ctx context.Context) ([]domain.Sportsman, error) 
 	return s.repo.GetSportsmen(ctx)
 }
 
+func (s *Service) GetSportsmenBySportID(
+	ctx context.Context,
+	sportID int64,
+	minRank *int16,
+) ([]domain.RankedSportsman, error) {
+	return s.repo.GetSportsmenBySportID(ctx, sportID, minRank)
+}
+
+func (s *Service) GetSportsmenByTrainerID(
+	ctx context.Context,
+	trainerID int64,
+	minRank *int16,
+) ([]domain.RankedSportsman, error) {
+	return s.repo.GetSportsmenByTrainerID(ctx, trainerID, minRank)
+}
+
 func (s *Service) GetSportsmenInvolvedInSeveralSports(ctx context.Context) ([]domain.Sportsman, error) {
 	return s.repo.GetSportsmenInvolvedInSeveralSports(ctx)
 }
@@ -69,6 +85,10 @@ func (s *Service) GetSports(ctx context.Context) ([]domain.Sport, error) {
 
 func (s *Service) GetTournaments(ctx context.Context) ([]domain.Tournament, error) {
 	return s.repo.GetTournaments(ctx)
+}
+
+func (s *Service) GetTrainers(ctx context.Context) ([]domain.Trainer, error) {
+	return s.repo.GetTrainers(ctx)
 }
 
 func (s *Service) GetTrainersBySportsmanID(ctx context.Context, sportsmanID int64) ([]domain.Trainer, error) {

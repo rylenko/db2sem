@@ -23,6 +23,12 @@ func registerRoutes(app *fiber.App, transport transport) {
 
 		queries.Get("/sport-trainers", transport.RenderSportTrainersGetPage)
 		queries.Post("/sport-trainers", transport.RenderSportTrainersPostPage)
+
+		queries.Get("/sport-sportsmen", transport.RenderSportSportsmenGetPage)
+		queries.Post("/sport-sportsmen", transport.RenderSportSportsmenPostPage)
+
+		queries.Get("/trainer-sportsmen", transport.RenderTrainerSportsmenGetPage)
+		queries.Post("/trainer-sportsmen", transport.RenderTrainerSportsmenPostPage)
 	}
 
 	sports := app.Group("sports")
