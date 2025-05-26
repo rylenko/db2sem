@@ -1,0 +1,50 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<title>Запрос 8</title>
+</head>
+<body>
+	<h1><a href="/queries">Назад</a></h1>
+
+	<h1>Запрос 8.</h1>
+
+	<p>Получить перечень соревнований, проведенных в определённом месте в целом либо по определённому виду спорта.</p>
+
+	<form method="POST">
+		<label for="place_id">Сооружение:</label>
+		<select id="place_id" name="place_id">
+			{{ range .Places }}
+				<option value="{{ .ID }}">{{ .Name }} ({{ .TypeName }}), {{ .Location }}</option>
+			{{ end }}
+		</select>
+		<br/>
+
+		<label for="sport_id">Спорт:</label>
+		<select id="sport_id" name="sport_id">
+			<option value="0">-</option>
+
+			{{ range .Sports }}
+				<option value="{{ .ID }}">{{ .Name }}</option>
+			{{ end }}
+		</select>
+		<br/>
+
+		<button type="submit">Получить соревнования</button>
+	</form>
+
+	<h3>Соревнования:</h3>
+
+	{{ if .Tournaments }}
+		{{ range .Tournaments }}
+			<p>Организатор: {{ .OrganizerName }}</p>
+			<p>Место: {{ .PlaceName }}</p>
+			<p>Начало: {{ .StartAtString }}</p>
+			<p>Виды спорта: {{ JoinStringsWithComma .SportNames }}</p>
+
+			<hr/>
+		{{ end }}
+	{{ else }}
+		<p><b>-</b></p>
+	{{ end }}
+</body>
+</html>

@@ -9,6 +9,8 @@ type transport interface {
 	DeleteSportsman(fiberCtx *fiber.Ctx) error
 	RenderIndexPage(fiberCtx *fiber.Ctx) error
 	RenderQueriesPage(fibercCtx *fiber.Ctx) error
+	RenderPlaceTournamentsGetPage(fibercCtx *fiber.Ctx) error
+	RenderPlaceTournamentsPostPage(fibercCtx *fiber.Ctx) error
 	RenderSportsmanPage(fibercCtx *fiber.Ctx) error
 	RenderSportsmanTrainersGetPage(fiberCtx *fiber.Ctx) error
 	RenderSportsmanTrainersPostPage(fiberCtx *fiber.Ctx) error

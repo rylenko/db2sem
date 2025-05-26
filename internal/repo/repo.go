@@ -541,6 +541,41 @@ func (r *Repo) GetTournaments(ctx context.Context) ([]domain.Tournament, error) 
 	return tournaments, nil
 }
 
+func (r *Repo) GetTournamentsByPlaceID(
+	ctx context.Context,
+	placeID int64,
+	sportID *int64,
+) ([]domain.Tournament, error) {
+	pgTournaments, err := r.conn.Queries(ctx).GetTournamentsByPlaceID(ctx, pg.GetTournamentsByPlaceIDParams{
+		PlaceID: placeID,
+		SportID: convertToPgInt8(sportID),
+	})
+	if err != nil {
+		return nil, fmt.Errorf("query: %w", err)
+	}
+
+	tournaments := make([]domain.Tournament, 0, len(pgTournaments))
+
+	for _, pgTournament := range pgTournaments {
+		startAt, err := convertFromPgTimestamptz(pgTournament.StartAt)
+		if err != nil {
+			return nil, fmt.Errorf("convert start at: %w", err)
+		}
+
+		tournament := domain.Tournament{
+			ID:            pgTournament.ID,
+			OrganizerName: pgTournament.OrganizerName,
+			PlaceName:     pgTournament.PlaceName,
+			SportNames:    pgTournament.SportNames,
+			StartAt:       startAt,
+		}
+
+		tournaments = append(tournaments, tournament)
+	}
+
+	return tournaments, nil
+}
+
 func (r *Repo) GetTournamentsForPeriod(
 	ctx context.Context,
 	startAt time.Time,
@@ -568,6 +603,7 @@ func (r *Repo) GetTournamentsForPeriod(
 			ID:            pgTournament.ID,
 			OrganizerName: pgTournament.OrganizerName,
 			PlaceName:     pgTournament.PlaceName,
+			SportNames:    pgTournament.SportNames,
 			StartAt:       startAt,
 		}
 
@@ -678,4 +714,30 @@ func (r *Repo) GetOrganizers(ctx context.Context) ([]domain.Organizer, error) {
 	}
 
 	return organizers, nil
+}
+
+func (r *Repo) GetPlaces(ctx context.Context) ([]domain.Place, error) {
+	pgPlaces, err := r.conn.Queries(ctx).GetPlaces(ctx)
+	if err != nil {
+		if errors.Is(err, pgx.ErrNoRows) {
+			return nil, nil
+		}
+
+		return nil, fmt.Errorf("query: %w", err)
+	}
+
+	places := make([]domain.Place, 0, len(pgPlaces))
+
+	for _, pgPlace := range pgPlaces {
+		place := domain.Place{
+			ID:       pgPlace.ID,
+			Name:     pgPlace.Name,
+			Location: pgPlace.Location,
+			TypeName: pgPlace.TypeName,
+		}
+
+		places = append(places, place)
+	}
+
+	return places, nil
 }

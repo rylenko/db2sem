@@ -211,8 +211,11 @@ SELECT
 	t.id,
 	t.start_at,
 	p.name AS place_name,
-	o.name AS organizer_name
+	o.name AS organizer_name,
+	ARRAY_AGG(s.name)::TEXT[] as sport_names
 FROM tournaments t
+JOIN tournament_sports ts ON ts.tournament_id = t.id
+JOIN sports s ON s.id = ts.sport_id
 JOIN places p ON p.id = t.place_id
 JOIN organizers o ON o.id = t.organizer_id
 WHERE
@@ -220,7 +223,12 @@ WHERE
 	AND (
 		t.organizer_id = sqlc.narg('organizer_id')
 		OR sqlc.narg('organizer_id') IS NULL
-	);
+	)
+GROUP BY
+	t.id,
+	t.start_at,
+	p.name,
+	o.name;
 
 -- Query #7
 --
@@ -252,19 +260,26 @@ ORDER BY p.rank;
 --
 -- name: GetTournamentsByPlaceID :many
 SELECT
-	p.name,
-	o.name,
-	t.start_at
+	t.id,
+	p.name AS place_name,
+	o.name AS organizer_name,
+	t.start_at,
+	ARRAY_AGG(s.name)::TEXT[] as sport_names
 FROM tournaments t
+JOIN tournament_sports ts ON ts.tournament_id = t.id
+JOIN sports s ON s.id = ts.sport_id
 JOIN places p ON p.id = t.place_id
 JOIN organizers o ON o.id = t.organizer_id
-JOIN tournament_sports ts ON ts.tournament_id = t.id
 WHERE
 	t.place_id = $1
-	AND (
-		ts.sport_id = sqlc.narg('sport_id')
-		OR sqlc.narg('sport_id') IS NULL
-	);
+GROUP BY
+	t.id,
+	t.start_at,
+	p.name,
+	o.name
+HAVING
+	sqlc.narg('sport_id') = ANY(ARRAY_AGG(s.id))
+	OR sqlc.narg('sport_id') IS NULL;
 
 -- Query #9
 --
@@ -637,3 +652,16 @@ SELECT
 	location
 FROM organizers
 ORDER BY name;
+
+-- Query: #33 (custom)
+--
+-- Получает сооружения.
+--
+-- name: GetPlaces :many
+SELECT
+	p.id,
+	p.name,
+	p.location,
+	pt.name AS type_name
+FROM places p
+JOIN place_types pt ON pt.id = p.type_id;

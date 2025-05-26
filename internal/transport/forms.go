@@ -1,5 +1,10 @@
 package transport
 
+type getPlaceTournamentsForm struct {
+	PlaceID int64 `validate:"required" form:"place_id"`
+	SportID int64 `form:"sport_id"`
+}
+
 type getSportsmanTrainersForm struct {
 	SportsmanID int64 `validate:"required" form:"sportsman_id"`
 }

@@ -476,6 +476,51 @@ func (q *Queries) GetPlaceTournamentDatesForPeriod(ctx context.Context, arg GetP
 	return items, nil
 }
 
+const getPlaces = `-- name: GetPlaces :many
+SELECT
+	p.id,
+	p.name,
+	p.location,
+	pt.name AS type_name
+FROM places p
+JOIN place_types pt ON pt.id = p.type_id
+`
+
+type GetPlacesRow struct {
+	ID       int64
+	Name     string
+	Location string
+	TypeName string
+}
+
+// Query: #33 (custom)
+//
+// Получает сооружения.
+func (q *Queries) GetPlaces(ctx context.Context) ([]GetPlacesRow, error) {
+	rows, err := q.db.Query(ctx, getPlaces)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	var items []GetPlacesRow
+	for rows.Next() {
+		var i GetPlacesRow
+		if err := rows.Scan(
+			&i.ID,
+			&i.Name,
+			&i.Location,
+			&i.TypeName,
+		); err != nil {
+			return nil, err
+		}
+		items = append(items, i)
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
+}
+
 const getPrizeWinnersByTournamentID = `-- name: GetPrizeWinnersByTournamentID :many
 SELECT
 	sm.id,
@@ -1082,19 +1127,26 @@ func (q *Queries) GetTournaments(ctx context.Context) ([]GetTournamentsRow, erro
 
 const getTournamentsByPlaceID = `-- name: GetTournamentsByPlaceID :many
 SELECT
-	p.name,
-	o.name,
-	t.start_at
+	t.id,
+	p.name AS place_name,
+	o.name AS organizer_name,
+	t.start_at,
+	ARRAY_AGG(s.name)::TEXT[] as sport_names
 FROM tournaments t
+JOIN tournament_sports ts ON ts.tournament_id = t.id
+JOIN sports s ON s.id = ts.sport_id
 JOIN places p ON p.id = t.place_id
 JOIN organizers o ON o.id = t.organizer_id
-JOIN tournament_sports ts ON ts.tournament_id = t.id
 WHERE
 	t.place_id = $1
-	AND (
-		ts.sport_id = $2
-		OR $2 IS NULL
-	)
+GROUP BY
+	t.id,
+	t.start_at,
+	p.name,
+	o.name
+HAVING
+	$2 = ANY(ARRAY_AGG(s.id))
+	OR $2 IS NULL
 `
 
 type GetTournamentsByPlaceIDParams struct {
@@ -1103,9 +1155,11 @@ type GetTournamentsByPlaceIDParams struct {
 }
 
 type GetTournamentsByPlaceIDRow struct {
-	Name    string
-	Name_2  string
-	StartAt pgtype.Timestamptz
+	ID            int64
+	PlaceName     string
+	OrganizerName string
+	StartAt       pgtype.Timestamptz
+	SportNames    []string
 }
 
 // Query #8
@@ -1121,7 +1175,13 @@ func (q *Queries) GetTournamentsByPlaceID(ctx context.Context, arg GetTournament
 	var items []GetTournamentsByPlaceIDRow
 	for rows.Next() {
 		var i GetTournamentsByPlaceIDRow
-		if err := rows.Scan(&i.Name, &i.Name_2, &i.StartAt); err != nil {
+		if err := rows.Scan(
+			&i.ID,
+			&i.PlaceName,
+			&i.OrganizerName,
+			&i.StartAt,
+			&i.SportNames,
+		); err != nil {
 			return nil, err
 		}
 		items = append(items, i)
@@ -1137,8 +1197,11 @@ SELECT
 	t.id,
 	t.start_at,
 	p.name AS place_name,
-	o.name AS organizer_name
+	o.name AS organizer_name,
+	ARRAY_AGG(s.name)::TEXT[] as sport_names
 FROM tournaments t
+JOIN tournament_sports ts ON ts.tournament_id = t.id
+JOIN sports s ON s.id = ts.sport_id
 JOIN places p ON p.id = t.place_id
 JOIN organizers o ON o.id = t.organizer_id
 WHERE
@@ -1147,6 +1210,11 @@ WHERE
 		t.organizer_id = $3
 		OR $3 IS NULL
 	)
+GROUP BY
+	t.id,
+	t.start_at,
+	p.name,
+	o.name
 `
 
 type GetTournamentsForPeriodParams struct {
@@ -1160,6 +1228,7 @@ type GetTournamentsForPeriodRow struct {
 	StartAt       pgtype.Timestamptz
 	PlaceName     string
 	OrganizerName string
+	SportNames    []string
 }
 
 // Query #6
@@ -1180,6 +1249,7 @@ func (q *Queries) GetTournamentsForPeriod(ctx context.Context, arg GetTournament
 			&i.StartAt,
 			&i.PlaceName,
 			&i.OrganizerName,
+			&i.SportNames,
 		); err != nil {
 			return nil, err
 		}

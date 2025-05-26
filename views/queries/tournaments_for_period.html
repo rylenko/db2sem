@@ -37,9 +37,10 @@
 
 	{{ if .Tournaments }}
 		{{ range .Tournaments }}
-			<p>Организатор: {{ .OrganizerName }}</a>
-			<p>Место: {{ .PlaceName }}</a>
-			<p>Начало: {{ .StartAtString }}</a>
+			<p>Организатор: {{ .OrganizerName }}</p>
+			<p>Место: {{ .PlaceName }}</p>
+			<p>Начало: {{ .StartAtString }}</p>
+			<p>Виды спорта: {{ JoinStringsWithComma .SportNames }}</p>
 
 			<hr/>
 		{{ end }}

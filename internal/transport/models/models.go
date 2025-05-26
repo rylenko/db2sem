@@ -134,6 +134,7 @@ type Tournament struct {
 	ID            int64
 	OrganizerName string
 	PlaceName     string
+	SportNames    []string
 	StartAtString string
 }
 
@@ -142,6 +143,7 @@ func ConvertFromServiceTournament(serviceTournament domain.Tournament) Tournamen
 		ID:            serviceTournament.ID,
 		OrganizerName: serviceTournament.OrganizerName,
 		PlaceName:     serviceTournament.PlaceName,
+		SportNames:    serviceTournament.SportNames,
 		StartAtString: serviceTournament.StartAt.Format("02.01.2006 15:04:05"),
 	}
 }
@@ -203,4 +205,31 @@ func ConvertFromServiceTrainers(serviceTrainers []domain.Trainer) []Trainer {
 	}
 
 	return trainers
+}
+
+type Place struct {
+	ID       int64
+	Name     string
+	Location string
+	TypeName string
+}
+
+func ConvertFromServicePlace(servicePlace domain.Place) Place {
+	return Place{
+		ID:       servicePlace.ID,
+		Name:     servicePlace.Name,
+		Location: servicePlace.Location,
+		TypeName: servicePlace.TypeName,
+	}
+}
+
+func ConvertFromServicePlaces(servicePlaces []domain.Place) []Place {
+	places := make([]Place, 0, len(servicePlaces))
+
+	for _, servicePlace := range servicePlaces {
+		place := ConvertFromServicePlace(servicePlace)
+		places = append(places, place)
+	}
+
+	return places
 }

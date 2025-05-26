@@ -287,6 +287,66 @@ func (t *Transport) RenderSportsmanTrainersPostPage(fiberCtx *fiber.Ctx) error {
 	})
 }
 
+func (t *Transport) RenderPlaceTournamentsGetPage(fiberCtx *fiber.Ctx) error {
+	servicePlaces, err := t.service.GetPlaces(fiberCtx.Context())
+	if err != nil {
+		return fmt.Errorf("service: %w", err)
+	}
+
+	places := models.ConvertFromServicePlaces(servicePlaces)
+
+	serviceSports, err := t.service.GetSports(fiberCtx.Context())
+	if err != nil {
+		return fmt.Errorf("service: %w", err)
+	}
+
+	sports := models.ConvertFromServiceSports(serviceSports)
+
+	return fiberCtx.Render("queries/place_tournaments", fiber.Map{
+		"Places": places,
+		"Sports": sports,
+	})
+}
+
+func (t *Transport) RenderPlaceTournamentsPostPage(fiberCtx *fiber.Ctx) error {
+	servicePlaces, err := t.service.GetPlaces(fiberCtx.Context())
+	if err != nil {
+		return fmt.Errorf("service: %w", err)
+	}
+
+	places := models.ConvertFromServicePlaces(servicePlaces)
+
+	serviceSports, err := t.service.GetSports(fiberCtx.Context())
+	if err != nil {
+		return fmt.Errorf("service: %w", err)
+	}
+
+	sports := models.ConvertFromServiceSports(serviceSports)
+
+	var form getPlaceTournamentsForm
+	if err := t.requestReader.ReadAndValidateFiberBody(fiberCtx, &form); err != nil {
+		return fmt.Errorf("parse body: %w", err)
+	}
+
+	var sportID *int64
+	if form.SportID > 0 {
+		sportID = &form.SportID
+	}
+
+	serviceTournaments, err := t.service.GetTournamentsByPlaceID(fiberCtx.Context(), form.PlaceID, sportID)
+	if err != nil {
+		return fmt.Errorf("get tournaments: %w", err)
+	}
+
+	tournaments := models.ConvertFromServiceTournaments(serviceTournaments)
+
+	return fiberCtx.Render("queries/place_tournaments", fiber.Map{
+		"Places":      places,
+		"Sports":      sports,
+		"Tournaments": tournaments,
+	})
+}
+
 func (t *Transport) RenderTournamentsForPeriodGetPage(fiberCtx *fiber.Ctx) error {
 	serviceOrganizers, err := t.service.GetOrganizers(fiberCtx.Context())
 	if err != nil {

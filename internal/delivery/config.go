@@ -46,8 +46,9 @@ type ServerConfig struct {
 func (cfg ServerConfig) convertToForeign() fiber.Config {
 	viewsEngine := html.New(cfg.ViewsDir, ".html")
 	viewsEngine.AddFuncMap(map[string]any{
-		"ContainsSport":       viewutils.ContainsSport,
-		"JoinSportsWithComma": viewutils.JoinSportsWithComma,
+		"ContainsSport":        viewutils.ContainsSport,
+		"JoinSportsWithComma":  viewutils.JoinSportsWithComma,
+		"JoinStringsWithComma": viewutils.JoinStringsWithComma,
 	})
 
 	return fiber.Config{

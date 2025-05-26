@@ -88,6 +88,14 @@ func (s *Service) GetTournaments(ctx context.Context) ([]domain.Tournament, erro
 	return s.repo.GetTournaments(ctx)
 }
 
+func (s *Service) GetTournamentsByPlaceID(
+	ctx context.Context,
+	placeID int64,
+	sportID *int64,
+) ([]domain.Tournament, error) {
+	return s.repo.GetTournamentsByPlaceID(ctx, placeID, sportID)
+}
+
 func (s *Service) GetTournamentsForPeriod(
 	ctx context.Context,
 	startAt time.Time,
@@ -99,6 +107,10 @@ func (s *Service) GetTournamentsForPeriod(
 
 func (s *Service) GetOrganizers(ctx context.Context) ([]domain.Organizer, error) {
 	return s.repo.GetOrganizers(ctx)
+}
+
+func (s *Service) GetPlaces(ctx context.Context) ([]domain.Place, error) {
+	return s.repo.GetPlaces(ctx)
 }
 
 func (s *Service) GetTrainers(ctx context.Context) ([]domain.Trainer, error) {
