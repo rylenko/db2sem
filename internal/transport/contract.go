@@ -2,6 +2,7 @@ package transport
 
 import (
 	"context"
+	"time"
 
 	"github.com/gofiber/fiber/v2"
 
@@ -28,6 +29,8 @@ type service interface {
 	GetSportByID(ctx context.Context, sportID int64) (*domain.Sport, error)
 	GetSports(ctx context.Context) ([]domain.Sport, error)
 	GetTournaments(ctx context.Context) ([]domain.Tournament, error)
+	GetTournamentsForPeriod(ctx context.Context, startAt, endAt time.Time, organizerID *int64) ([]domain.Tournament, error)
+	GetOrganizers(ctx context.Context) ([]domain.Organizer, error)
 	GetTrainers(ctx context.Context) ([]domain.Trainer, error)
 	GetTrainersBySportsmanID(ctx context.Context, sportsmanID int64) ([]domain.Trainer, error)
 	GetTrainersBySportID(ctx context.Context, sportID int64) ([]domain.Trainer, error)

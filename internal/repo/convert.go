@@ -16,6 +16,14 @@ func convertFromPgDate(date pgtype.Date) (time.Time, error) {
 	return date.Time, nil
 }
 
+func convertFromPgText(text pgtype.Text) *string {
+	if !text.Valid {
+		return nil
+	}
+
+	return &text.String
+}
+
 func convertFromPgFloat8(float8 pgtype.Float8) (float64, error) {
 	if !float8.Valid {
 		return 0, errors.New("invalid value")
@@ -62,6 +70,17 @@ func convertToPgInt2(value *int16) pgtype.Int2 {
 	return int2
 }
 
+func convertToPgInt8(value *int64) pgtype.Int8 {
+	var pgInt pgtype.Int8
+
+	if value != nil {
+		pgInt.Int64 = *value
+		pgInt.Valid = true
+	}
+
+	return pgInt
+}
+
 func convertToPgNumeric(number float64) (pgtype.Numeric, error) {
 	var numeric pgtype.Numeric
 	if err := numeric.Scan(fmt.Sprintf("%f", number)); err != nil {
@@ -75,5 +94,12 @@ func convertToPgDate(date time.Time) pgtype.Date {
 	return pgtype.Date{
 		Valid: true,
 		Time:  date,
+	}
+}
+
+func convertToPgTimestamptz(t time.Time) pgtype.Timestamptz {
+	return pgtype.Timestamptz{
+		Time:  t,
+		Valid: true,
 	}
 }

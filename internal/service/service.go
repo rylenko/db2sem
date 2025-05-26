@@ -2,6 +2,7 @@ package service
 
 import (
 	"context"
+	"time"
 
 	"db2sem/internal/domain"
 	repodto "db2sem/internal/repo/dto"
@@ -85,6 +86,19 @@ func (s *Service) GetSports(ctx context.Context) ([]domain.Sport, error) {
 
 func (s *Service) GetTournaments(ctx context.Context) ([]domain.Tournament, error) {
 	return s.repo.GetTournaments(ctx)
+}
+
+func (s *Service) GetTournamentsForPeriod(
+	ctx context.Context,
+	startAt time.Time,
+	endAt time.Time,
+	organizerID *int64,
+) ([]domain.Tournament, error) {
+	return s.repo.GetTournamentsForPeriod(ctx, startAt, endAt, organizerID)
+}
+
+func (s *Service) GetOrganizers(ctx context.Context) ([]domain.Organizer, error) {
+	return s.repo.GetOrganizers(ctx)
 }
 
 func (s *Service) GetTrainers(ctx context.Context) ([]domain.Trainer, error) {

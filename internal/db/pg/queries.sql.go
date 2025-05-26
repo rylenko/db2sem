@@ -389,6 +389,44 @@ func (q *Queries) GetOrganizerTournamentCountsForPeriod(ctx context.Context) ([]
 	return items, nil
 }
 
+const getOrganizers = `-- name: GetOrganizers :many
+SELECT
+	id,
+	name,
+	location
+FROM organizers
+ORDER BY name
+`
+
+type GetOrganizersRow struct {
+	ID       int64
+	Name     string
+	Location pgtype.Text
+}
+
+// Query: #32 (custom)
+//
+// Получает всех организаторов.
+func (q *Queries) GetOrganizers(ctx context.Context) ([]GetOrganizersRow, error) {
+	rows, err := q.db.Query(ctx, getOrganizers)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	var items []GetOrganizersRow
+	for rows.Next() {
+		var i GetOrganizersRow
+		if err := rows.Scan(&i.ID, &i.Name, &i.Location); err != nil {
+			return nil, err
+		}
+		items = append(items, i)
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
+}
+
 const getPlaceTournamentDatesForPeriod = `-- name: GetPlaceTournamentDatesForPeriod :many
 SELECT
 	p.name,
@@ -529,7 +567,7 @@ SELECT
 	id,
 	name
 FROM sports
-ORDER BY id DESC
+ORDER BY name
 `
 
 type GetSportsRow struct {
@@ -668,7 +706,7 @@ GROUP BY
 	sm.weight_kg,
 	c.id,
 	c.name
-ORDER BY sm.id DESC
+ORDER BY sm.name
 `
 
 type GetSportsmenRow struct {
@@ -877,7 +915,7 @@ GROUP BY
 	c.id,
 	c.name
 HAVING COUNT(sms.id) > 1
-ORDER BY sm.id DESC
+ORDER BY sm.name
 `
 
 type GetSportsmenInvolvedInSeveralSportsRow struct {
@@ -1096,9 +1134,10 @@ func (q *Queries) GetTournamentsByPlaceID(ctx context.Context, arg GetTournament
 
 const getTournamentsForPeriod = `-- name: GetTournamentsForPeriod :many
 SELECT
-	p.name,
-	o.name,
-	t.start_at
+	t.id,
+	t.start_at,
+	p.name AS place_name,
+	o.name AS organizer_name
 FROM tournaments t
 JOIN places p ON p.id = t.place_id
 JOIN organizers o ON o.id = t.organizer_id
@@ -1117,9 +1156,10 @@ type GetTournamentsForPeriodParams struct {
 }
 
 type GetTournamentsForPeriodRow struct {
-	Name    string
-	Name_2  string
-	StartAt pgtype.Timestamptz
+	ID            int64
+	StartAt       pgtype.Timestamptz
+	PlaceName     string
+	OrganizerName string
 }
 
 // Query #6
@@ -1135,7 +1175,12 @@ func (q *Queries) GetTournamentsForPeriod(ctx context.Context, arg GetTournament
 	var items []GetTournamentsForPeriodRow
 	for rows.Next() {
 		var i GetTournamentsForPeriodRow
-		if err := rows.Scan(&i.Name, &i.Name_2, &i.StartAt); err != nil {
+		if err := rows.Scan(
+			&i.ID,
+			&i.StartAt,
+			&i.PlaceName,
+			&i.OrganizerName,
+		); err != nil {
 			return nil, err
 		}
 		items = append(items, i)
@@ -1189,7 +1234,7 @@ FROM trainers t
 JOIN sportsman_sport_trainers sst ON sst.trainer_id = t.id
 JOIN sportsman_sports ss ON ss.id = sst.sportsman_sport_id
 WHERE ss.sport_id = $1
-ORDER BY t.id DESC
+ORDER BY t.name
 `
 
 type GetTrainersBySportIDRow struct {

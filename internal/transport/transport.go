@@ -287,6 +287,60 @@ func (t *Transport) RenderSportsmanTrainersPostPage(fiberCtx *fiber.Ctx) error {
 	})
 }
 
+func (t *Transport) RenderTournamentsForPeriodGetPage(fiberCtx *fiber.Ctx) error {
+	serviceOrganizers, err := t.service.GetOrganizers(fiberCtx.Context())
+	if err != nil {
+		return fmt.Errorf("service: %w", err)
+	}
+
+	organizers := models.ConvertFromServiceOrganizers(serviceOrganizers)
+
+	return fiberCtx.Render("queries/tournaments_for_period", fiber.Map{
+		"Organizers": organizers,
+	})
+}
+
+func (t *Transport) RenderTournamentsForPeriodPostPage(fiberCtx *fiber.Ctx) error {
+	serviceOrganizers, err := t.service.GetOrganizers(fiberCtx.Context())
+	if err != nil {
+		return fmt.Errorf("service: %w", err)
+	}
+
+	organizers := models.ConvertFromServiceOrganizers(serviceOrganizers)
+
+	var form getTournamentsForPeriodForm
+	if err := t.requestReader.ReadAndValidateFiberBody(fiberCtx, &form); err != nil {
+		return fmt.Errorf("parse body: %w", err)
+	}
+
+	var organizerID *int64
+	if form.OrganizerID > 0 {
+		organizerID = &form.OrganizerID
+	}
+
+	startAt, err := time.Parse("2006-01-02T15:04", form.StartAt)
+	if err != nil {
+		return fiberCtx.Status(fiber.StatusBadRequest).SendString("Invalid start date format")
+	}
+
+	endAt, err := time.Parse("2006-01-02T15:04", form.EndAt)
+	if err != nil {
+		return fiberCtx.Status(fiber.StatusBadRequest).SendString("Invalid end date format")
+	}
+
+	serviceTournaments, err := t.service.GetTournamentsForPeriod(fiberCtx.Context(), startAt, endAt, organizerID)
+	if err != nil {
+		return fmt.Errorf("get tournaments: %w", err)
+	}
+
+	tournaments := models.ConvertFromServiceTournaments(serviceTournaments)
+
+	return fiberCtx.Render("queries/tournaments_for_period", fiber.Map{
+		"Organizers":  organizers,
+		"Tournaments": tournaments,
+	})
+}
+
 func (t *Transport) RenderSportSportsmenGetPage(fiberCtx *fiber.Ctx) error {
 	serviceSports, err := t.service.GetSports(fiberCtx.Context())
 	if err != nil {

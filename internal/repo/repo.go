@@ -4,6 +4,7 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"time"
 
 	"github.com/jackc/pgx/v5"
 
@@ -540,6 +541,42 @@ func (r *Repo) GetTournaments(ctx context.Context) ([]domain.Tournament, error) 
 	return tournaments, nil
 }
 
+func (r *Repo) GetTournamentsForPeriod(
+	ctx context.Context,
+	startAt time.Time,
+	endAt time.Time,
+	organizerID *int64,
+) ([]domain.Tournament, error) {
+	pgTournaments, err := r.conn.Queries(ctx).GetTournamentsForPeriod(ctx, pg.GetTournamentsForPeriodParams{
+		StartAt:     convertToPgTimestamptz(startAt),
+		EndAt:       convertToPgTimestamptz(endAt),
+		OrganizerID: convertToPgInt8(organizerID),
+	})
+	if err != nil {
+		return nil, fmt.Errorf("query: %w", err)
+	}
+
+	tournaments := make([]domain.Tournament, 0, len(pgTournaments))
+
+	for _, pgTournament := range pgTournaments {
+		startAt, err := convertFromPgTimestamptz(pgTournament.StartAt)
+		if err != nil {
+			return nil, fmt.Errorf("convert start at: %w", err)
+		}
+
+		tournament := domain.Tournament{
+			ID:            pgTournament.ID,
+			OrganizerName: pgTournament.OrganizerName,
+			PlaceName:     pgTournament.PlaceName,
+			StartAt:       startAt,
+		}
+
+		tournaments = append(tournaments, tournament)
+	}
+
+	return tournaments, nil
+}
+
 func (r *Repo) InsertSport(ctx context.Context, name string) error {
 	return r.conn.Queries(ctx).InsertSport(ctx, name)
 }
@@ -616,4 +653,29 @@ func (r *Repo) GetTrainers(ctx context.Context) ([]domain.Trainer, error) {
 	}
 
 	return trainers, nil
+}
+
+func (r *Repo) GetOrganizers(ctx context.Context) ([]domain.Organizer, error) {
+	pgOrganizers, err := r.conn.Queries(ctx).GetOrganizers(ctx)
+	if err != nil {
+		if errors.Is(err, pgx.ErrNoRows) {
+			return nil, nil
+		}
+
+		return nil, fmt.Errorf("query: %w", err)
+	}
+
+	organizers := make([]domain.Organizer, 0, len(pgOrganizers))
+
+	for _, pgOrganizer := range pgOrganizers {
+		organizer := domain.Organizer{
+			ID:       pgOrganizer.ID,
+			Name:     pgOrganizer.Name,
+			Location: convertFromPgText(pgOrganizer.Location),
+		}
+
+		organizers = append(organizers, organizer)
+	}
+
+	return organizers, nil
 }

@@ -157,6 +157,31 @@ func ConvertFromServiceTournaments(serviceTournaments []domain.Tournament) []Tou
 	return tournaments
 }
 
+type Organizer struct {
+	ID       int64
+	Name     string
+	Location *string
+}
+
+func ConvertFromServiceOrganizer(serviceOrganizer domain.Organizer) Organizer {
+	return Organizer{
+		ID:       serviceOrganizer.ID,
+		Name:     serviceOrganizer.Name,
+		Location: serviceOrganizer.Location,
+	}
+}
+
+func ConvertFromServiceOrganizers(serviceOrganizers []domain.Organizer) []Organizer {
+	organizers := make([]Organizer, 0, len(serviceOrganizers))
+
+	for _, serviceOrganizer := range serviceOrganizers {
+		organizer := ConvertFromServiceOrganizer(serviceOrganizer)
+		organizers = append(organizers, organizer)
+	}
+
+	return organizers
+}
+
 type Trainer struct {
 	ID   int64
 	Name string

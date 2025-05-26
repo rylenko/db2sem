@@ -1,0 +1,50 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<title>Запрос 6</title>
+</head>
+<body>
+	<h1><a href="/queries">Назад</a></h1>
+
+	<h1>Запрос 6.</h1>
+
+	<p>Получить перечень соревнований, проведенных в течение заданного периода времени в целом либо указанным организатором.</p>
+
+	<form method="POST">
+		<label for="start_at">Начало периода:</label>
+		<input type="datetime-local" name="start_at" required>
+		<br/>
+
+		<label for="end_at">Конец периода:</label>
+		<input type="datetime-local" name="end_at" required>
+		<br/>
+
+		<label for="organizer_id">Организаторы:</label>
+		<select id="organizer_id" name="organizer_id">
+			<option value="0">-</option>
+
+			{{ range .Organizers }}
+				<option value="{{ .ID }}">{{ .Name }}{{ if .Location }}, {{ .Location }}{{ end }}</option>
+			{{ end }}
+		</select>
+
+		<br/>
+
+		<button type="submit">Получить соревнования</button>
+	</form>
+
+	<h3>Соревнования:</h3>
+
+	{{ if .Tournaments }}
+		{{ range .Tournaments }}
+			<p>Организатор: {{ .OrganizerName }}</a>
+			<p>Место: {{ .PlaceName }}</a>
+			<p>Начало: {{ .StartAtString }}</a>
+
+			<hr/>
+		{{ end }}
+	{{ else }}
+		<p><b>-</b></p>
+	{{ end }}
+</body>
+</html>

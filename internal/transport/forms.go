@@ -17,6 +17,12 @@ type getTournamentPrizeWinnersForm struct {
 	TournamentID int64 `validate:"required" form:"tournament_id"`
 }
 
+type getTournamentsForPeriodForm struct {
+	StartAt     string `validate:"required" form:"start_at"`
+	EndAt       string `validate:"required" form:"end_at"`
+	OrganizerID int64  `form:"organizer_id"`
+}
+
 type getTrainerSportsmenForm struct {
 	TrainerID int64 `validate:"required" form:"trainer_id"`
 	MinRank   int16 `form:"min_rank"`

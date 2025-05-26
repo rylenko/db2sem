@@ -186,7 +186,7 @@ GROUP BY
 	c.id,
 	c.name
 HAVING COUNT(sms.id) > 1
-ORDER BY sm.id DESC;
+ORDER BY sm.name;
 
 -- Query #5
 --
@@ -208,9 +208,10 @@ WHERE ss.sportsman_id = $1;
 --
 -- name: GetTournamentsForPeriod :many
 SELECT
-	p.name,
-	o.name,
-	t.start_at
+	t.id,
+	t.start_at,
+	p.name AS place_name,
+	o.name AS organizer_name
 FROM tournaments t
 JOIN places p ON p.id = t.place_id
 JOIN organizers o ON o.id = t.organizer_id
@@ -296,7 +297,7 @@ FROM trainers t
 JOIN sportsman_sport_trainers sst ON sst.trainer_id = t.id
 JOIN sportsman_sports ss ON ss.id = sst.sportsman_sport_id
 WHERE ss.sport_id = $1
-ORDER BY t.id DESC;
+ORDER BY t.name;
 
 -- Query: #11
 --
@@ -469,7 +470,7 @@ SELECT
 	id,
 	name
 FROM sports
-ORDER BY id DESC;
+ORDER BY name;
 
 -- Query: #21 (custom)
 --
@@ -504,7 +505,7 @@ GROUP BY
 	sm.weight_kg,
 	c.id,
 	c.name
-ORDER BY sm.id DESC;
+ORDER BY sm.name;
 
 -- Query: #23 (custom)
 --
@@ -624,3 +625,15 @@ SELECT
 	id,
 	name
 FROM trainers;
+
+-- Query: #32 (custom)
+--
+-- Получает всех организаторов.
+--
+-- name: GetOrganizers :many
+SELECT
+	id,
+	name,
+	location
+FROM organizers
+ORDER BY name;
