@@ -1,0 +1,38 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<title>Запрос 9</title>
+</head>
+<body>
+	<h1><a href="/queries">Назад</a></h1>
+
+	<h1>Запрос 9.</h1>
+
+	<p>Получить перечень спортивных клубов и число спортсменов этих клубов, участвовавших в спортивных соревнованиях в течение заданного интервала времени.</p>
+
+	<form method="POST">
+		<label for="start_at">Начало периода:</label>
+		<input type="datetime-local" name="start_at" required>
+		<br/>
+
+		<label for="end_at">Конец периода:</label>
+		<input type="datetime-local" name="end_at" required>
+		<br/>
+
+		<button type="submit">Получить клубы с количеством активным спортсменов</button>
+	</form>
+
+	<h3>Клубы и количества активных спортсменов:</h3>
+
+	{{ if .ClubSportsmenCounts }}
+		{{ range .ClubSportsmenCounts }}
+			<p>Клуб: {{ .Name }}</p>
+			<p>Количество активных спортсменов за период: {{ .SportsmenCount }}</p>
+
+			<hr/>
+		{{ end }}
+	{{ else }}
+		<p><b>-</b></p>
+	{{ end }}
+</body>
+</html>

@@ -91,8 +91,9 @@ func (q *Queries) GetArenaPlaces(ctx context.Context, arg GetArenaPlacesParams) 
 
 const getClubActiveSportsmenCountsForPeriod = `-- name: GetClubActiveSportsmenCountsForPeriod :many
 SELECT
+	c.id,
 	c.name,
-	COUNT(s.id)
+	COUNT(s.id) AS active_sportsmen_count
 FROM clubs c
 LEFT JOIN sportsmen s ON s.club_id = c.id
 LEFT JOIN participations p ON p.sportsman_id = s.id
@@ -102,6 +103,7 @@ WHERE t.start_at BETWEEN $1 AND $2
 GROUP BY
 	c.id,
 	c.name
+ORDER BY c.name
 `
 
 type GetClubActiveSportsmenCountsForPeriodParams struct {
@@ -110,8 +112,9 @@ type GetClubActiveSportsmenCountsForPeriodParams struct {
 }
 
 type GetClubActiveSportsmenCountsForPeriodRow struct {
-	Name  string
-	Count int64
+	ID                   int64
+	Name                 string
+	ActiveSportsmenCount int64
 }
 
 // Query #9
@@ -127,7 +130,7 @@ func (q *Queries) GetClubActiveSportsmenCountsForPeriod(ctx context.Context, arg
 	var items []GetClubActiveSportsmenCountsForPeriodRow
 	for rows.Next() {
 		var i GetClubActiveSportsmenCountsForPeriodRow
-		if err := rows.Scan(&i.Name, &i.Count); err != nil {
+		if err := rows.Scan(&i.ID, &i.Name, &i.ActiveSportsmenCount); err != nil {
 			return nil, err
 		}
 		items = append(items, i)
@@ -1147,6 +1150,7 @@ GROUP BY
 HAVING
 	$2 = ANY(ARRAY_AGG(s.id))
 	OR $2 IS NULL
+ORDER BY t.start_at DESC
 `
 
 type GetTournamentsByPlaceIDParams struct {

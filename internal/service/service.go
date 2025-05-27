@@ -40,6 +40,14 @@ func (s *Service) DeleteSportsmanByID(ctx context.Context, sportsmanID int64) er
 	return s.repo.DeleteSportsmanByID(ctx, sportsmanID)
 }
 
+func (s *Service) GetClubActiveSportsmenCountsForPeriod(
+	ctx context.Context,
+	startAt time.Time,
+	endAt time.Time,
+) ([]domain.ClubSportsmenCount, error) {
+	return s.repo.GetClubActiveSportsmenCountsForPeriod(ctx, startAt, endAt)
+}
+
 func (s *Service) GetClubs(ctx context.Context) ([]domain.Club, error) {
 	return s.repo.GetClubs(ctx)
 }

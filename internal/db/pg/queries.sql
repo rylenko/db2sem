@@ -279,7 +279,8 @@ GROUP BY
 	o.name
 HAVING
 	sqlc.narg('sport_id') = ANY(ARRAY_AGG(s.id))
-	OR sqlc.narg('sport_id') IS NULL;
+	OR sqlc.narg('sport_id') IS NULL
+ORDER BY t.start_at DESC;
 
 -- Query #9
 --
@@ -288,8 +289,9 @@ HAVING
 --
 -- name: GetClubActiveSportsmenCountsForPeriod :many
 SELECT
+	c.id,
 	c.name,
-	COUNT(s.id)
+	COUNT(s.id) AS active_sportsmen_count
 FROM clubs c
 LEFT JOIN sportsmen s ON s.club_id = c.id
 LEFT JOIN participations p ON p.sportsman_id = s.id
@@ -298,7 +300,8 @@ LEFT JOIN tournaments t ON t.id = ts.tournament_id
 WHERE t.start_at BETWEEN @start_at AND @end_at
 GROUP BY
 	c.id,
-	c.name;
+	c.name
+ORDER BY c.name;
 
 -- Query #10
 --

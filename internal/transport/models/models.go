@@ -2,6 +2,29 @@ package models
 
 import "db2sem/internal/domain"
 
+type ClubSportsmenCount struct {
+	Club
+	SportsmenCount uint64
+}
+
+func ConvertFromServiceClubSportsmenCount(serviceClub domain.ClubSportsmenCount) ClubSportsmenCount {
+	return ClubSportsmenCount{
+		Club:           ConvertFromServiceClub(serviceClub.Club),
+		SportsmenCount: serviceClub.SportsmenCount,
+	}
+}
+
+func ConvertFromServiceClubSportsmenCounts(serviceClubs []domain.ClubSportsmenCount) []ClubSportsmenCount {
+	clubs := make([]ClubSportsmenCount, 0, len(serviceClubs))
+
+	for _, serviceClub := range serviceClubs {
+		club := ConvertFromServiceClubSportsmenCount(serviceClub)
+		clubs = append(clubs, club)
+	}
+
+	return clubs
+}
+
 type Club struct {
 	ID   int64
 	Name string

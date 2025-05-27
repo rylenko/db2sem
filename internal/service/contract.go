@@ -13,6 +13,8 @@ type repo interface {
 	InsertSportsman(ctx context.Context, req repodto.InsertSportsmanRequest) error
 	DeleteSportByID(ctx context.Context, sportID int64) error
 	DeleteSportsmanByID(ctx context.Context, sportsmanID int64) error
+	GetClubActiveSportsmenCountsForPeriod(
+		ctx context.Context, startAt, endAt time.Time) ([]domain.ClubSportsmenCount, error)
 	GetClubs(ctx context.Context) ([]domain.Club, error)
 	GetOrganizers(ctx context.Context) ([]domain.Organizer, error)
 	GetPlaces(ctx context.Context) ([]domain.Place, error)

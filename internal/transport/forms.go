@@ -22,6 +22,11 @@ type getTournamentPrizeWinnersForm struct {
 	TournamentID int64 `validate:"required" form:"tournament_id"`
 }
 
+type getClubActiveSportsmenCountsForm struct {
+	StartAt string `validate:"required" form:"start_at"`
+	EndAt   string `validate:"required" form:"end_at"`
+}
+
 type getTournamentsForPeriodForm struct {
 	StartAt     string `validate:"required" form:"start_at"`
 	EndAt       string `validate:"required" form:"end_at"`

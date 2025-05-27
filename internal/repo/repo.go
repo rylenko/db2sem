@@ -29,6 +29,43 @@ func (r *Repo) DeleteSportsmanByID(ctx context.Context, sportsmanID int64) error
 	return r.conn.Queries(ctx).DeleteSportsmanByID(ctx, sportsmanID)
 }
 
+func (r *Repo) GetClubActiveSportsmenCountsForPeriod(
+	ctx context.Context,
+	startAt time.Time,
+	endAt time.Time,
+) ([]domain.ClubSportsmenCount, error) {
+	pgClubs, err := r.conn.Queries(ctx).GetClubActiveSportsmenCountsForPeriod(
+		ctx,
+		pg.GetClubActiveSportsmenCountsForPeriodParams{
+			StartAt: convertToPgTimestamptz(startAt),
+			EndAt:   convertToPgTimestamptz(endAt),
+		},
+	)
+	if err != nil {
+		if errors.Is(err, pgx.ErrNoRows) {
+			return nil, nil
+		}
+
+		return nil, fmt.Errorf("query: %w", err)
+	}
+
+	clubs := make([]domain.ClubSportsmenCount, 0, len(pgClubs))
+
+	for _, pgClub := range pgClubs {
+		club := domain.Club{
+			ID:   pgClub.ID,
+			Name: pgClub.Name,
+		}
+
+		clubs = append(clubs, domain.ClubSportsmenCount{
+			Club:           club,
+			SportsmenCount: uint64(pgClub.ActiveSportsmenCount),
+		})
+	}
+
+	return clubs, nil
+}
+
 func (r *Repo) GetClubs(ctx context.Context) ([]domain.Club, error) {
 	pgClubs, err := r.conn.Queries(ctx).GetClubs(ctx)
 	if err != nil {

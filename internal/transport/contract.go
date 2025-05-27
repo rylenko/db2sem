@@ -19,6 +19,8 @@ type service interface {
 	CreateSportsman(ctx context.Context, req servicedto.CreateSportsmanRequest) error
 	DeleteSportByID(ctx context.Context, sportID int64) error
 	DeleteSportsmanByID(ctx context.Context, sportsmanID int64) error
+	GetClubActiveSportsmenCountsForPeriod(
+		ctx context.Context, startAt, endAt time.Time) ([]domain.ClubSportsmenCount, error)
 	GetClubs(ctx context.Context) ([]domain.Club, error)
 	GetPrizeWinnersByTournamentID(ctx context.Context, tournamentID int64) ([]domain.PrizeWinner, error)
 	GetSportsmanByID(ctx context.Context, sportsmanID int64) (*domain.Sportsman, error)
