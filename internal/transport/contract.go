@@ -20,6 +20,11 @@ type service interface {
 	DeleteSportByID(ctx context.Context, sportID int64) error
 	DeleteSportsmanByID(ctx context.Context, sportsmanID int64) error
 	GetInactiveSportsmenForPeriod(ctx context.Context, startAt, endAt time.Time) ([]domain.Sportsman, error)
+	GetOrganizerTournamentCountsForPeriod(
+		ctx context.Context,
+		startAt time.Time,
+		endAt time.Time,
+	) ([]domain.OrganizerTournamentsCount, error)
 	GetClubActiveSportsmenCountsForPeriod(
 		ctx context.Context, startAt, endAt time.Time) ([]domain.ClubSportsmenCount, error)
 	GetClubs(ctx context.Context) ([]domain.Club, error)

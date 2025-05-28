@@ -15,6 +15,11 @@ type repo interface {
 	DeleteSportsmanByID(ctx context.Context, sportsmanID int64) error
 	GetClubActiveSportsmenCountsForPeriod(
 		ctx context.Context, startAt, endAt time.Time) ([]domain.ClubSportsmenCount, error)
+	GetOrganizerTournamentCountsForPeriod(
+		ctx context.Context,
+		startAt time.Time,
+		endAt time.Time,
+	) ([]domain.OrganizerTournamentsCount, error)
 	GetInactiveSportsmenForPeriod(ctx context.Context, startAt, endAt time.Time) ([]domain.Sportsman, error)
 	GetClubs(ctx context.Context) ([]domain.Club, error)
 	GetOrganizers(ctx context.Context) ([]domain.Organizer, error)

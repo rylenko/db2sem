@@ -21,6 +21,10 @@
 
 	{{ range .Sports }}
 		<p><a href="/sports/{{ .ID }}">{{ .Name }}</a></p>
+
+		<form action="/sports/{{ .ID }}/delete" method="POST">
+			<button type="submit">Удалить</button>
+		</form>
 	{{ end }}
 </body>
 </html>

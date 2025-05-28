@@ -362,29 +362,39 @@ func (q *Queries) GetInactiveSportsmenForPeriod(ctx context.Context, arg GetInac
 
 const getOrganizerTournamentCountsForPeriod = `-- name: GetOrganizerTournamentCountsForPeriod :many
 SELECT
+	o.id,
 	o.name,
 	o.location,
-	COUNT(t.id)
+	COUNT(t.id) AS tournaments_count
 FROM organizers o
-LEFT JOIN tournaments t ON t.organizer_id = o.id
+LEFT JOIN tournaments t ON
+	t.organizer_id = o.id
+	AND t.start_at BETWEEN $1 AND $2
 GROUP BY
 	o.id,
 	o.name,
 	o.location
+ORDER BY COUNT(t.id) DESC
 `
 
+type GetOrganizerTournamentCountsForPeriodParams struct {
+	StartAt pgtype.Timestamptz
+	EndAt   pgtype.Timestamptz
+}
+
 type GetOrganizerTournamentCountsForPeriodRow struct {
-	Name     string
-	Location pgtype.Text
-	Count    int64
+	ID               int64
+	Name             string
+	Location         pgtype.Text
+	TournamentsCount int64
 }
 
 // Query: #12
 //
 // Получить список организаторов соревнований и число проведенных ими соревнований в
 // течение определенного периода времени.
-func (q *Queries) GetOrganizerTournamentCountsForPeriod(ctx context.Context) ([]GetOrganizerTournamentCountsForPeriodRow, error) {
-	rows, err := q.db.Query(ctx, getOrganizerTournamentCountsForPeriod)
+func (q *Queries) GetOrganizerTournamentCountsForPeriod(ctx context.Context, arg GetOrganizerTournamentCountsForPeriodParams) ([]GetOrganizerTournamentCountsForPeriodRow, error) {
+	rows, err := q.db.Query(ctx, getOrganizerTournamentCountsForPeriod, arg.StartAt, arg.EndAt)
 	if err != nil {
 		return nil, err
 	}
@@ -392,7 +402,12 @@ func (q *Queries) GetOrganizerTournamentCountsForPeriod(ctx context.Context) ([]
 	var items []GetOrganizerTournamentCountsForPeriodRow
 	for rows.Next() {
 		var i GetOrganizerTournamentCountsForPeriodRow
-		if err := rows.Scan(&i.Name, &i.Location, &i.Count); err != nil {
+		if err := rows.Scan(
+			&i.ID,
+			&i.Name,
+			&i.Location,
+			&i.TournamentsCount,
+		); err != nil {
 			return nil, err
 		}
 		items = append(items, i)

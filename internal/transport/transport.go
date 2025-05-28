@@ -379,6 +379,38 @@ func (t *Transport) RenderInactiveSportsmenPostPage(fiberCtx *fiber.Ctx) error {
 	})
 }
 
+func (t *Transport) RenderOrganizerTournamentCountsGetPage(fiberCtx *fiber.Ctx) error {
+	return fiberCtx.Render("queries/organizer_tournament_counts", fiber.Map{})
+}
+
+func (t *Transport) RenderOrganizerTournamentCountsPostPage(fiberCtx *fiber.Ctx) error {
+	var form getOrganizerTournamentCountsForm
+	if err := t.requestReader.ReadAndValidateFiberBody(fiberCtx, &form); err != nil {
+		return fmt.Errorf("parse body: %w", err)
+	}
+
+	startAt, err := time.Parse("2006-01-02T15:04", form.StartAt)
+	if err != nil {
+		return fiberCtx.Status(fiber.StatusBadRequest).SendString("Invalid start date format")
+	}
+
+	endAt, err := time.Parse("2006-01-02T15:04", form.EndAt)
+	if err != nil {
+		return fiberCtx.Status(fiber.StatusBadRequest).SendString("Invalid end date format")
+	}
+
+	serviceOrganizers, err := t.service.GetOrganizerTournamentCountsForPeriod(fiberCtx.Context(), startAt, endAt)
+	if err != nil {
+		return fmt.Errorf("get tournaments: %w", err)
+	}
+
+	organizer := models.ConvertFromServiceOrganizerTournamentCounts(serviceOrganizers)
+
+	return fiberCtx.Render("queries/organizer_tournament_counts", fiber.Map{
+		"OrganizerTournamentCounts": organizer,
+	})
+}
+
 func (t *Transport) RenderClubActiveSportsmenCountsGetPage(fiberCtx *fiber.Ctx) error {
 	return fiberCtx.Render("queries/club_active_sportsmen_counts", fiber.Map{})
 }

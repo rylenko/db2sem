@@ -5,3 +5,8 @@ type Organizer struct {
 	Name     string
 	Location *string
 }
+
+type OrganizerTournamentsCount struct {
+	Organizer
+	TournamentsCount uint64
+}

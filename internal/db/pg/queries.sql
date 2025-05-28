@@ -351,15 +351,19 @@ ORDER BY sm.name;
 --
 -- name: GetOrganizerTournamentCountsForPeriod :many
 SELECT
+	o.id,
 	o.name,
 	o.location,
-	COUNT(t.id)
+	COUNT(t.id) AS tournaments_count
 FROM organizers o
-LEFT JOIN tournaments t ON t.organizer_id = o.id
+LEFT JOIN tournaments t ON
+	t.organizer_id = o.id
+	AND t.start_at BETWEEN @start_at AND @end_at
 GROUP BY
 	o.id,
 	o.name,
-	o.location;
+	o.location
+ORDER BY COUNT(t.id) DESC;
 
 -- Query: #13
 --

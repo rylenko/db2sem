@@ -790,6 +790,44 @@ func (r *Repo) GetTrainers(ctx context.Context) ([]domain.Trainer, error) {
 	return trainers, nil
 }
 
+func (r *Repo) GetOrganizerTournamentCountsForPeriod(
+	ctx context.Context,
+	startAt time.Time,
+	endAt time.Time,
+) ([]domain.OrganizerTournamentsCount, error) {
+	pgOrganizers, err := r.conn.Queries(ctx).GetOrganizerTournamentCountsForPeriod(
+		ctx,
+		pg.GetOrganizerTournamentCountsForPeriodParams{
+			StartAt: convertToPgTimestamptz(startAt),
+			EndAt:   convertToPgTimestamptz(endAt),
+		},
+	)
+	if err != nil {
+		if errors.Is(err, pgx.ErrNoRows) {
+			return nil, nil
+		}
+
+		return nil, fmt.Errorf("query: %w", err)
+	}
+
+	organizers := make([]domain.OrganizerTournamentsCount, 0, len(pgOrganizers))
+
+	for _, pgOrganizer := range pgOrganizers {
+		organizer := domain.Organizer{
+			ID:       pgOrganizer.ID,
+			Name:     pgOrganizer.Name,
+			Location: convertFromPgText(pgOrganizer.Location),
+		}
+
+		organizers = append(organizers, domain.OrganizerTournamentsCount{
+			Organizer:        organizer,
+			TournamentsCount: uint64(pgOrganizer.TournamentsCount),
+		})
+	}
+
+	return organizers, nil
+}
+
 func (r *Repo) GetOrganizers(ctx context.Context) ([]domain.Organizer, error) {
 	pgOrganizers, err := r.conn.Queries(ctx).GetOrganizers(ctx)
 	if err != nil {
