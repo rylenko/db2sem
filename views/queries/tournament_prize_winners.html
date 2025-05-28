@@ -21,6 +21,7 @@
 			<p>Рост: {{ .HeightCm }} см.</p>
 			<p>Вес: {{ .WeightKg }} кг.</p>
 			<p>Виды спорта: {{ JoinSportsWithComma .Sports }}</p>
+			<p>Клуб: {{ .Club.Name }} ID: {{ .Club.ID }}</p>
 
 			<hr/>
 		{{ end }}

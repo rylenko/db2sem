@@ -324,11 +324,15 @@ ORDER BY t.name;
 --
 -- name: GetInactiveSportsmenForPeriod :many
 SELECT
+	sm.id,
 	sm.name,
 	sm.birth_date,
 	sm.height_cm,
-	sm.weight_kg
+	sm.weight_kg,
+	c.id AS club_id,
+	c.name AS club_name
 FROM sportsmen sm
+JOIN clubs c ON c.id = sm.club_id
 WHERE NOT EXISTS (
 	SELECT 1
 	FROM participations p
@@ -337,7 +341,8 @@ WHERE NOT EXISTS (
 	WHERE
 		t.start_at BETWEEN @start_at AND @end_at
 		AND p.sportsman_id = sm.id
-);
+)
+ORDER BY sm.name;
 
 -- Query: #12
 --

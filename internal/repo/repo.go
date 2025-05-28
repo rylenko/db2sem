@@ -253,6 +253,68 @@ func (r *Repo) GetTrainersBySportID(ctx context.Context, sportID int64) ([]domai
 	return trainers, nil
 }
 
+func (r *Repo) GetInactiveSportsmenForPeriod(
+	ctx context.Context, startAt, endAt time.Time) ([]domain.Sportsman, error) {
+	pgSportsmen, err := r.conn.Queries(ctx).GetInactiveSportsmenForPeriod(ctx, pg.GetInactiveSportsmenForPeriodParams{
+		StartAt: convertToPgTimestamptz(startAt),
+		EndAt:   convertToPgTimestamptz(endAt),
+	})
+	if err != nil {
+		if errors.Is(err, pgx.ErrNoRows) {
+			return nil, nil
+		}
+
+		return nil, fmt.Errorf("query: %w", err)
+	}
+
+	sportsmen := make([]domain.Sportsman, 0, len(pgSportsmen))
+
+	for _, pgSportsman := range pgSportsmen {
+		birthDate, err := convertFromPgDate(pgSportsman.BirthDate)
+		if err != nil {
+			return nil, fmt.Errorf("birth date: %w", err)
+		}
+
+		weightKg, err := convertFromPgNumeric(pgSportsman.WeightKg)
+		if err != nil {
+			return nil, fmt.Errorf("weight kg: %w", err)
+		}
+
+		pgSports, err := r.conn.Queries(ctx).GetSportsBySportsmanID(ctx, pgSportsman.ID)
+		if err != nil && !errors.Is(err, pgx.ErrNoRows) {
+			return nil, fmt.Errorf("get sports: %w", err)
+		}
+
+		sports := make([]domain.Sport, 0, len(pgSports))
+
+		for _, pgSport := range pgSports {
+			sport := domain.Sport{
+				ID:   pgSport.ID,
+				Name: pgSport.Name,
+			}
+
+			sports = append(sports, sport)
+		}
+
+		sportsman := domain.Sportsman{
+			ID:        pgSportsman.ID,
+			Name:      pgSportsman.Name,
+			BirthDate: birthDate,
+			HeightCm:  uint16(pgSportsman.HeightCm),
+			WeightKg:  weightKg,
+			Club: domain.Club{
+				ID:   pgSportsman.ClubID,
+				Name: pgSportsman.ClubName,
+			},
+			Sports: sports,
+		}
+
+		sportsmen = append(sportsmen, sportsman)
+	}
+
+	return sportsmen, nil
+}
+
 func (r *Repo) GetSportsmen(ctx context.Context) ([]domain.Sportsman, error) {
 	pgSportsmen, err := r.conn.Queries(ctx).GetSportsmen(ctx)
 	if err != nil {

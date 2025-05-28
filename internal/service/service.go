@@ -21,6 +21,11 @@ func (s *Service) CreateSport(ctx context.Context, name string) error {
 	return s.repo.InsertSport(ctx, name)
 }
 
+func (s *Service) GetInactiveSportsmenForPeriod(
+	ctx context.Context, startAt, endAt time.Time) ([]domain.Sportsman, error) {
+	return s.repo.GetInactiveSportsmenForPeriod(ctx, startAt, endAt)
+}
+
 func (s *Service) CreateSportsman(ctx context.Context, req dto.CreateSportsmanRequest) error {
 	return s.repo.InsertSportsman(ctx, repodto.InsertSportsmanRequest{
 		Name:      req.Name,

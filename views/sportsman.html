@@ -32,7 +32,7 @@
 		<label for="club_id">Клуб:</label>
 		<select id="club_id" name="club_id">
 			{{ range .Clubs }}
-				<option value="{{ .ID }}" {{ if (eq .ID $SportsmanClub.ID) }}selected{{ end }}>{{ .Name }}</option>
+				<option value="{{ .ID }}" {{ if (eq .ID $SportsmanClub.ID) }}selected{{ end }}>{{ $SportsmanClub.Name }} ID: {{ $SportsmanClub.ID }}</option>
 			{{ end }}
 		</select>
 

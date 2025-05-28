@@ -292,11 +292,15 @@ func (q *Queries) GetGymPlaces(ctx context.Context, arg GetGymPlacesParams) ([]G
 
 const getInactiveSportsmenForPeriod = `-- name: GetInactiveSportsmenForPeriod :many
 SELECT
+	sm.id,
 	sm.name,
 	sm.birth_date,
 	sm.height_cm,
-	sm.weight_kg
+	sm.weight_kg,
+	c.id AS club_id,
+	c.name AS club_name
 FROM sportsmen sm
+JOIN clubs c ON c.id = sm.club_id
 WHERE NOT EXISTS (
 	SELECT 1
 	FROM participations p
@@ -306,6 +310,7 @@ WHERE NOT EXISTS (
 		t.start_at BETWEEN $1 AND $2
 		AND p.sportsman_id = sm.id
 )
+ORDER BY sm.name
 `
 
 type GetInactiveSportsmenForPeriodParams struct {
@@ -314,10 +319,13 @@ type GetInactiveSportsmenForPeriodParams struct {
 }
 
 type GetInactiveSportsmenForPeriodRow struct {
+	ID        int64
 	Name      string
 	BirthDate pgtype.Date
 	HeightCm  int16
 	WeightKg  pgtype.Numeric
+	ClubID    int64
+	ClubName  string
 }
 
 // Query: #11
@@ -334,10 +342,13 @@ func (q *Queries) GetInactiveSportsmenForPeriod(ctx context.Context, arg GetInac
 	for rows.Next() {
 		var i GetInactiveSportsmenForPeriodRow
 		if err := rows.Scan(
+			&i.ID,
 			&i.Name,
 			&i.BirthDate,
 			&i.HeightCm,
 			&i.WeightKg,
+			&i.ClubID,
+			&i.ClubName,
 		); err != nil {
 			return nil, err
 		}

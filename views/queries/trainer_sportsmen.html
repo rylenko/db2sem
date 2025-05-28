@@ -21,6 +21,7 @@
 		<br/>
 
 		<label for="min_rank">Минимальный ранг:</label>
+		<input type="number" id="min_rank" name="min_rank">
 
 		<br/>
 
@@ -36,6 +37,7 @@
 			<p>Рост: {{ .HeightCm }} см.</p>
 			<p>Вес: {{ .WeightKg }} кг.</p>
 			<p>Виды спорта: {{ JoinSportsWithComma .Sports }}</p>
+			<p>Клуб: {{ .Club.Name }} ID: {{ .Club.ID }}</p>
 
 			<p>Ранг: {{ if .Rank }} {{ .Rank }} {{ else }} - {{ end }}</p>
 

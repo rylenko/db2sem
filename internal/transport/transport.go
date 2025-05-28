@@ -347,6 +347,38 @@ func (t *Transport) RenderPlaceTournamentsPostPage(fiberCtx *fiber.Ctx) error {
 	})
 }
 
+func (t *Transport) RenderInactiveSportsmenGetPage(fiberCtx *fiber.Ctx) error {
+	return fiberCtx.Render("queries/inactive_sportsmen", fiber.Map{})
+}
+
+func (t *Transport) RenderInactiveSportsmenPostPage(fiberCtx *fiber.Ctx) error {
+	var form getInactiveSportsmenForm
+	if err := t.requestReader.ReadAndValidateFiberBody(fiberCtx, &form); err != nil {
+		return fmt.Errorf("parse body: %w", err)
+	}
+
+	startAt, err := time.Parse("2006-01-02T15:04", form.StartAt)
+	if err != nil {
+		return fiberCtx.Status(fiber.StatusBadRequest).SendString("Invalid start date format")
+	}
+
+	endAt, err := time.Parse("2006-01-02T15:04", form.EndAt)
+	if err != nil {
+		return fiberCtx.Status(fiber.StatusBadRequest).SendString("Invalid end date format")
+	}
+
+	serviceSportsmen, err := t.service.GetInactiveSportsmenForPeriod(fiberCtx.Context(), startAt, endAt)
+	if err != nil {
+		return fmt.Errorf("get sportsmen: %w", err)
+	}
+
+	sportsmen := models.ConvertFromServiceSportsmen(serviceSportsmen)
+
+	return fiberCtx.Render("queries/inactive_sportsmen", fiber.Map{
+		"Sportsmen": sportsmen,
+	})
+}
+
 func (t *Transport) RenderClubActiveSportsmenCountsGetPage(fiberCtx *fiber.Ctx) error {
 	return fiberCtx.Render("queries/club_active_sportsmen_counts", fiber.Map{})
 }
