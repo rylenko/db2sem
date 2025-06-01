@@ -1,0 +1,33 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<title>Запрос 13</title>
+</head>
+<body>
+	<h1><a href="/queries">Назад</a></h1>
+
+	<h1>Запрос 13.</h1>
+
+	<p>Получить перечень спортивных сооружений и даты проведения на них соревнований в течение определенного периода времени.</p>
+
+	<form method="POST">
+		<label for="start_at">Начало периода:</label>
+		<input type="datetime-local" name="start_at" required>
+		<br/>
+
+		<label for="end_at">Конец периода:</label>
+		<input type="datetime-local" name="end_at" required>
+		<br/>
+
+		<button type="submit">Получить места и даты соревнований</button>
+	</form>
+
+	<h3>Места и даты соревнований:</h3>
+
+	{{ if .Places }}
+		{{ range .Places }}
+			<p>{{ .Name }} ({{ .TypeName }}), {{ .Location }}: {{ JoinStringsWithComma .TournamentDateStrings }}</p>
+		{{ end }}
+	{{ end }}
+</body>
+</html>

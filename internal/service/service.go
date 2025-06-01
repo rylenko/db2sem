@@ -17,6 +17,47 @@ func New(repo repo) *Service {
 	return &Service{repo: repo}
 }
 
+func (s *Service) GetPlacesWithTournamentDatesForPeriod(
+	ctx context.Context,
+	startAt time.Time,
+	endAt time.Time,
+) ([]domain.PlaceWithTournamentDates, error) {
+	return s.repo.GetPlacesWithTournamentDatesForPeriod(ctx, startAt, endAt)
+}
+
+func (s *Service) GetGyms(ctx context.Context, req dto.GetGymsRequest) ([]domain.Gym, error) {
+	return s.repo.GetGyms(ctx, repodto.GetGymsRequest{
+		TrainersCount:  req.TrainersCount,
+		DumbbellsCount: req.DumbbellsCount,
+		HasBathhouse:   req.HasBathhouse,
+	})
+}
+
+func (s *Service) GetCourts(ctx context.Context, req dto.GetCourtsRequest) ([]domain.Court, error) {
+	return s.repo.GetCourts(ctx, repodto.GetCourtsRequest{
+		WidthCm:   req.WidthCm,
+		LengthCm:  req.LengthCm,
+		IsOutdoor: req.IsOutdoor,
+	})
+}
+
+func (s *Service) GetStadiums(ctx context.Context, req dto.GetStadiumsRequest) ([]domain.Stadium, error) {
+	return s.repo.GetStadiums(ctx, repodto.GetStadiumsRequest{
+		WidthCm:       req.WidthCm,
+		LengthCm:      req.LengthCm,
+		MaxSpectators: req.MaxSpectators,
+		IsOutdoor:     req.IsOutdoor,
+		Coating:       req.Coating,
+	})
+}
+
+func (s *Service) GetArenas(ctx context.Context, req dto.GetArenasRequest) ([]domain.Arena, error) {
+	return s.repo.GetArenas(ctx, repodto.GetArenasRequest{
+		RefereesCount:     req.RefereesCount,
+		TreadmillLengthCm: req.TreadmillLengthCm,
+	})
+}
+
 func (s *Service) CreateSport(ctx context.Context, name string) error {
 	return s.repo.InsertSport(ctx, name)
 }

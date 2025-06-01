@@ -9,6 +9,12 @@ import (
 )
 
 type repo interface {
+	GetPlacesWithTournamentDatesForPeriod(
+		ctx context.Context, startAt, endAt time.Time) ([]domain.PlaceWithTournamentDates, error)
+	GetArenas(ctx context.Context, req repodto.GetArenasRequest) ([]domain.Arena, error)
+	GetStadiums(ctx context.Context, req repodto.GetStadiumsRequest) ([]domain.Stadium, error)
+	GetGyms(ctx context.Context, req repodto.GetGymsRequest) ([]domain.Gym, error)
+	GetCourts(ctx context.Context, req repodto.GetCourtsRequest) ([]domain.Court, error)
 	InsertSport(ctx context.Context, name string) error
 	InsertSportsman(ctx context.Context, req repodto.InsertSportsmanRequest) error
 	DeleteSportByID(ctx context.Context, sportID int64) error

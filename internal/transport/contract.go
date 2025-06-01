@@ -15,6 +15,12 @@ type requestReader interface {
 }
 
 type service interface {
+	GetPlacesWithTournamentDatesForPeriod(
+		ctx context.Context, startAt, endAt time.Time) ([]domain.PlaceWithTournamentDates, error)
+	GetArenas(ctx context.Context, req servicedto.GetArenasRequest) ([]domain.Arena, error)
+	GetStadiums(ctx context.Context, req servicedto.GetStadiumsRequest) ([]domain.Stadium, error)
+	GetGyms(ctx context.Context, req servicedto.GetGymsRequest) ([]domain.Gym, error)
+	GetCourts(ctx context.Context, req servicedto.GetCourtsRequest) ([]domain.Court, error)
 	CreateSport(ctx context.Context, name string) error
 	CreateSportsman(ctx context.Context, req servicedto.CreateSportsmanRequest) error
 	DeleteSportByID(ctx context.Context, sportID int64) error

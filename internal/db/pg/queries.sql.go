@@ -37,10 +37,13 @@ func (q *Queries) DeleteSportsmanByID(ctx context.Context, id int64) error {
 	return err
 }
 
-const getArenaPlaces = `-- name: GetArenaPlaces :many
+const getArenas = `-- name: GetArenas :many
 SELECT
+	p.id,
 	p.name,
-	p.location
+	p.location,
+	aa.referees_count,
+	aa.treadmill_length_cm
 FROM places p
 JOIN arena_attributes aa ON aa.place_id = p.id
 WHERE
@@ -54,14 +57,17 @@ WHERE
 	)
 `
 
-type GetArenaPlacesParams struct {
+type GetArenasParams struct {
 	RefereesCount     pgtype.Int2
 	TreadmillLengthCm pgtype.Int8
 }
 
-type GetArenaPlacesRow struct {
-	Name     string
-	Location string
+type GetArenasRow struct {
+	ID                int64
+	Name              string
+	Location          string
+	RefereesCount     int16
+	TreadmillLengthCm int64
 }
 
 // Query #1.1
@@ -69,16 +75,22 @@ type GetArenaPlacesRow struct {
 // Получить перечень спортивных сооружений указанного типа в целом или
 // удовлетворяющих заданным характеристикам (например, стадионы, вмещающие не менее
 // указанного числа зрителей).
-func (q *Queries) GetArenaPlaces(ctx context.Context, arg GetArenaPlacesParams) ([]GetArenaPlacesRow, error) {
-	rows, err := q.db.Query(ctx, getArenaPlaces, arg.RefereesCount, arg.TreadmillLengthCm)
+func (q *Queries) GetArenas(ctx context.Context, arg GetArenasParams) ([]GetArenasRow, error) {
+	rows, err := q.db.Query(ctx, getArenas, arg.RefereesCount, arg.TreadmillLengthCm)
 	if err != nil {
 		return nil, err
 	}
 	defer rows.Close()
-	var items []GetArenaPlacesRow
+	var items []GetArenasRow
 	for rows.Next() {
-		var i GetArenaPlacesRow
-		if err := rows.Scan(&i.Name, &i.Location); err != nil {
+		var i GetArenasRow
+		if err := rows.Scan(
+			&i.ID,
+			&i.Name,
+			&i.Location,
+			&i.RefereesCount,
+			&i.TreadmillLengthCm,
+		); err != nil {
 			return nil, err
 		}
 		items = append(items, i)
@@ -176,10 +188,14 @@ func (q *Queries) GetClubs(ctx context.Context) ([]GetClubsRow, error) {
 	return items, nil
 }
 
-const getCourtPlaces = `-- name: GetCourtPlaces :many
+const getCourts = `-- name: GetCourts :many
 SELECT
+	p.id,
 	p.name,
-	p.location
+	p.location,
+	ca.width_cm,
+	ca.length_cm,
+	ca.is_outdoor
 FROM places p
 JOIN court_attributes ca ON ca.place_id = p.id
 WHERE
@@ -197,15 +213,19 @@ WHERE
 	)
 `
 
-type GetCourtPlacesParams struct {
+type GetCourtsParams struct {
 	WidthCm   pgtype.Int8
 	LengthCm  pgtype.Int8
 	IsOutdoor pgtype.Bool
 }
 
-type GetCourtPlacesRow struct {
-	Name     string
-	Location string
+type GetCourtsRow struct {
+	ID        int64
+	Name      string
+	Location  string
+	WidthCm   int64
+	LengthCm  int64
+	IsOutdoor bool
 }
 
 // Query #1.3
@@ -213,16 +233,23 @@ type GetCourtPlacesRow struct {
 // Получить перечень спортивных сооружений указанного типа в целом или
 // удовлетворяющих заданным характеристикам (например, стадионы, вмещающие не менее
 // указанного числа зрителей).
-func (q *Queries) GetCourtPlaces(ctx context.Context, arg GetCourtPlacesParams) ([]GetCourtPlacesRow, error) {
-	rows, err := q.db.Query(ctx, getCourtPlaces, arg.WidthCm, arg.LengthCm, arg.IsOutdoor)
+func (q *Queries) GetCourts(ctx context.Context, arg GetCourtsParams) ([]GetCourtsRow, error) {
+	rows, err := q.db.Query(ctx, getCourts, arg.WidthCm, arg.LengthCm, arg.IsOutdoor)
 	if err != nil {
 		return nil, err
 	}
 	defer rows.Close()
-	var items []GetCourtPlacesRow
+	var items []GetCourtsRow
 	for rows.Next() {
-		var i GetCourtPlacesRow
-		if err := rows.Scan(&i.Name, &i.Location); err != nil {
+		var i GetCourtsRow
+		if err := rows.Scan(
+			&i.ID,
+			&i.Name,
+			&i.Location,
+			&i.WidthCm,
+			&i.LengthCm,
+			&i.IsOutdoor,
+		); err != nil {
 			return nil, err
 		}
 		items = append(items, i)
@@ -233,10 +260,14 @@ func (q *Queries) GetCourtPlaces(ctx context.Context, arg GetCourtPlacesParams) 
 	return items, nil
 }
 
-const getGymPlaces = `-- name: GetGymPlaces :many
+const getGyms = `-- name: GetGyms :many
 SELECT
+	p.id,
 	p.name,
-	p.location
+	p.location,
+	ga.trainers_count,
+	ga.dumbbells_count,
+	ga.has_bathhouse
 FROM places p
 JOIN gym_attributes ga ON ga.place_id = p.id
 WHERE
@@ -254,15 +285,19 @@ WHERE
 	)
 `
 
-type GetGymPlacesParams struct {
+type GetGymsParams struct {
 	TrainersCount  pgtype.Int2
 	DumbbellsCount pgtype.Int2
 	HasBathhouse   pgtype.Bool
 }
 
-type GetGymPlacesRow struct {
-	Name     string
-	Location string
+type GetGymsRow struct {
+	ID             int64
+	Name           string
+	Location       string
+	TrainersCount  int16
+	DumbbellsCount int16
+	HasBathhouse   bool
 }
 
 // Query #1.4
@@ -270,16 +305,23 @@ type GetGymPlacesRow struct {
 // Получить перечень спортивных сооружений указанного типа в целом или
 // удовлетворяющих заданным характеристикам (например, стадионы, вмещающие не менее
 // указанного числа зрителей).
-func (q *Queries) GetGymPlaces(ctx context.Context, arg GetGymPlacesParams) ([]GetGymPlacesRow, error) {
-	rows, err := q.db.Query(ctx, getGymPlaces, arg.TrainersCount, arg.DumbbellsCount, arg.HasBathhouse)
+func (q *Queries) GetGyms(ctx context.Context, arg GetGymsParams) ([]GetGymsRow, error) {
+	rows, err := q.db.Query(ctx, getGyms, arg.TrainersCount, arg.DumbbellsCount, arg.HasBathhouse)
 	if err != nil {
 		return nil, err
 	}
 	defer rows.Close()
-	var items []GetGymPlacesRow
+	var items []GetGymsRow
 	for rows.Next() {
-		var i GetGymPlacesRow
-		if err := rows.Scan(&i.Name, &i.Location); err != nil {
+		var i GetGymsRow
+		if err := rows.Scan(
+			&i.ID,
+			&i.Name,
+			&i.Location,
+			&i.TrainersCount,
+			&i.DumbbellsCount,
+			&i.HasBathhouse,
+		); err != nil {
 			return nil, err
 		}
 		items = append(items, i)
@@ -456,55 +498,6 @@ func (q *Queries) GetOrganizers(ctx context.Context) ([]GetOrganizersRow, error)
 	return items, nil
 }
 
-const getPlaceTournamentDatesForPeriod = `-- name: GetPlaceTournamentDatesForPeriod :many
-SELECT
-	p.name,
-	p.location,
-	ARRAY_AGG(t.start_at)::TIMESTAMPTZ[] as dates
-FROM places p
-LEFT JOIN tournaments t ON t.place_id = p.id
-WHERE t.start_at BETWEEN $1 AND $2
-GROUP BY
-	p.id,
-	p.name,
-	p.location
-`
-
-type GetPlaceTournamentDatesForPeriodParams struct {
-	StartAt pgtype.Timestamptz
-	EndAt   pgtype.Timestamptz
-}
-
-type GetPlaceTournamentDatesForPeriodRow struct {
-	Name     string
-	Location string
-	Dates    []pgtype.Timestamptz
-}
-
-// Query: #13
-//
-// Получить перечень спортивных сооружений и даты проведения на них соревнований в
-// течение определенного периода времени.
-func (q *Queries) GetPlaceTournamentDatesForPeriod(ctx context.Context, arg GetPlaceTournamentDatesForPeriodParams) ([]GetPlaceTournamentDatesForPeriodRow, error) {
-	rows, err := q.db.Query(ctx, getPlaceTournamentDatesForPeriod, arg.StartAt, arg.EndAt)
-	if err != nil {
-		return nil, err
-	}
-	defer rows.Close()
-	var items []GetPlaceTournamentDatesForPeriodRow
-	for rows.Next() {
-		var i GetPlaceTournamentDatesForPeriodRow
-		if err := rows.Scan(&i.Name, &i.Location, &i.Dates); err != nil {
-			return nil, err
-		}
-		items = append(items, i)
-	}
-	if err := rows.Err(); err != nil {
-		return nil, err
-	}
-	return items, nil
-}
-
 const getPlaces = `-- name: GetPlaces :many
 SELECT
 	p.id,
@@ -539,6 +532,69 @@ func (q *Queries) GetPlaces(ctx context.Context) ([]GetPlacesRow, error) {
 			&i.Name,
 			&i.Location,
 			&i.TypeName,
+		); err != nil {
+			return nil, err
+		}
+		items = append(items, i)
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
+}
+
+const getPlacesWithTournamentDatesForPeriod = `-- name: GetPlacesWithTournamentDatesForPeriod :many
+SELECT
+	p.id,
+	p.name,
+	p.location,
+	pt.name AS type_name,
+	ARRAY_AGG(t.start_at)::TIMESTAMPTZ[] AS tournament_dates
+FROM places p
+JOIN place_types pt ON pt.id = p.type_id
+LEFT JOIN tournaments t
+	ON t.place_id = p.id
+	AND t.start_at BETWEEN $1 AND $2
+GROUP BY
+	p.id,
+	p.name,
+	p.location,
+	pt.name
+ORDER BY p.name
+`
+
+type GetPlacesWithTournamentDatesForPeriodParams struct {
+	StartAt pgtype.Timestamptz
+	EndAt   pgtype.Timestamptz
+}
+
+type GetPlacesWithTournamentDatesForPeriodRow struct {
+	ID              int64
+	Name            string
+	Location        string
+	TypeName        string
+	TournamentDates []pgtype.Timestamptz
+}
+
+// Query: #13
+//
+// Получить перечень спортивных сооружений и даты проведения на них соревнований в
+// течение определенного периода времени.
+func (q *Queries) GetPlacesWithTournamentDatesForPeriod(ctx context.Context, arg GetPlacesWithTournamentDatesForPeriodParams) ([]GetPlacesWithTournamentDatesForPeriodRow, error) {
+	rows, err := q.db.Query(ctx, getPlacesWithTournamentDatesForPeriod, arg.StartAt, arg.EndAt)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	var items []GetPlacesWithTournamentDatesForPeriodRow
+	for rows.Next() {
+		var i GetPlacesWithTournamentDatesForPeriodRow
+		if err := rows.Scan(
+			&i.ID,
+			&i.Name,
+			&i.Location,
+			&i.TypeName,
+			&i.TournamentDates,
 		); err != nil {
 			return nil, err
 		}
@@ -1034,10 +1090,16 @@ func (q *Queries) GetSportsmenInvolvedInSeveralSports(ctx context.Context) ([]Ge
 	return items, nil
 }
 
-const getStadiumPlaces = `-- name: GetStadiumPlaces :many
+const getStadiums = `-- name: GetStadiums :many
 SELECT
+	p.id,
 	p.name,
-	p.location
+	p.location,
+	sa.width_cm,
+	sa.length_cm,
+	sa.max_spectators,
+	sa.is_outdoor,
+	sa.coating
 FROM places p
 JOIN stadium_attributes sa ON sa.place_id = p.id
 WHERE
@@ -1063,7 +1125,7 @@ WHERE
 	)
 `
 
-type GetStadiumPlacesParams struct {
+type GetStadiumsParams struct {
 	WidthCm       pgtype.Int8
 	LengthCm      pgtype.Int8
 	MaxSpectators pgtype.Int2
@@ -1071,9 +1133,15 @@ type GetStadiumPlacesParams struct {
 	Coating       pgtype.Text
 }
 
-type GetStadiumPlacesRow struct {
-	Name     string
-	Location string
+type GetStadiumsRow struct {
+	ID            int64
+	Name          string
+	Location      string
+	WidthCm       int64
+	LengthCm      int64
+	MaxSpectators int16
+	IsOutdoor     bool
+	Coating       string
 }
 
 // Query #1.2
@@ -1081,8 +1149,8 @@ type GetStadiumPlacesRow struct {
 // Получить перечень спортивных сооружений указанного типа в целом или
 // удовлетворяющих заданным характеристикам (например, стадионы, вмещающие не менее
 // указанного числа зрителей).
-func (q *Queries) GetStadiumPlaces(ctx context.Context, arg GetStadiumPlacesParams) ([]GetStadiumPlacesRow, error) {
-	rows, err := q.db.Query(ctx, getStadiumPlaces,
+func (q *Queries) GetStadiums(ctx context.Context, arg GetStadiumsParams) ([]GetStadiumsRow, error) {
+	rows, err := q.db.Query(ctx, getStadiums,
 		arg.WidthCm,
 		arg.LengthCm,
 		arg.MaxSpectators,
@@ -1093,10 +1161,19 @@ func (q *Queries) GetStadiumPlaces(ctx context.Context, arg GetStadiumPlacesPara
 		return nil, err
 	}
 	defer rows.Close()
-	var items []GetStadiumPlacesRow
+	var items []GetStadiumsRow
 	for rows.Next() {
-		var i GetStadiumPlacesRow
-		if err := rows.Scan(&i.Name, &i.Location); err != nil {
+		var i GetStadiumsRow
+		if err := rows.Scan(
+			&i.ID,
+			&i.Name,
+			&i.Location,
+			&i.WidthCm,
+			&i.LengthCm,
+			&i.MaxSpectators,
+			&i.IsOutdoor,
+			&i.Coating,
+		); err != nil {
 			return nil, err
 		}
 		items = append(items, i)

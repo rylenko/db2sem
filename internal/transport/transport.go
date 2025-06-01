@@ -443,6 +443,38 @@ func (t *Transport) RenderClubActiveSportsmenCountsPostPage(fiberCtx *fiber.Ctx)
 	})
 }
 
+func (t *Transport) RenderPlacesWithTournamentDatesGetPage(fiberCtx *fiber.Ctx) error {
+	return fiberCtx.Render("queries/places_with_tournament_dates", fiber.Map{})
+}
+
+func (t *Transport) RenderPlacesWithTournamentDatesPostPage(fiberCtx *fiber.Ctx) error {
+	var form getPlacesWithTournamentDatesForm
+	if err := t.requestReader.ReadAndValidateFiberBody(fiberCtx, &form); err != nil {
+		return fmt.Errorf("parse body: %w", err)
+	}
+
+	startAt, err := time.Parse("2006-01-02T15:04", form.StartAt)
+	if err != nil {
+		return fiberCtx.Status(fiber.StatusBadRequest).SendString("Invalid start date format")
+	}
+
+	endAt, err := time.Parse("2006-01-02T15:04", form.EndAt)
+	if err != nil {
+		return fiberCtx.Status(fiber.StatusBadRequest).SendString("Invalid end date format")
+	}
+
+	servicePlaces, err := t.service.GetPlacesWithTournamentDatesForPeriod(fiberCtx.Context(), startAt, endAt)
+	if err != nil {
+		return fmt.Errorf("get places: %w", err)
+	}
+
+	places := models.ConvertFromServicePlacesWithTournamentDates(servicePlaces)
+
+	return fiberCtx.Render("queries/places_with_tournament_dates", fiber.Map{
+		"Places": places,
+	})
+}
+
 func (t *Transport) RenderTournamentsForPeriodGetPage(fiberCtx *fiber.Ctx) error {
 	serviceOrganizers, err := t.service.GetOrganizers(fiberCtx.Context())
 	if err != nil {

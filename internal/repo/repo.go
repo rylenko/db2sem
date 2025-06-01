@@ -21,6 +21,136 @@ func New(conn pg.Conn) *Repo {
 	return &Repo{conn: conn}
 }
 
+func (r *Repo) GetCourts(ctx context.Context, req dto.GetCourtsRequest) ([]domain.Court, error) {
+	pgPlaces, err := r.conn.Queries(ctx).GetCourts(ctx, pg.GetCourtsParams{
+		WidthCm:   convertToPgInt8(req.WidthCm),
+		LengthCm:  convertToPgInt8(req.LengthCm),
+		IsOutdoor: convertToPgBool(req.IsOutdoor),
+	})
+	if err != nil {
+		if errors.Is(err, pgx.ErrNoRows) {
+			return nil, nil
+		}
+
+		return nil, fmt.Errorf("query: %w", err)
+	}
+
+	places := make([]domain.Court, 0, len(pgPlaces))
+
+	for _, pgPlace := range pgPlaces {
+		place := domain.Court{
+			ID:        pgPlace.ID,
+			Name:      pgPlace.Name,
+			Location:  pgPlace.Location,
+			WidthCm:   pgPlace.WidthCm,
+			LengthCm:  pgPlace.LengthCm,
+			IsOutdoor: pgPlace.IsOutdoor,
+		}
+
+		places = append(places, place)
+	}
+
+	return places, nil
+}
+
+func (r *Repo) GetGyms(ctx context.Context, req dto.GetGymsRequest) ([]domain.Gym, error) {
+	pgPlaces, err := r.conn.Queries(ctx).GetGyms(ctx, pg.GetGymsParams{
+		TrainersCount:  convertToPgInt2(req.TrainersCount),
+		DumbbellsCount: convertToPgInt2(req.DumbbellsCount),
+		HasBathhouse:   convertToPgBool(req.HasBathhouse),
+	})
+	if err != nil {
+		if errors.Is(err, pgx.ErrNoRows) {
+			return nil, nil
+		}
+
+		return nil, fmt.Errorf("query: %w", err)
+	}
+
+	places := make([]domain.Gym, 0, len(pgPlaces))
+
+	for _, pgPlace := range pgPlaces {
+		place := domain.Gym{
+			ID:             pgPlace.ID,
+			Name:           pgPlace.Name,
+			Location:       pgPlace.Location,
+			TrainersCount:  pgPlace.TrainersCount,
+			DumbbellsCount: pgPlace.DumbbellsCount,
+			HasBathhouse:   pgPlace.HasBathhouse,
+		}
+
+		places = append(places, place)
+	}
+
+	return places, nil
+}
+
+func (r *Repo) GetStadiums(ctx context.Context, req dto.GetStadiumsRequest) ([]domain.Stadium, error) {
+	pgPlaces, err := r.conn.Queries(ctx).GetStadiums(ctx, pg.GetStadiumsParams{
+		MaxSpectators: convertToPgInt2(req.MaxSpectators),
+		WidthCm:       convertToPgInt8(req.WidthCm),
+		LengthCm:      convertToPgInt8(req.LengthCm),
+		IsOutdoor:     convertToPgBool(req.IsOutdoor),
+		Coating:       convertToPgText(req.Coating),
+	})
+	if err != nil {
+		if errors.Is(err, pgx.ErrNoRows) {
+			return nil, nil
+		}
+
+		return nil, fmt.Errorf("query: %w", err)
+	}
+
+	places := make([]domain.Stadium, 0, len(pgPlaces))
+
+	for _, pgPlace := range pgPlaces {
+		place := domain.Stadium{
+			ID:            pgPlace.ID,
+			Name:          pgPlace.Name,
+			Location:      pgPlace.Location,
+			WidthCm:       pgPlace.WidthCm,
+			LengthCm:      pgPlace.LengthCm,
+			MaxSpectators: pgPlace.MaxSpectators,
+			IsOutdoor:     pgPlace.IsOutdoor,
+			Coating:       pgPlace.Coating,
+		}
+
+		places = append(places, place)
+	}
+
+	return places, nil
+}
+
+func (r *Repo) GetArenas(ctx context.Context, req dto.GetArenasRequest) ([]domain.Arena, error) {
+	pgPlaces, err := r.conn.Queries(ctx).GetArenas(ctx, pg.GetArenasParams{
+		RefereesCount:     convertToPgInt2(req.RefereesCount),
+		TreadmillLengthCm: convertToPgInt8(req.TreadmillLengthCm),
+	})
+	if err != nil {
+		if errors.Is(err, pgx.ErrNoRows) {
+			return nil, nil
+		}
+
+		return nil, fmt.Errorf("query: %w", err)
+	}
+
+	places := make([]domain.Arena, 0, len(pgPlaces))
+
+	for _, pgPlace := range pgPlaces {
+		place := domain.Arena{
+			ID:                pgPlace.ID,
+			Name:              pgPlace.Name,
+			Location:          pgPlace.Location,
+			RefereesCount:     pgPlace.RefereesCount,
+			TreadmillLengthCm: pgPlace.TreadmillLengthCm,
+		}
+
+		places = append(places, place)
+	}
+
+	return places, nil
+}
+
 func (r *Repo) DeleteSportByID(ctx context.Context, sportID int64) error {
 	return r.conn.Queries(ctx).DeleteSportByID(ctx, sportID)
 }
@@ -874,6 +1004,53 @@ func (r *Repo) GetPlaces(ctx context.Context) ([]domain.Place, error) {
 		}
 
 		places = append(places, place)
+	}
+
+	return places, nil
+}
+
+func (r *Repo) GetPlacesWithTournamentDatesForPeriod(
+	ctx context.Context, startAt, endAt time.Time) ([]domain.PlaceWithTournamentDates, error) {
+	pgPlaces, err := r.conn.Queries(ctx).GetPlacesWithTournamentDatesForPeriod(
+		ctx,
+		pg.GetPlacesWithTournamentDatesForPeriodParams{
+			StartAt: convertToPgTimestamptz(startAt),
+			EndAt:   convertToPgTimestamptz(endAt),
+		},
+	)
+	if err != nil {
+		if errors.Is(err, pgx.ErrNoRows) {
+			return nil, nil
+		}
+
+		return nil, fmt.Errorf("query: %w", err)
+	}
+
+	places := make([]domain.PlaceWithTournamentDates, 0, len(pgPlaces))
+
+	for _, pgPlace := range pgPlaces {
+		place := domain.Place{
+			ID:       pgPlace.ID,
+			Name:     pgPlace.Name,
+			Location: pgPlace.Location,
+			TypeName: pgPlace.TypeName,
+		}
+
+		dates := make([]time.Time, 0, len(pgPlace.TournamentDates))
+
+		for _, pgDate := range pgPlace.TournamentDates {
+			date, err := convertFromPgTimestamptz(pgDate)
+			if err != nil {
+				return nil, err
+			}
+
+			dates = append(dates, date)
+		}
+
+		places = append(places, domain.PlaceWithTournamentDates{
+			Place:           place,
+			TournamentDates: dates,
+		})
 	}
 
 	return places, nil

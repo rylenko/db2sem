@@ -255,6 +255,36 @@ func ConvertFromServiceTrainers(serviceTrainers []domain.Trainer) []Trainer {
 	return trainers
 }
 
+type PlaceWithTournamentDates struct {
+	Place
+	TournamentDateStrings []string
+}
+
+func ConvertFromServicePlaceWithTournamentDates(servicePlace domain.PlaceWithTournamentDates) PlaceWithTournamentDates {
+	dates := make([]string, 0, len(servicePlace.TournamentDates))
+
+	for _, date := range servicePlace.TournamentDates {
+		dates = append(dates, date.Format("2006-01-02"))
+	}
+
+	return PlaceWithTournamentDates{
+		Place:                 ConvertFromServicePlace(servicePlace.Place),
+		TournamentDateStrings: dates,
+	}
+}
+
+func ConvertFromServicePlacesWithTournamentDates(
+	servicePlaces []domain.PlaceWithTournamentDates) []PlaceWithTournamentDates {
+	places := make([]PlaceWithTournamentDates, 0, len(servicePlaces))
+
+	for _, servicePlace := range servicePlaces {
+		place := ConvertFromServicePlaceWithTournamentDates(servicePlace)
+		places = append(places, place)
+	}
+
+	return places
+}
+
 type Place struct {
 	ID       int64
 	Name     string

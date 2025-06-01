@@ -12,6 +12,8 @@ type transport interface {
 	RenderPlaceTournamentsGetPage(fibercCtx *fiber.Ctx) error
 	RenderPlaceTournamentsPostPage(fibercCtx *fiber.Ctx) error
 	RenderSportsmanPage(fibercCtx *fiber.Ctx) error
+	RenderPlacesWithTournamentDatesGetPage(fiberCtx *fiber.Ctx) error
+	RenderPlacesWithTournamentDatesPostPage(fiberCtx *fiber.Ctx) error
 	RenderSportsmanTrainersGetPage(fiberCtx *fiber.Ctx) error
 	RenderSportsmanTrainersPostPage(fiberCtx *fiber.Ctx) error
 	RenderSportPage(fiberCtx *fiber.Ctx) error

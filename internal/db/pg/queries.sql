@@ -4,10 +4,13 @@
 -- удовлетворяющих заданным характеристикам (например, стадионы, вмещающие не менее
 -- указанного числа зрителей).
 --
--- name: GetArenaPlaces :many
+-- name: GetArenas :many
 SELECT
+	p.id,
 	p.name,
-	p.location
+	p.location,
+	aa.referees_count,
+	aa.treadmill_length_cm
 FROM places p
 JOIN arena_attributes aa ON aa.place_id = p.id
 WHERE
@@ -26,10 +29,16 @@ WHERE
 -- удовлетворяющих заданным характеристикам (например, стадионы, вмещающие не менее
 -- указанного числа зрителей).
 --
--- name: GetStadiumPlaces :many
+-- name: GetStadiums :many
 SELECT
+	p.id,
 	p.name,
-	p.location
+	p.location,
+	sa.width_cm,
+	sa.length_cm,
+	sa.max_spectators,
+	sa.is_outdoor,
+	sa.coating
 FROM places p
 JOIN stadium_attributes sa ON sa.place_id = p.id
 WHERE
@@ -60,10 +69,14 @@ WHERE
 -- удовлетворяющих заданным характеристикам (например, стадионы, вмещающие не менее
 -- указанного числа зрителей).
 --
--- name: GetCourtPlaces :many
+-- name: GetCourts :many
 SELECT
+	p.id,
 	p.name,
-	p.location
+	p.location,
+	ca.width_cm,
+	ca.length_cm,
+	ca.is_outdoor
 FROM places p
 JOIN court_attributes ca ON ca.place_id = p.id
 WHERE
@@ -86,10 +99,14 @@ WHERE
 -- удовлетворяющих заданным характеристикам (например, стадионы, вмещающие не менее
 -- указанного числа зрителей).
 --
--- name: GetGymPlaces :many
+-- name: GetGyms :many
 SELECT
+	p.id,
 	p.name,
-	p.location
+	p.location,
+	ga.trainers_count,
+	ga.dumbbells_count,
+	ga.has_bathhouse
 FROM places p
 JOIN gym_attributes ga ON ga.place_id = p.id
 WHERE
@@ -370,18 +387,24 @@ ORDER BY COUNT(t.id) DESC;
 -- Получить перечень спортивных сооружений и даты проведения на них соревнований в
 -- течение определенного периода времени.
 --
--- name: GetPlaceTournamentDatesForPeriod :many
+-- name: GetPlacesWithTournamentDatesForPeriod :many
 SELECT
+	p.id,
 	p.name,
 	p.location,
-	ARRAY_AGG(t.start_at)::TIMESTAMPTZ[] as dates
+	pt.name AS type_name,
+	ARRAY_AGG(t.start_at)::TIMESTAMPTZ[] AS tournament_dates
 FROM places p
-LEFT JOIN tournaments t ON t.place_id = p.id
-WHERE t.start_at BETWEEN @start_at AND @end_at
+JOIN place_types pt ON pt.id = p.type_id
+LEFT JOIN tournaments t
+	ON t.place_id = p.id
+	AND t.start_at BETWEEN @start_at AND @end_at
 GROUP BY
 	p.id,
 	p.name,
-	p.location;
+	p.location,
+	pt.name
+ORDER BY p.name;
 
 -- Query: #14 (custom)
 --

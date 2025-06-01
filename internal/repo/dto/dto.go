@@ -2,6 +2,31 @@ package dto
 
 import "time"
 
+type GetArenasRequest struct {
+	RefereesCount     *int16
+	TreadmillLengthCm *int64
+}
+
+type GetStadiumsRequest struct {
+	WidthCm       *int64
+	LengthCm      *int64
+	MaxSpectators *int16
+	IsOutdoor     *bool
+	Coating       *string
+}
+
+type GetGymsRequest struct {
+	TrainersCount  *int16
+	DumbbellsCount *int16
+	HasBathhouse   *bool
+}
+
+type GetCourtsRequest struct {
+	WidthCm   *int64
+	LengthCm  *int64
+	IsOutdoor *bool
+}
+
 type InsertSportsmanRequest struct {
 	Name      string
 	BirthDate time.Time

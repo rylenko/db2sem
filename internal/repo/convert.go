@@ -8,6 +8,28 @@ import (
 	"github.com/jackc/pgx/v5/pgtype"
 )
 
+func convertToPgBool(value *bool) pgtype.Bool {
+	var pgBool pgtype.Bool
+
+	if value != nil {
+		pgBool.Bool = *value
+		pgBool.Valid = true
+	}
+
+	return pgBool
+}
+
+func convertToPgText(value *string) pgtype.Text {
+	var pgText pgtype.Text
+
+	if value != nil {
+		pgText.String = *value
+		pgText.Valid = true
+	}
+
+	return pgText
+}
+
 func convertFromPgDate(date pgtype.Date) (time.Time, error) {
 	if !date.Valid {
 		return time.Time{}, errors.New("invalid value")
