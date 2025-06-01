@@ -393,7 +393,10 @@ SELECT
 	p.name,
 	p.location,
 	pt.name AS type_name,
-	ARRAY_AGG(t.start_at)::TIMESTAMPTZ[] AS tournament_dates
+	(
+		ARRAY_AGG(t.start_at ORDER BY t.start_at DESC)
+		FILTER (WHERE t.start_at IS NOT NULL)
+	)::TIMESTAMPTZ[] AS tournament_dates
 FROM places p
 JOIN place_types pt ON pt.id = p.type_id
 LEFT JOIN tournaments t

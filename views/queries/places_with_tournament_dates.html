@@ -24,9 +24,9 @@
 
 	<h3>Места и даты соревнований:</h3>
 
-	{{ if .Places }}
-		{{ range .Places }}
-			<p>{{ .Name }} ({{ .TypeName }}), {{ .Location }}: {{ JoinStringsWithComma .TournamentDateStrings }}</p>
+	{{ if .PlacesWithTournamentDates }}
+		{{ range .PlacesWithTournamentDates }}
+			<p>{{ .Name }} ({{ .TypeName }}), {{ .Location }}:{{ if .TournamentDateStrings }} {{ JoinStringsWithComma .TournamentDateStrings }}{{ else }} - {{ end }}</p>
 		{{ end }}
 	{{ end }}
 </body>

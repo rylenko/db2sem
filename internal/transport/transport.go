@@ -471,7 +471,7 @@ func (t *Transport) RenderPlacesWithTournamentDatesPostPage(fiberCtx *fiber.Ctx)
 	places := models.ConvertFromServicePlacesWithTournamentDates(servicePlaces)
 
 	return fiberCtx.Render("queries/places_with_tournament_dates", fiber.Map{
-		"Places": places,
+		"PlacesWithTournamentDates": places,
 	})
 }
 

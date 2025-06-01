@@ -264,7 +264,7 @@ func ConvertFromServicePlaceWithTournamentDates(servicePlace domain.PlaceWithTou
 	dates := make([]string, 0, len(servicePlace.TournamentDates))
 
 	for _, date := range servicePlace.TournamentDates {
-		dates = append(dates, date.Format("2006-01-02"))
+		dates = append(dates, date.Format("02.01.2006 15:04:05"))
 	}
 
 	return PlaceWithTournamentDates{
