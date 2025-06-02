@@ -1,0 +1,30 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<title>Виды спорта</title>
+</head>
+<body>
+	<h1><a href="/">Главная</a></h1>
+
+	<h1>Создать спорт</h1>
+
+	<form method="POST">
+		<label for="name">Имя:</label>
+		<input type="text" id="name" name="name" required>
+
+		<br/>
+
+		<button type="submit">Создать</button>
+	</form>
+
+	<h1>Список видов спорта</h1>
+
+	{{ range .Sports }}
+		<p><a href="/sports/{{ .ID }}">{{ .Name }}</a></p>
+
+		<form action="/sports/{{ .ID }}/delete" method="POST">
+			<button type="submit">Удалить</button>
+		</form>
+	{{ end }}
+</body>
+</html>

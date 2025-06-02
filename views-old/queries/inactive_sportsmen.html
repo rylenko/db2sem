@@ -1,0 +1,42 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<title>Запрос 11</title>
+</head>
+<body>
+	<h1><a href="/queries">Назад</a></h1>
+
+	<h1>Запрос 11.</h1>
+
+	<p>Получить список спортсменов, не участвовавших ни в каких соревнованиях в течение определенного периода времени</p>
+
+	<form method="POST">
+		<label for="start_at">Начало периода:</label>
+		<input type="datetime-local" name="start_at" required>
+		<br/>
+
+		<label for="end_at">Конец периода:</label>
+		<input type="datetime-local" name="end_at" required>
+		<br/>
+
+		<button type="submit">Получить спортсменов</button>
+	</form>
+
+	<h3>Неактивные спортсменов:</h3>
+
+	{{ if .Sportsmen }}
+		{{ range .Sportsmen }}
+			<p><a href="/sportsmen/{{ .ID }}">{{ .Name }}</a></p>
+			<p>Дата рождения: {{ .BirthDateString }}</p>
+			<p>Рост: {{ .HeightCm }} см.</p>
+			<p>Вес: {{ .WeightKg }} кг.</p>
+			<p>Виды спорта: {{ JoinSportsWithComma .Sports }}</p>
+			<p>Клуб: {{ .Club.Name }}, ID: {{ .Club.ID }}</p>
+
+			<hr/>
+		{{ end }}
+	{{ else }}
+		<p><b>-</b></p>
+	{{ end }}
+</body>
+</html>

@@ -1,0 +1,43 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<title>Запрос 7</title>
+</head>
+<body>
+	<h1><a href="/queries">Назад</a></h1>
+
+	<h1>Запрос 7.</h1>
+
+	<p>Получение призёров соревнования.</p>
+
+
+	<h3>Призёры:</h3>
+
+	{{ if .PrizeWinners }}
+
+		{{ range .PrizeWinners }}
+			<p><b>{{ .Rank }}</b> <a href="/sportsmen/{{ .ID }}">{{ .Name }}</a></p>
+			<p>Дата рождения: {{ .BirthDateString }}</p>
+			<p>Рост: {{ .HeightCm }} см.</p>
+			<p>Вес: {{ .WeightKg }} кг.</p>
+			<p>Виды спорта: {{ JoinSportsWithComma .Sports }}</p>
+			<p>Клуб: {{ .Club.Name }} ID: {{ .Club.ID }}</p>
+
+			<hr/>
+		{{ end }}
+	{{ else }}
+		<p><b>-</b></p>
+	{{ end }}
+
+	<form method="POST">
+		<label for="tournament_id">Соревнование:</label>
+		<select id="tournament_id" name="tournament_id">
+			{{ range .Tournaments }}
+				<option value="{{ .ID }}">{{ .StartAtString }} | {{ .PlaceName }} | {{ .OrganizerName }}</option>
+			{{ end }}
+		</select>
+
+		<button type="submit">Получить призёров</button>
+	</form>
+</body>
+</html>

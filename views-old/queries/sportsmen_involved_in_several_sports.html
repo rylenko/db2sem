@@ -1,0 +1,24 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<title>Запрос 4</title>
+</head>
+<body>
+	<h1><a href="/queries">Назад</a></h1>
+
+	<h1>Запрос 4.</h1>
+
+	<p>Получить список спортсменов, занимающихся более чем одним видом спорта с указанием этих видов спорта.</p>
+
+	{{ range .Sportsmen }}
+		<p>* <a href="/sportsmen/{{ .ID }}">{{ .Name }}</a></p>
+		<p>Дата рождения: {{ .BirthDateString }}</p>
+		<p>Рост: {{ .HeightCm }} см.</p>
+		<p>Вес: {{ .WeightKg }} кг.</p>
+		<p>Виды спорта: {{ JoinSportsWithComma .Sports }}</p>
+		<p>Клуб: {{ .Club.Name }} ID: {{ .Club.ID }}</p>
+
+		<hr/>
+	{{ end }}
+</body>
+</html>

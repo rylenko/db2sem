@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<title>Запрос 12</title>
+</head>
+<body>
+	<h1><a href="/queries">Назад</a></h1>
+
+	<h1>Запрос 12.</h1>
+
+	<p>Получить список организаторов соревнований и число проведенных ими соревнований в течение определенного периода времени.</p>
+
+	<form method="POST">
+		<label for="start_at">Начало периода:</label>
+		<input type="datetime-local" name="start_at" required>
+		<br/>
+
+		<label for="end_at">Конец периода:</label>
+		<input type="datetime-local" name="end_at" required>
+		<br/>
+
+		<button type="submit">Получить организаторов</button>
+	</form>
+
+	<h3>Организаторы и количества турниров за период:</h3>
+
+	{{ if .OrganizerTournamentCounts }}
+		{{ range .OrganizerTournamentCounts }}
+			<p>Организатор: {{ .Name }}</p>
+			<p>Расположение организатора: {{ .Location }}</p>
+			<p>Количество турниров за период: {{ .TournamentsCount }}</p>
+
+			<hr/>
+		{{ end }}
+	{{ else }}
+		<p><b>-</b></p>
+	{{ end }}
+</body>
+</html>
