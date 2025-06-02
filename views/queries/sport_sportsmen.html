@@ -20,7 +20,7 @@
 
 		<br/>
 
-		<label for="min_rank">Минимальный ранг:</label>
+		<label for="min_rank">Минимальный разряд:</label>
 		<input type="number" id="min_rank" name="min_rank" step="1" min="1">
 
 		<br/>
@@ -39,7 +39,7 @@
 			<p>Виды спорта: {{ JoinSportsWithComma .Sports }}</p>
 			<p>Клуб: {{ .Club.Name }} ID: {{ .Club.ID }}</p>
 
-			<p>Ранг: {{ if .Rank }} {{ .Rank }} {{ else }} - {{ end }}</p>
+			<p>Разряд: {{ if .Rank }} {{ .Rank }} {{ else }} - {{ end }}</p>
 
 			<hr/>
 		{{ end }}
