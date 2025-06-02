@@ -1,57 +1,103 @@
 <!DOCTYPE html>
-<html>
+<html lang="ru">
 <head>
-	<title>Запросы</title>
+    <meta charset="UTF-8">
+    <title>Запросы</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #f5f7fa;
+            color: #333;
+            padding: 40px;
+            max-width: 900px;
+            margin: auto;
+        }
+
+        h1 {
+            color: #222;
+            margin-bottom: 30px;
+        }
+
+        a {
+            color: #0077cc;
+            text-decoration: none;
+            font-size: 1.05rem;
+        }
+
+        a:hover {
+            text-decoration: underline;
+        }
+
+        p {
+            margin-bottom: 18px;
+        }
+
+        p a {
+            display: block;
+            background-color: #ffffff;
+            border: 1px solid #ddd;
+            border-left: 4px solid #0077cc;
+            padding: 12px 16px;
+            border-radius: 6px;
+            transition: background-color 0.2s ease;
+        }
+
+        p a:hover {
+            background-color: #eaf4ff;
+        }
+    </style>
 </head>
 <body>
-	<h1><a href="/">Главная</a></h1>
+    <h1><a href="/">Главная</a></h1>
 
-	<p><a href="/queries/sport-sportsmen">
-		2. Получить список спортсменов, занимающихся определённым видом спорта в целом или не ниже разряда
-	</a></p>
+    <p><a href="/queries/sport-sportsmen">
+        2. Получить список спортсменов, занимающихся определённым видом спорта в целом или не ниже разряда
+    </a></p>
 
-	<p><a href="/queries/trainer-sportsmen">
-		3. Получить список спортсменов, занимающихся у тренера в целом или не ниже разряда
-	</a></p>
+    <p><a href="/queries/trainer-sportsmen">
+        3. Получить список спортсменов, занимающихся у тренера в целом или не ниже разряда
+    </a></p>
 
-	<p><a href="/queries/sportsmen-involved-in-several-sports">
-		4. Получить список спортсменов, занимающихся более чем одним видом спорта с указанием этих видов спорта
-	</a></p>
+    <p><a href="/queries/sportsmen-involved-in-several-sports">
+        4. Получить список спортсменов, занимающихся более чем одним видом спорта с указанием этих видов спорта
+    </a></p>
 
-	<p><a href="/queries/sportsman-trainers">
-		5. Получить тренеров спортсмена
-	</a></p>
+    <p><a href="/queries/sportsman-trainers">
+        5. Получить тренеров спортсмена
+    </a></p>
 
-	<p><a href="/queries/tournaments-for-period">
-		6. Получить перечень соревнований, проведенных в течение заданного периода времени в целом либо указанным организатором.
-	</a></p>
+    <p><a href="/queries/tournaments-for-period">
+        6. Получить перечень соревнований, проведенных в течение заданного периода времени в целом либо указанным организатором.
+    </a></p>
 
-	<p><a href="/queries/tournament-prize-winners">
-		7. Получить призёров соревнования
-	</a></p>
+    <p><a href="/queries/tournament-prize-winners">
+        7. Получить призёров соревнования
+    </a></p>
 
-	<p><a href="/queries/place-tournaments">
-		8. Получить перечень соревнований, проведенных в указанном спортивном сооружении в целом либо по определенному виду спорта.
-	</a></p>
+    <p><a href="/queries/place-tournaments">
+        8. Получить перечень соревнований, проведенных в указанном спортивном сооружении в целом либо по определенному виду спорта.
+    </a></p>
 
-	<p><a href="/queries/club-active-sportsmen-counts">
-		9. Получить перечень спортивных клубов и число спортсменов этих клубов, участвовавших в спортивных соревнованиях в течение заданного интервала времени.
-	</a></p>
+    <p><a href="/queries/club-active-sportsmen-counts">
+        9. Получить перечень спортивных клубов и число спортсменов этих клубов, участвовавших в спортивных соревнованиях в течение заданного интервала времени.
+    </a></p>
 
-	<p><a href="/queries/sport-trainers">
-		10. Получить тренеров по виду спорта
-	</a></p>
+    <p><a href="/queries/sport-trainers">
+        10. Получить тренеров по виду спорта
+    </a></p>
 
-	<p><a href="/queries/inactive-sportsmen">
-		11. Получить список спортсменов, не участвовавших ни в каких соревнованиях в течение определенного периода времени.
-	</a></p>
+    <p><a href="/queries/inactive-sportsmen">
+        11. Получить список спортсменов, не участвовавших ни в каких соревнованиях в течение определенного периода времени.
+    </a></p>
 
-	<p><a href="/queries/organizer-tournament-counts">
-		12. Получить список организаторов соревнований и число проведенных ими соревнований в течение определенного периода времени.
-	</a></p>
+    <p><a href="/queries/organizer-tournament-counts">
+        12. Получить список организаторов соревнований и число проведенных ими соревнований в течение определенного периода времени.
+    </a></p>
 
-	<p><a href="/queries/places-with-tournament-dates">
-		13. Получить перечень спортивных сооружений и даты проведения на них соревнований в течение определенного периода времени.
-	</a></p>
+    <p><a href="/queries/places-with-tournament-dates">
+        13. Получить перечень спортивных сооружений и даты проведения на них соревнований в течение определенного периода времени.
+    </a></p>
 </body>
 </html>
+
