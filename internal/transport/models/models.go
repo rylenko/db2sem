@@ -2,6 +2,128 @@ package models
 
 import "db2sem/internal/domain"
 
+type Gym struct {
+	ID             int64
+	Name           string
+	Location       string
+	TrainersCount  int16
+	DumbbellsCount int16
+	HasBathhouse   bool
+}
+
+func ConvertFromServiceGym(sStadium domain.Gym) Gym {
+	return Gym{
+		ID:             sStadium.ID,
+		Name:           sStadium.Name,
+		Location:       sStadium.Location,
+		TrainersCount:  sStadium.TrainersCount,
+		DumbbellsCount: sStadium.DumbbellsCount,
+		HasBathhouse:   sStadium.HasBathhouse,
+	}
+}
+
+func ConvertFromServiceGyms(sArenas []domain.Gym) []Gym {
+	arenas := make([]Gym, 0, len(sArenas))
+
+	for _, sArena := range sArenas {
+		arenas = append(arenas, ConvertFromServiceGym(sArena))
+	}
+
+	return arenas
+}
+
+type Court struct {
+	ID        int64
+	Name      string
+	Location  string
+	WidthCm   int64
+	LengthCm  int64
+	IsOutdoor bool
+}
+
+func ConvertFromServiceCourt(sStadium domain.Court) Court {
+	return Court{
+		ID:        sStadium.ID,
+		Name:      sStadium.Name,
+		Location:  sStadium.Location,
+		WidthCm:   sStadium.WidthCm,
+		LengthCm:  sStadium.LengthCm,
+		IsOutdoor: sStadium.IsOutdoor,
+	}
+}
+
+func ConvertFromServiceCourts(sArenas []domain.Court) []Court {
+	arenas := make([]Court, 0, len(sArenas))
+
+	for _, sArena := range sArenas {
+		arenas = append(arenas, ConvertFromServiceCourt(sArena))
+	}
+
+	return arenas
+}
+
+type Stadium struct {
+	ID            int64
+	Name          string
+	Location      string
+	WidthCm       int64
+	LengthCm      int64
+	MaxSpectators int16
+	IsOutdoor     bool
+	Coating       string
+}
+
+func ConvertFromServiceStadium(sStadium domain.Stadium) Stadium {
+	return Stadium{
+		ID:            sStadium.ID,
+		Name:          sStadium.Name,
+		Location:      sStadium.Location,
+		WidthCm:       sStadium.WidthCm,
+		LengthCm:      sStadium.LengthCm,
+		MaxSpectators: sStadium.MaxSpectators,
+		IsOutdoor:     sStadium.IsOutdoor,
+		Coating:       sStadium.Coating,
+	}
+}
+
+func ConvertFromServiceStadiums(sArenas []domain.Stadium) []Stadium {
+	arenas := make([]Stadium, 0, len(sArenas))
+
+	for _, sArena := range sArenas {
+		arenas = append(arenas, ConvertFromServiceStadium(sArena))
+	}
+
+	return arenas
+}
+
+type Arena struct {
+	ID                int64
+	Name              string
+	Location          string
+	RefereesCount     int16
+	TreadmillLengthCm int64
+}
+
+func ConvertFromServiceArena(sArena domain.Arena) Arena {
+	return Arena{
+		ID:                sArena.ID,
+		Name:              sArena.Name,
+		Location:          sArena.Location,
+		RefereesCount:     sArena.RefereesCount,
+		TreadmillLengthCm: sArena.TreadmillLengthCm,
+	}
+}
+
+func ConvertFromServiceArenas(sArenas []domain.Arena) []Arena {
+	arenas := make([]Arena, 0, len(sArenas))
+
+	for _, sArena := range sArenas {
+		arenas = append(arenas, ConvertFromServiceArena(sArena))
+	}
+
+	return arenas
+}
+
 type ClubSportsmenCount struct {
 	Club
 	SportsmenCount uint64
