@@ -1,0 +1,55 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<title>Запрос 1.2.</title>
+</head>
+<body>
+	<h1><a href="/queries">Назад</a></h1>
+
+	<h1>Запрос 1.2.</h1>
+
+	<p>Получает стадионы в целом, либо по определённым параметрам</p>
+
+	<form>
+		<label for="width_cm">Минимальное ширина (см.):</label>
+		<input type="number" id="width_cm" name="width_cm">
+		<br/>
+
+		<label for="length_cm">Минимальная длина (см.):</label>
+		<input type="number" id="length_cm" name="length_cm">
+		<br/>
+
+		<label for="max_spectators">Минимальное количество зрителей:</label>
+		<input type="number" id="max_spectators" name="max_spectators">
+		<br/>
+
+		<label for="max_spectators">Минимальное количество зрителей:</label>
+		<input type="number" id="max_spectators" name="max_spectators">
+		<br/>
+
+		<label for="is_outdoor">Уличный:</label>
+		<input type="checkbox" id="is_outdoor" name="is_outdoor" value="true">
+		<br/>
+
+		<label for="coating">Покрытие:</label>
+		<input type="text" id="coating" name="coating">
+		<br/>
+
+		<button type="submit">Получить стадионы</button>
+	</form>
+
+	<h3>Стадионы:</h3>
+
+	{{ range .Stadiums }}
+		<p><a href="/stadiums/{{ .ID }}">{{ .Name }}</a></p>
+		<p>Расположение: {{ .Location }}</p>
+		<p>Ширина (см.): {{ .WidthCm }}</p>
+		<p>Длина (см.): {{ .LengthCm }}</p>
+		<p>Количество зрителей: {{ .MaxSpectators }}</p>
+		<p>Уличный: {{ if .IsOutdoor }}да{{ else }}нет{{ end }}</p>
+		<p>Покрытие: {{ .Coating }}</p>
+
+		<hr/>
+	{{ end }}
+</body>
+</html>

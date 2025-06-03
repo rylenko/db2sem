@@ -28,3 +28,15 @@ func (r Reader) ReadAndValidateFiberBody(fiberCtx *fiber.Ctx, request any) error
 
 	return nil
 }
+
+func (r Reader) ReadAndValidateFiberQuery(fiberCtx *fiber.Ctx, request any) error {
+	if err := fiberCtx.QueryParser(request); err != nil {
+		return fmt.Errorf("query parser: %w", err)
+	}
+
+	if err := r.validate.StructCtx(fiberCtx.Context(), request); err != nil {
+		return fmt.Errorf("validate: %w", err)
+	}
+
+	return nil
+}

@@ -86,12 +86,19 @@ func (r *Repo) GetGyms(ctx context.Context, req dto.GetGymsRequest) ([]domain.Gy
 }
 
 func (r *Repo) GetStadiums(ctx context.Context, req dto.GetStadiumsRequest) ([]domain.Stadium, error) {
+	var coating *string
+
+	if req.Coating != nil {
+		coatingValue := "%" + *req.Coating + "%"
+		coating = &coatingValue
+	}
+
 	pgPlaces, err := r.conn.Queries(ctx).GetStadiums(ctx, pg.GetStadiumsParams{
 		MaxSpectators: convertToPgInt2(req.MaxSpectators),
 		WidthCm:       convertToPgInt8(req.WidthCm),
 		LengthCm:      convertToPgInt8(req.LengthCm),
 		IsOutdoor:     convertToPgBool(req.IsOutdoor),
-		Coating:       convertToPgText(req.Coating),
+		Coating:       convertToPgText(coating),
 	})
 	if err != nil {
 		if errors.Is(err, pgx.ErrNoRows) {

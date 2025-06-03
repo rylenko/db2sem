@@ -1,5 +1,24 @@
 package transport
 
+type getArenasForm struct {
+	RefereesCount     int16 `query:"referees_count"`
+	TreadmillLengthCm int64 `query:"treadmill_length_cm"`
+}
+
+type getStadiumsForm struct {
+	WidthCm       int64  `query:"width_cm"`
+	LengthCm      int64  `query:"length_cm"`
+	MaxSpectators int16  `query:"max_spectators"`
+	IsOutdoor     bool   `query:"is_outdoor"`
+	Coating       string `query:"coating"`
+}
+
+type getCourtsForm struct {
+	WidthCm   int64 `query:"width_cm"`
+	LengthCm  int64 `query:"length_cm"`
+	IsOutdoor bool  `query:"is_outdoor"`
+}
+
 type getPlaceTournamentsForm struct {
 	PlaceID int64 `validate:"required" form:"place_id"`
 	SportID int64 `form:"sport_id"`

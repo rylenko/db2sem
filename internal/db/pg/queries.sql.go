@@ -1123,7 +1123,7 @@ WHERE
 		OR $4 IS NULL
 	)
 	AND (
-		sa.coating = $5
+		sa.coating ILIKE $5
 		OR $5 IS NULL
 	)
 `

@@ -1,0 +1,36 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<title>Запрос 1.1.</title>
+</head>
+<body>
+	<h1><a href="/queries">Назад</a></h1>
+
+	<h1>Запрос 1.1.</h1>
+
+	<p>Получает манежей в целом, либо по определённым параметрам</p>
+
+	<form>
+		<label for="referees_count">Минимальное количество судей:</label>
+		<input type="number" id="referees_count" name="referees_count">
+		<br/>
+
+		<label for="treadmill_length_cm">Минимальная длина беговой дорожки (см.):</label>
+		<input type="number" id="treadmill_length_cm" name="treadmill_length_cm">
+		<br/>
+
+		<button type="submit">Получить манежи</button>
+	</form>
+
+	<h3>Манежи:</h3>
+
+	{{ range .Arenas }}
+		<p><a href="/arenas/{{ .ID }}">{{ .Name }}</a></p>
+		<p>Расположение: {{ .Location }}</p>
+		<p>Количество судей: {{ .RefereesCount }}</p>
+		<p>Длина беговой дорожки: {{ .TreadmillLengthCm }}</p>
+
+		<hr/>
+	{{ end }}
+</body>
+</html>

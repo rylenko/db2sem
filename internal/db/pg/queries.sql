@@ -59,7 +59,7 @@ WHERE
 		OR sqlc.narg('is_outdoor') IS NULL
 	)
 	AND (
-		sa.coating = sqlc.narg('coating')
+		sa.coating ILIKE sqlc.narg('coating')
 		OR sqlc.narg('coating') IS NULL
 	);
 

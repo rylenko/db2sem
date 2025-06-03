@@ -12,6 +12,7 @@ import (
 
 type requestReader interface {
 	ReadAndValidateFiberBody(fiberCtx *fiber.Ctx, request any) error
+	ReadAndValidateFiberQuery(fiberCtx *fiber.Ctx, request any) error
 }
 
 type service interface {

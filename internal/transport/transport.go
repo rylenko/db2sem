@@ -529,6 +529,106 @@ func (t *Transport) RenderTournamentsForPeriodPostPage(fiberCtx *fiber.Ctx) erro
 	})
 }
 
+func (t *Transport) RenderCourtsPage(fiberCtx *fiber.Ctx) error {
+	var form getCourtsForm
+
+	err := t.requestReader.ReadAndValidateFiberQuery(fiberCtx, &form)
+	if err != nil {
+		return fmt.Errorf("parse body: %w", err)
+	}
+
+	var req servicedto.GetCourtsRequest
+
+	if form.WidthCm > 0 {
+		req.WidthCm = &form.WidthCm
+	}
+
+	if form.LengthCm > 0 {
+		req.LengthCm = &form.LengthCm
+	}
+
+	req.IsOutdoor = &form.IsOutdoor
+
+	serviceCourts, err := t.service.GetCourts(fiberCtx.Context(), req)
+	if err != nil {
+		return fmt.Errorf("service: %w", err)
+	}
+
+	courts := models.ConvertFromServiceCourts(serviceCourts)
+
+	return fiberCtx.Render("queries/courts", fiber.Map{
+		"Courts": courts,
+	})
+}
+
+func (t *Transport) RenderStadiumsPage(fiberCtx *fiber.Ctx) error {
+	var form getStadiumsForm
+
+	err := t.requestReader.ReadAndValidateFiberQuery(fiberCtx, &form)
+	if err != nil {
+		return fmt.Errorf("parse body: %w", err)
+	}
+
+	var req servicedto.GetStadiumsRequest
+
+	if form.WidthCm > 0 {
+		req.WidthCm = &form.WidthCm
+	}
+
+	if form.LengthCm > 0 {
+		req.LengthCm = &form.LengthCm
+	}
+
+	if form.MaxSpectators > 0 {
+		req.MaxSpectators = &form.MaxSpectators
+	}
+
+	req.IsOutdoor = &form.IsOutdoor
+
+	if form.Coating != "" {
+		req.Coating = &form.Coating
+	}
+
+	serviceStadiums, err := t.service.GetStadiums(fiberCtx.Context(), req)
+	if err != nil {
+		return fmt.Errorf("service: %w", err)
+	}
+
+	stadiums := models.ConvertFromServiceStadiums(serviceStadiums)
+
+	return fiberCtx.Render("queries/stadiums", fiber.Map{
+		"Stadiums": stadiums,
+	})
+}
+
+func (t *Transport) RenderArenasPage(fiberCtx *fiber.Ctx) error {
+	var form getArenasForm
+	if err := t.requestReader.ReadAndValidateFiberQuery(fiberCtx, &form); err != nil {
+		return fmt.Errorf("parse body: %w", err)
+	}
+
+	var req servicedto.GetArenasRequest
+
+	if form.RefereesCount > 0 {
+		req.RefereesCount = &form.RefereesCount
+	}
+
+	if form.TreadmillLengthCm > 0 {
+		req.TreadmillLengthCm = &form.TreadmillLengthCm
+	}
+
+	serviceArenas, err := t.service.GetArenas(fiberCtx.Context(), req)
+	if err != nil {
+		return fmt.Errorf("service: %w", err)
+	}
+
+	arenas := models.ConvertFromServiceArenas(serviceArenas)
+
+	return fiberCtx.Render("queries/arenas", fiber.Map{
+		"Arenas": arenas,
+	})
+}
+
 func (t *Transport) RenderSportSportsmenGetPage(fiberCtx *fiber.Ctx) error {
 	serviceSports, err := t.service.GetSports(fiberCtx.Context())
 	if err != nil {

@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<title>Запрос 1.3.</title>
+</head>
+<body>
+	<h1><a href="/queries">Назад</a></h1>
+
+	<h1>Запрос 1.3.</h1>
+
+	<p>Получает корты в целом, либо по определённым параметрам</p>
+
+	<form>
+		<label for="width_cm">Минимальное ширина (см.):</label>
+		<input type="number" id="width_cm" name="width_cm">
+		<br/>
+
+		<label for="length_cm">Минимальная длина (см.):</label>
+		<input type="number" id="length_cm" name="length_cm">
+		<br/>
+
+		<label for="is_outdoor">Уличный:</label>
+		<input type="checkbox" id="is_outdoor" name="is_outdoor" value="true">
+		<br/>
+
+		<button type="submit">Получить корты</button>
+	</form>
+
+	<h3>Корты:</h3>
+
+	{{ range .Courts }}
+		<p><a href="/courts/{{ .ID }}">{{ .Name }}</a></p>
+		<p>Расположение: {{ .Location }}</p>
+		<p>Ширина (см.): {{ .WidthCm }}</p>
+		<p>Длина (см.): {{ .LengthCm }}</p>
+		<p>Уличный: {{ if .IsOutdoor }}да{{ else }}нет{{ end }}</p>
+
+		<hr/>
+	{{ end }}
+</body>
+</html>
