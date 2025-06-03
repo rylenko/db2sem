@@ -19,6 +19,12 @@ type getCourtsForm struct {
 	IsOutdoor bool  `query:"is_outdoor"`
 }
 
+type getGymsForm struct {
+	TrainersCount  int16 `query:"trainers_count"`
+	DumbbellsCount int16 `query:"dumbbells_count"`
+	HasBathhouse   bool  `query:"has_bathhouse"`
+}
+
 type getPlaceTournamentsForm struct {
 	PlaceID int64 `validate:"required" form:"place_id"`
 	SportID int64 `form:"sport_id"`

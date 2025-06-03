@@ -529,6 +529,38 @@ func (t *Transport) RenderTournamentsForPeriodPostPage(fiberCtx *fiber.Ctx) erro
 	})
 }
 
+func (t *Transport) RenderGymsPage(fiberCtx *fiber.Ctx) error {
+	var form getGymsForm
+
+	err := t.requestReader.ReadAndValidateFiberQuery(fiberCtx, &form)
+	if err != nil {
+		return fmt.Errorf("parse body: %w", err)
+	}
+
+	var req servicedto.GetGymsRequest
+
+	if form.TrainersCount > 0 {
+		req.TrainersCount = &form.TrainersCount
+	}
+
+	if form.DumbbellsCount > 0 {
+		req.DumbbellsCount = &form.DumbbellsCount
+	}
+
+	req.HasBathhouse = &form.HasBathhouse
+
+	serviceGyms, err := t.service.GetGyms(fiberCtx.Context(), req)
+	if err != nil {
+		return fmt.Errorf("service: %w", err)
+	}
+
+	gyms := models.ConvertFromServiceGyms(serviceGyms)
+
+	return fiberCtx.Render("queries/gyms", fiber.Map{
+		"Gyms": gyms,
+	})
+}
+
 func (t *Transport) RenderCourtsPage(fiberCtx *fiber.Ctx) error {
 	var form getCourtsForm
 

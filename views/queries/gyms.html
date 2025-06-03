@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<title>Запрос 1.4.</title>
+</head>
+<body>
+	<h1><a href="/queries">Назад</a></h1>
+
+	<h1>Запрос 1.4.</h1>
+
+	<p>Получает залы в целом, либо по определённым параметрам</p>
+
+	<form>
+		<label for="trainers_count">Минимальное количество тренеров:</label>
+		<input type="number" id="trainers_count" name="trainers_count">
+		<br/>
+
+		<label for="dumbbells_count">Минимальное количество гантель:</label>
+		<input type="number" id="dumbbells_count" name="dumbbells_count">
+		<br/>
+
+		<label for="has_bathhouse">Есть сауна:</label>
+		<input type="checkbox" id="has_bathhouse" name="has_bathhouse" value="true">
+		<br/>
+
+		<button type="submit">Получить залы</button>
+	</form>
+
+	<h3>Залы:</h3>
+
+	{{ range .Gyms }}
+		<p><a href="/gyms/{{ .ID }}">{{ .Name }}</a></p>
+		<p>Расположение: {{ .Location }}</p>
+		<p>Количество тренеров: {{ .TrainersCount }}</p>
+		<p>Количество гантель: {{ .DumbbellsCount }}</p>
+		<p>Есть сауна: {{ if .HasBathhouse }}да{{ else }}нет{{ end }}</p>
+
+		<hr/>
+	{{ end }}
+</body>
+</html>

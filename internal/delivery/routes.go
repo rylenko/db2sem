@@ -17,6 +17,7 @@ func registerRoutes(app *fiber.App, transport transport) {
 		queries.Get("/arenas", transport.RenderArenasPage)
 		queries.Get("/stadiums", transport.RenderStadiumsPage)
 		queries.Get("/courts", transport.RenderCourtsPage)
+		queries.Get("/gyms", transport.RenderGymsPage)
 
 		queries.Get("/sportsmen-involved-in-several-sports", transport.RenderSportsmenInvolvedInSeveralSportsPage)
 
