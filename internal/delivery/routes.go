@@ -80,6 +80,7 @@ func registerRoutes(app *fiber.App, transport transport) {
 
 	arenas := app.Group("arenas")
 	{
+		arenas.Post("/", transport.CreateArena)
 		arenas.Get("/:id", transport.RenderArenaPage)
 		arenas.Post("/:id/update", transport.UpdateArena)
 	}

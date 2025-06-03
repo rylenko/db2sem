@@ -75,6 +75,15 @@ func (s *Service) GetInactiveSportsmenForPeriod(
 	return s.repo.GetInactiveSportsmenForPeriod(ctx, startAt, endAt)
 }
 
+func (s *Service) CreateArena(ctx context.Context, req dto.CreateArenaRequest) error {
+	return s.repo.InsertArena(ctx, repodto.InsertArenaRequest{
+		Name:              req.Name,
+		Location:          req.Location,
+		RefereesCount:     req.RefereesCount,
+		TreadmillLengthCm: req.TreadmillLengthCm,
+	})
+}
+
 func (s *Service) CreateSportsman(ctx context.Context, req dto.CreateSportsmanRequest) error {
 	return s.repo.InsertSportsman(ctx, repodto.InsertSportsmanRequest{
 		Name:      req.Name,

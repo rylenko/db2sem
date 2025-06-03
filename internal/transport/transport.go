@@ -37,6 +37,25 @@ func (t *Transport) CreateSport(fiberCtx *fiber.Ctx) error {
 	return fiberCtx.Redirect("/sports/", fiber.StatusFound)
 }
 
+func (t *Transport) CreateArena(fiberCtx *fiber.Ctx) error {
+	var form createArenaForm
+	if err := t.requestReader.ReadAndValidateFiberBody(fiberCtx, &form); err != nil {
+		return fmt.Errorf("parse body: %w", err)
+	}
+
+	err := t.service.CreateArena(fiberCtx.Context(), servicedto.CreateArenaRequest{
+		Name:              form.Name,
+		Location:          form.Location,
+		RefereesCount:     form.RefereesCount,
+		TreadmillLengthCm: form.TreadmillLengthCm,
+	})
+	if err != nil {
+		return fmt.Errorf("service: %w", err)
+	}
+
+	return fiberCtx.Redirect("/queries/arenas/", fiber.StatusFound)
+}
+
 func (t *Transport) CreateSportsman(fiberCtx *fiber.Ctx) error {
 	var form createSportsmanForm
 	if err := t.requestReader.ReadAndValidateFiberBody(fiberCtx, &form); err != nil {

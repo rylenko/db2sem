@@ -3,6 +3,7 @@ package delivery
 import "github.com/gofiber/fiber/v2"
 
 type transport interface {
+	CreateArena(fiberCtx *fiber.Ctx) error
 	CreateSport(fiberCtx *fiber.Ctx) error
 	CreateSportsman(fiberCtx *fiber.Ctx) error
 	DeleteSport(fiberCtx *fiber.Ctx) error

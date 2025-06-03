@@ -1192,3 +1192,12 @@ func (r *Repo) GetPlacesWithTournamentDatesForPeriod(
 func (r *Repo) DeletePlaceByID(ctx context.Context, placeID int64) error {
 	return r.conn.Queries(ctx).DeletePlaceByID(ctx, placeID)
 }
+
+func (r *Repo) InsertArena(ctx context.Context, req dto.InsertArenaRequest) error {
+	return r.conn.Queries(ctx).InsertArena(ctx, pg.InsertArenaParams{
+		Name:              req.Name,
+		Location:          req.Location,
+		RefereesCount:     req.RefereesCount,
+		TreadmillLengthCm: req.TreadmillLengthCm,
+	})
+}

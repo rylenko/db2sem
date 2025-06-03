@@ -24,6 +24,7 @@ type service interface {
 	GetCourts(ctx context.Context, req servicedto.GetCourtsRequest) ([]domain.Court, error)
 	CreateSport(ctx context.Context, name string) error
 	CreateSportsman(ctx context.Context, req servicedto.CreateSportsmanRequest) error
+	CreateArena(ctx context.Context, req servicedto.CreateArenaRequest) error
 	DeleteSportByID(ctx context.Context, sportID int64) error
 	DeletePlaceByID(ctx context.Context, placeID int64) error
 	DeleteSportsmanByID(ctx context.Context, sportsmanID int64) error

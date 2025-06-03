@@ -16,6 +16,7 @@ type repo interface {
 	GetGyms(ctx context.Context, req repodto.GetGymsRequest) ([]domain.Gym, error)
 	GetCourts(ctx context.Context, req repodto.GetCourtsRequest) ([]domain.Court, error)
 	InsertSport(ctx context.Context, name string) error
+	InsertArena(ctx context.Context, req repodto.InsertArenaRequest) error
 	InsertSportsman(ctx context.Context, req repodto.InsertSportsmanRequest) error
 	DeleteSportByID(ctx context.Context, sportID int64) error
 	DeletePlaceByID(ctx context.Context, placeID int64) error
