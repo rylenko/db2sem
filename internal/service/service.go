@@ -62,6 +62,10 @@ func (s *Service) CreateOrganizer(ctx context.Context, name string, location *st
 	return s.repo.InsertOrganizer(ctx, name, location)
 }
 
+func (s *Service) CreateTrainer(ctx context.Context, name string) error {
+	return s.repo.InsertTrainer(ctx, name)
+}
+
 func (s *Service) CreateClub(ctx context.Context, name string) error {
 	return s.repo.InsertClub(ctx, name)
 }
@@ -104,6 +108,14 @@ func (s *Service) CreateArena(ctx context.Context, req dto.CreateArenaRequest) e
 	})
 }
 
+func (s *Service) CreateTournament(ctx context.Context, req dto.CreateTournamentRequest) error {
+	return s.repo.InsertTournament(ctx, repodto.InsertTournamentRequest{
+		PlaceID:     req.PlaceID,
+		OrganizerID: req.PlaceID,
+		StartAt:     req.StartAt,
+	})
+}
+
 func (s *Service) CreateSportsman(ctx context.Context, req dto.CreateSportsmanRequest) error {
 	return s.repo.InsertSportsman(ctx, repodto.InsertSportsmanRequest{
 		Name:      req.Name,
@@ -117,6 +129,10 @@ func (s *Service) CreateSportsman(ctx context.Context, req dto.CreateSportsmanRe
 
 func (s *Service) DeleteOrganizerByID(ctx context.Context, sportID int64) error {
 	return s.repo.DeleteOrganizerByID(ctx, sportID)
+}
+
+func (s *Service) DeleteTrainerByID(ctx context.Context, sportID int64) error {
+	return s.repo.DeleteTrainerByID(ctx, sportID)
 }
 
 func (s *Service) DeleteClubByID(ctx context.Context, sportID int64) error {
@@ -181,6 +197,10 @@ func (s *Service) GetSportsmenInvolvedInSeveralSports(ctx context.Context) ([]do
 
 func (s *Service) GetOrganizerByID(ctx context.Context, sportID int64) (*domain.Organizer, error) {
 	return s.repo.GetOrganizerByID(ctx, sportID)
+}
+
+func (s *Service) GetTrainerByID(ctx context.Context, clubID int64) (*domain.Trainer, error) {
+	return s.repo.GetTrainerByID(ctx, clubID)
 }
 
 func (s *Service) GetClubByID(ctx context.Context, clubID int64) (*domain.Club, error) {
@@ -257,6 +277,13 @@ func (s *Service) UpdateOrganizerByID(ctx context.Context, req dto.UpdateOrganiz
 		ID:       req.ID,
 		Name:     req.Name,
 		Location: req.Location,
+	})
+}
+
+func (s *Service) UpdateTrainerByID(ctx context.Context, req dto.UpdateTrainerByIDRequest) error {
+	return s.repo.UpdateTrainerByID(ctx, repodto.UpdateTrainerByIDRequest{
+		ID:   req.ID,
+		Name: req.Name,
 	})
 }
 

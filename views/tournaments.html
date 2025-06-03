@@ -1,0 +1,149 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<title>Соревнования</title>
+
+	<meta charset="UTF-8">
+	<link href="https://fonts.googleapis.com/css2?family=Inter&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #f5f7fa;
+            color: #333;
+            padding: 40px;
+            max-width: 800px;
+            margin: auto;
+        }
+
+        h1 {
+            color: #222;
+            margin-top: 30px;
+            margin-bottom: 20px;
+        }
+
+        a {
+            color: #0077cc;
+            text-decoration: none;
+            font-size: 1.1rem;
+        }
+
+        a:hover {
+            text-decoration: underline;
+        }
+
+        form {
+            margin-bottom: 30px;
+        }
+
+        label {
+            display: block;
+            margin-top: 15px;
+            font-weight: 500;
+        }
+
+        input, select {
+            width: 100%;
+            padding: 10px;
+            font-size: 1rem;
+            margin-top: 5px;
+            box-sizing: border-box;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+        }
+
+        select[multiple] {
+            height: 120px;
+        }
+
+        button {
+            margin-top: 20px;
+            padding: 12px 24px;
+            font-size: 1rem;
+            color: white;
+            background-color: #007bff;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+        }
+
+        button:hover {
+            background-color: #0056b3;
+        }
+
+        form:last-of-type button {
+            background-color: #dc3545;
+        }
+
+        form:last-of-type button:hover {
+            background-color: #c82333;
+        }
+
+        hr {
+            margin: 30px 0;
+            border: 0;
+            border-top: 1px solid #ccc;
+        }
+
+        p {
+            margin: 6px 0;
+        }
+    </style>
+</head>
+<body>
+	<h1><a href="/">Главная</a></h1>
+
+	<h1>Создать соревнования</h1>
+
+	<form method="POST">
+		<label for="start_at">Дата рождения:</label>
+		<input type="datetime-local" name="start_at" required>
+
+		<br/>
+
+		<label for="organizer_id">Организатор:</label>
+		<select id="organizer_id" name="organizer_id">
+			{{ range .Organizers }}
+				<option value="{{ .ID }}">{{ .Name }}</option>
+			{{ end }}
+		</select>
+
+		<br/>
+
+		<label for="place_id">Место:</label>
+		<select id="place_id" name="place_id">
+			{{ range .Places }}
+				<option value="{{ .ID }}">{{ .Name }} ({{ .TypeName }}), {{ .Location }}</option>
+			{{ end }}
+		</select>
+
+		<br/>
+
+		<label for="sport_ids">Виды спорта:</label>
+		<select id="sport_ids" name="sport_ids" multiple>
+			{{ range .Sports }}
+				<option value="{{ .ID }}">{{ .Name }}</option>
+			{{ end }}
+		</select>
+
+		<br/>
+
+		<button type="submit">Создать</button>
+	</form>
+
+	<h1>Список соревнований</h1>
+
+	{{ range .Tournaments }}
+		<p>* <a href="/tournaments/{{ .ID }}">{{ .Name }}</a></p>
+		<p>Организатор: {{ .OrganizerName }}</p>
+		<p>Место: {{ .PlaceName }}</p>
+		<p>Виды спорта: {{ JoinStringsWithComma .SportNames }}</p>
+		<p>Время начала: {{ .StartAtString }}</p>
+
+		<form action="/tournaments/{{ .ID }}/delete" method="POST">
+			<button type="submit">Удалить</button>
+		</form>
+
+		<hr/>
+	{{ end }}
+</body>
+</html>

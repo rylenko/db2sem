@@ -76,6 +76,19 @@ func (q *Queries) DeleteSportsmanByID(ctx context.Context, id int64) error {
 	return err
 }
 
+const deleteTrainerByID = `-- name: DeleteTrainerByID :exec
+DELETE FROM trainers
+WHERE id = $1
+`
+
+// Query: #53 (custom)
+//
+// Удаляет клуб по ID.
+func (q *Queries) DeleteTrainerByID(ctx context.Context, id int64) error {
+	_, err := q.db.Exec(ctx, deleteTrainerByID, id)
+	return err
+}
+
 const getArenaByID = `-- name: GetArenaByID :one
 SELECT
 	p.id,
@@ -1618,6 +1631,29 @@ func (q *Queries) GetTournamentsForPeriod(ctx context.Context, arg GetTournament
 	return items, nil
 }
 
+const getTrainerByID = `-- name: GetTrainerByID :one
+SELECT
+	id,
+	name
+FROM trainers
+WHERE id = $1
+`
+
+type GetTrainerByIDRow struct {
+	ID   int64
+	Name string
+}
+
+// Query: #54 (custom)
+//
+// Получает клуб по идентификатору.
+func (q *Queries) GetTrainerByID(ctx context.Context, id int64) (GetTrainerByIDRow, error) {
+	row := q.db.QueryRow(ctx, getTrainerByID, id)
+	var i GetTrainerByIDRow
+	err := row.Scan(&i.ID, &i.Name)
+	return i, err
+}
+
 const getTrainers = `-- name: GetTrainers :many
 SELECT
 	id,
@@ -1959,6 +1995,54 @@ func (q *Queries) InsertStadium(ctx context.Context, arg InsertStadiumParams) er
 	return err
 }
 
+const insertTournament = `-- name: InsertTournament :exec
+WITH tournament AS (
+	INSERT INTO tournaments (place_id, organizer_id, start_at)
+	VALUES ($1, $2, $3)
+	RETURNING id
+)
+INSERT INTO tournament_sports (tournament_id, sport_id)
+SELECT
+	id,
+	sport_id
+FROM
+	tournament,
+	UNNEST($4::BIGINT[]) AS sport_id
+`
+
+type InsertTournamentParams struct {
+	PlaceID     int64
+	OrganizerID int64
+	StartAt     pgtype.Timestamptz
+	SportIds    []int64
+}
+
+// Query: #55 (custom)
+//
+// Создать соревнование.
+func (q *Queries) InsertTournament(ctx context.Context, arg InsertTournamentParams) error {
+	_, err := q.db.Exec(ctx, insertTournament,
+		arg.PlaceID,
+		arg.OrganizerID,
+		arg.StartAt,
+		arg.SportIds,
+	)
+	return err
+}
+
+const insertTrainer = `-- name: InsertTrainer :exec
+INSERT INTO trainers (name)
+VALUES ($1)
+`
+
+// Query: #51 (custom)
+//
+// Создать тренера.
+func (q *Queries) InsertTrainer(ctx context.Context, name string) error {
+	_, err := q.db.Exec(ctx, insertTrainer, name)
+	return err
+}
+
 const updateArenaByID = `-- name: UpdateArenaByID :exec
 WITH updated_attributes AS (
 	UPDATE arena_attributes
@@ -2236,5 +2320,24 @@ func (q *Queries) UpdateStadiumByID(ctx context.Context, arg UpdateStadiumByIDPa
 		arg.Name,
 		arg.Location,
 	)
+	return err
+}
+
+const updateTrainerByID = `-- name: UpdateTrainerByID :exec
+UPDATE trainers
+SET name = $1
+WHERE id = $2
+`
+
+type UpdateTrainerByIDParams struct {
+	Name string
+	ID   int64
+}
+
+// Query: #52 (custom)
+//
+// Обновляет тренера.
+func (q *Queries) UpdateTrainerByID(ctx context.Context, arg UpdateTrainerByIDParams) error {
+	_, err := q.db.Exec(ctx, updateTrainerByID, arg.Name, arg.ID)
 	return err
 }

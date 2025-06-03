@@ -6,11 +6,14 @@ type transport interface {
 	CreateArena(fiberCtx *fiber.Ctx) error
 	CreateStadium(fiberCtx *fiber.Ctx) error
 	CreateSport(fiberCtx *fiber.Ctx) error
+	CreateTournament(fiberCtx *fiber.Ctx) error
 	CreateClub(fiberCtx *fiber.Ctx) error
+	CreateTrainer(fiberCtx *fiber.Ctx) error
 	CreateOrganizer(fiberCtx *fiber.Ctx) error
 	CreateSportsman(fiberCtx *fiber.Ctx) error
 	DeleteSport(fiberCtx *fiber.Ctx) error
 	DeleteClub(fiberCtx *fiber.Ctx) error
+	DeleteTrainer(fiberCtx *fiber.Ctx) error
 	DeletePlace(fiberCtx *fiber.Ctx) error
 	DeleteSportsman(fiberCtx *fiber.Ctx) error
 	DeleteOrganizer(fiberCtx *fiber.Ctx) error
@@ -23,10 +26,13 @@ type transport interface {
 	RenderPlaceTournamentsGetPage(fibercCtx *fiber.Ctx) error
 	RenderPlaceTournamentsPostPage(fibercCtx *fiber.Ctx) error
 	RenderSportsmanPage(fibercCtx *fiber.Ctx) error
+	RenderTournamentsPage(fibercCtx *fiber.Ctx) error
 	RenderPlacesWithTournamentDatesGetPage(fiberCtx *fiber.Ctx) error
 	RenderPlacesWithTournamentDatesPostPage(fiberCtx *fiber.Ctx) error
 	RenderSportsmanTrainersGetPage(fiberCtx *fiber.Ctx) error
 	RenderSportsmanTrainersPostPage(fiberCtx *fiber.Ctx) error
+	RenderTrainerPage(fiberCtx *fiber.Ctx) error
+	RenderTrainersPage(fiberCtx *fiber.Ctx) error
 	RenderClubPage(fiberCtx *fiber.Ctx) error
 	RenderClubsPage(fiberCtx *fiber.Ctx) error
 	RenderArenaPage(fiberCtx *fiber.Ctx) error
@@ -63,4 +69,5 @@ type transport interface {
 	UpdateSportsman(fiberCtx *fiber.Ctx) error
 	UpdateOrganizer(fiberCtx *fiber.Ctx) error
 	UpdateClub(fiberCtx *fiber.Ctx) error
+	UpdateTrainer(fiberCtx *fiber.Ctx) error
 }

@@ -239,6 +239,10 @@ func (r *Repo) GetArenas(ctx context.Context, req dto.GetArenasRequest) ([]domai
 	return places, nil
 }
 
+func (r *Repo) DeleteTrainerByID(ctx context.Context, sportID int64) error {
+	return r.conn.Queries(ctx).DeleteTrainerByID(ctx, sportID)
+}
+
 func (r *Repo) DeleteClubByID(ctx context.Context, sportID int64) error {
 	return r.conn.Queries(ctx).DeleteClubByID(ctx, sportID)
 }
@@ -816,6 +820,24 @@ func (r *Repo) GetOrganizerByID(ctx context.Context, organizerID int64) (*domain
 	return &sport, nil
 }
 
+func (r *Repo) GetTrainerByID(ctx context.Context, sportID int64) (*domain.Trainer, error) {
+	pgSport, err := r.conn.Queries(ctx).GetTrainerByID(ctx, sportID)
+	if err != nil {
+		if errors.Is(err, pgx.ErrNoRows) {
+			return nil, nil //nolint:nilnil // must be checked on the top level
+		}
+
+		return nil, fmt.Errorf("query: %w", err)
+	}
+
+	sport := domain.Trainer{
+		ID:   pgSport.ID,
+		Name: pgSport.Name,
+	}
+
+	return &sport, nil
+}
+
 func (r *Repo) GetClubByID(ctx context.Context, sportID int64) (*domain.Club, error) {
 	pgSport, err := r.conn.Queries(ctx).GetClubByID(ctx, sportID)
 	if err != nil {
@@ -975,6 +997,10 @@ func (r *Repo) GetTournamentsForPeriod(
 	return tournaments, nil
 }
 
+func (r *Repo) InsertTrainer(ctx context.Context, name string) error {
+	return r.conn.Queries(ctx).InsertTrainer(ctx, name)
+}
+
 func (r *Repo) InsertClub(ctx context.Context, name string) error {
 	return r.conn.Queries(ctx).InsertClub(ctx, name)
 }
@@ -988,6 +1014,20 @@ func (r *Repo) InsertOrganizer(ctx context.Context, name string, location *strin
 		Name:     name,
 		Location: convertToPgText(location),
 	})
+}
+
+func (r *Repo) InsertTournament(ctx context.Context, req dto.InsertTournamentRequest) error {
+	err := r.conn.Queries(ctx).InsertTournament(ctx, pg.InsertTournamentParams{
+		OrganizerID: req.OrganizerID,
+		PlaceID:     req.PlaceID,
+		StartAt:     convertToPgTimestamptz(req.StartAt),
+		SportIds:    req.SportIDs,
+	})
+	if err != nil {
+		return fmt.Errorf("query: %w", err)
+	}
+
+	return nil
 }
 
 func (r *Repo) InsertSportsman(ctx context.Context, req dto.InsertSportsmanRequest) error {
@@ -1053,6 +1093,13 @@ func (r *Repo) UpdateStadiumByID(ctx context.Context, req dto.UpdateStadiumByIDR
 		MaxSpectators: req.MaxSpectators,
 		IsOutdoor:     req.IsOutdoor,
 		Coating:       req.Coating,
+	})
+}
+
+func (r *Repo) UpdateTrainerByID(ctx context.Context, req dto.UpdateTrainerByIDRequest) error {
+	return r.conn.Queries(ctx).UpdateTrainerByID(ctx, pg.UpdateTrainerByIDParams{
+		ID:   req.ID,
+		Name: req.Name,
 	})
 }
 

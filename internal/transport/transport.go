@@ -42,6 +42,20 @@ func (t *Transport) CreateOrganizer(fiberCtx *fiber.Ctx) error {
 	return fiberCtx.Redirect("/organizers/", fiber.StatusFound)
 }
 
+func (t *Transport) CreateTrainer(fiberCtx *fiber.Ctx) error {
+	var form createTrainerForm
+	if err := t.requestReader.ReadAndValidateFiberBody(fiberCtx, &form); err != nil {
+		return fmt.Errorf("parse body: %w", err)
+	}
+
+	err := t.service.CreateTrainer(fiberCtx.Context(), form.Name)
+	if err != nil {
+		return fmt.Errorf("service: %w", err)
+	}
+
+	return fiberCtx.Redirect("/trainers/", fiber.StatusFound)
+}
+
 func (t *Transport) CreateClub(fiberCtx *fiber.Ctx) error {
 	var form createClubForm
 	if err := t.requestReader.ReadAndValidateFiberBody(fiberCtx, &form); err != nil {
@@ -111,6 +125,29 @@ func (t *Transport) CreateArena(fiberCtx *fiber.Ctx) error {
 	return fiberCtx.Redirect("/queries/arenas/", fiber.StatusFound)
 }
 
+func (t *Transport) CreateTournament(fiberCtx *fiber.Ctx) error {
+	var form createTournamentForm
+	if err := t.requestReader.ReadAndValidateFiberBody(fiberCtx, &form); err != nil {
+		return fmt.Errorf("parse body: %w", err)
+	}
+
+	startAt, err := time.Parse("02.01.2006 15:04:05", form.StartAt)
+	if err != nil {
+		return fmt.Errorf("parse birth date: %w", err)
+	}
+
+	err = t.service.CreateTournament(fiberCtx.Context(), servicedto.CreateTournamentRequest{
+		OrganizerID: form.OrganizerID,
+		PlaceID:     form.PlaceID,
+		StartAt:     startAt,
+	})
+	if err != nil {
+		return fmt.Errorf("service: %w", err)
+	}
+
+	return fiberCtx.Redirect("/tournaments/", fiber.StatusFound)
+}
+
 func (t *Transport) CreateSportsman(fiberCtx *fiber.Ctx) error {
 	var form createSportsmanForm
 	if err := t.requestReader.ReadAndValidateFiberBody(fiberCtx, &form); err != nil {
@@ -176,6 +213,19 @@ func (t *Transport) DeleteOrganizer(fiberCtx *fiber.Ctx) error {
 	}
 
 	return fiberCtx.Redirect("/organizers/", fiber.StatusFound)
+}
+
+func (t *Transport) DeleteTrainer(fiberCtx *fiber.Ctx) error {
+	sportID, err := strconv.ParseInt(fiberCtx.Params("id"), 10, 64)
+	if err != nil {
+		return fmt.Errorf("parse sport ID: %w", err)
+	}
+
+	if err := t.service.DeleteTrainerByID(fiberCtx.Context(), sportID); err != nil {
+		return fmt.Errorf("service: %w", err)
+	}
+
+	return fiberCtx.Redirect("/trainers/", fiber.StatusFound)
 }
 
 func (t *Transport) DeleteClub(fiberCtx *fiber.Ctx) error {
@@ -299,6 +349,43 @@ func (t *Transport) RenderSportsmanPage(fiberCtx *fiber.Ctx) error {
 		"Sportsman": sportsman,
 		"Clubs":     clubs,
 		"Sports":    sports,
+	})
+}
+
+func (t *Transport) RenderTournamentsPage(fiberCtx *fiber.Ctx) error {
+	serviceTournaments, err := t.service.GetTournaments(fiberCtx.Context())
+	if err != nil {
+		return fmt.Errorf("get clubs: %w", err)
+	}
+
+	tournaments := models.ConvertFromServiceTournaments(serviceTournaments)
+
+	serviceOrganizers, err := t.service.GetOrganizers(fiberCtx.Context())
+	if err != nil {
+		return fmt.Errorf("get clubs: %w", err)
+	}
+
+	organizers := models.ConvertFromServiceOrganizers(serviceOrganizers)
+
+	servicePlaces, err := t.service.GetPlaces(fiberCtx.Context())
+	if err != nil {
+		return fmt.Errorf("get clubs: %w", err)
+	}
+
+	places := models.ConvertFromServicePlaces(servicePlaces)
+
+	serviceSports, err := t.service.GetSports(fiberCtx.Context())
+	if err != nil {
+		return fmt.Errorf("get sport names: %w", err)
+	}
+
+	sports := models.ConvertFromServiceSports(serviceSports)
+
+	return fiberCtx.Render("tournaments", fiber.Map{
+		"Tournaments": tournaments,
+		"Organizers":  organizers,
+		"Places":      places,
+		"Sports":      sports,
 	})
 }
 
@@ -433,6 +520,28 @@ func (t *Transport) RenderOrganizerPage(fiberCtx *fiber.Ctx) error {
 	})
 }
 
+func (t *Transport) RenderTrainerPage(fiberCtx *fiber.Ctx) error {
+	sportID, err := strconv.ParseInt(fiberCtx.Params("id"), 10, 64)
+	if err != nil {
+		return fmt.Errorf("parse sportsman ID: %w", err)
+	}
+
+	serviceSport, err := t.service.GetTrainerByID(fiberCtx.Context(), sportID)
+	if err != nil {
+		return fmt.Errorf("get sportsman: %w", err)
+	}
+
+	if serviceSport == nil {
+		return fiberCtx.Status(fiber.StatusNotFound).SendString("Sport not found")
+	}
+
+	sport := models.ConvertFromServiceTrainer(*serviceSport)
+
+	return fiberCtx.Render("trainer", fiber.Map{
+		"Trainer": sport,
+	})
+}
+
 func (t *Transport) RenderClubPage(fiberCtx *fiber.Ctx) error {
 	sportID, err := strconv.ParseInt(fiberCtx.Params("id"), 10, 64)
 	if err != nil {
@@ -487,6 +596,19 @@ func (t *Transport) RenderOrganizersPage(fiberCtx *fiber.Ctx) error {
 
 	return fiberCtx.Render("organizers", fiber.Map{
 		"Organizers": sports,
+	})
+}
+
+func (t *Transport) RenderTrainersPage(fiberCtx *fiber.Ctx) error {
+	serviceSports, err := t.service.GetTrainers(fiberCtx.Context())
+	if err != nil {
+		return fmt.Errorf("service: %w", err)
+	}
+
+	sports := models.ConvertFromServiceTrainers(serviceSports)
+
+	return fiberCtx.Render("trainers", fiber.Map{
+		"Trainers": sports,
 	})
 }
 
@@ -1200,6 +1322,28 @@ func (t *Transport) UpdateOrganizer(fiberCtx *fiber.Ctx) error {
 	}
 
 	return fiberCtx.Redirect(fmt.Sprintf("/organizers/%d", sportID), fiber.StatusFound)
+}
+
+func (t *Transport) UpdateTrainer(fiberCtx *fiber.Ctx) error {
+	sportID, err := strconv.ParseInt(fiberCtx.Params("id"), 10, 64)
+	if err != nil {
+		return fmt.Errorf("parse sport ID: %w", err)
+	}
+
+	var form updateTrainerForm
+	if err := t.requestReader.ReadAndValidateFiberBody(fiberCtx, &form); err != nil {
+		return fmt.Errorf("parse body: %w", err)
+	}
+
+	err = t.service.UpdateTrainerByID(fiberCtx.Context(), servicedto.UpdateTrainerByIDRequest{
+		ID:   sportID,
+		Name: form.Name,
+	})
+	if err != nil {
+		return fmt.Errorf("service: %w", err)
+	}
+
+	return fiberCtx.Redirect(fmt.Sprintf("/trainers/%d", sportID), fiber.StatusFound)
 }
 
 func (t *Transport) UpdateClub(fiberCtx *fiber.Ctx) error {

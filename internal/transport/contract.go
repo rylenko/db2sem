@@ -23,12 +23,15 @@ type service interface {
 	GetGyms(ctx context.Context, req servicedto.GetGymsRequest) ([]domain.Gym, error)
 	GetCourts(ctx context.Context, req servicedto.GetCourtsRequest) ([]domain.Court, error)
 	CreateSport(ctx context.Context, name string) error
+	CreateTrainer(ctx context.Context, name string) error
 	CreateClub(ctx context.Context, name string) error
 	CreateOrganizer(ctx context.Context, name string, location *string) error
+	CreateTournament(ctx context.Context, req servicedto.CreateTournamentRequest) error
 	CreateSportsman(ctx context.Context, req servicedto.CreateSportsmanRequest) error
 	CreateArena(ctx context.Context, req servicedto.CreateArenaRequest) error
 	CreateStadium(ctx context.Context, req servicedto.CreateStadiumRequest) error
 	DeleteClubByID(ctx context.Context, sportID int64) error
+	DeleteTrainerByID(ctx context.Context, sportID int64) error
 	DeleteSportByID(ctx context.Context, sportID int64) error
 	DeleteOrganizerByID(ctx context.Context, sportID int64) error
 	DeletePlaceByID(ctx context.Context, placeID int64) error
@@ -51,6 +54,7 @@ type service interface {
 	GetOrganizerByID(ctx context.Context, sportID int64) (*domain.Organizer, error)
 	GetSportByID(ctx context.Context, sportID int64) (*domain.Sport, error)
 	GetClubByID(ctx context.Context, sportID int64) (*domain.Club, error)
+	GetTrainerByID(ctx context.Context, sportID int64) (*domain.Trainer, error)
 	GetArenaByID(ctx context.Context, id int64) (*domain.Arena, error)
 	GetStadiumByID(ctx context.Context, id int64) (*domain.Stadium, error)
 	GetCourtByID(ctx context.Context, id int64) (*domain.Court, error)
@@ -66,6 +70,7 @@ type service interface {
 	GetTrainersBySportID(ctx context.Context, sportID int64) ([]domain.Trainer, error)
 	UpdateSportByID(ctx context.Context, req servicedto.UpdateSportByIDRequest) error
 	UpdateClubByID(ctx context.Context, req servicedto.UpdateClubByIDRequest) error
+	UpdateTrainerByID(ctx context.Context, req servicedto.UpdateTrainerByIDRequest) error
 	UpdateOrganizerByID(ctx context.Context, req servicedto.UpdateOrganizerByIDRequest) error
 	UpdateArenaByID(ctx context.Context, req servicedto.UpdateArenaByIDRequest) error
 	UpdateStadiumByID(ctx context.Context, req servicedto.UpdateStadiumByIDRequest) error

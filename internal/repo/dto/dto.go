@@ -27,6 +27,13 @@ type GetCourtsRequest struct {
 	IsOutdoor *bool
 }
 
+type InsertTournamentRequest struct {
+	OrganizerID int64
+	PlaceID     int64
+	StartAt     time.Time
+	SportIDs    []int64
+}
+
 type InsertSportsmanRequest struct {
 	Name      string
 	BirthDate time.Time
@@ -54,6 +61,11 @@ type InsertStadiumRequest struct {
 }
 
 type UpdateClubByIDRequest struct {
+	ID   int64
+	Name string
+}
+
+type UpdateTrainerByIDRequest struct {
 	ID   int64
 	Name string
 }

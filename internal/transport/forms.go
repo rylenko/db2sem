@@ -82,6 +82,10 @@ type createClubForm struct {
 	Name string `validate:"required" form:"name"`
 }
 
+type createTrainerForm struct {
+	Name string `validate:"required" form:"name"`
+}
+
 type createSportForm struct {
 	Name string `validate:"required" form:"name"`
 }
@@ -89,6 +93,13 @@ type createSportForm struct {
 type createOrganizerForm struct {
 	Name     string `validate:"required" form:"name"`
 	Location string `form:"location"`
+}
+
+type createTournamentForm struct {
+	OrganizerID int64   `validate:"required" form:"organizer_id"`
+	PlaceID     int64   `validate:"required" form:"place_id"`
+	StartAt     string  `validate:"reqired" form:"birth_date"`
+	SportIDs    []int64 `form:"sport_ids"`
 }
 
 type createSportsmanForm struct {
@@ -101,6 +112,10 @@ type createSportsmanForm struct {
 }
 
 type updateClubForm struct {
+	Name string `validate:"required" form:"name"`
+}
+
+type updateTrainerForm struct {
 	Name string `validate:"required" form:"name"`
 }
 

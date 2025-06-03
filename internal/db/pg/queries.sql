@@ -933,3 +933,57 @@ SELECT
 	name
 FROM clubs
 WHERE id = $1;
+
+-- Query: #51 (custom)
+--
+-- Создать тренера.
+--
+-- name: InsertTrainer :exec
+INSERT INTO trainers (name)
+VALUES ($1);
+
+-- Query: #52 (custom)
+--
+-- Обновляет тренера.
+--
+-- name: UpdateTrainerByID :exec
+UPDATE trainers
+SET name = $1
+WHERE id = $2;
+
+-- Query: #53 (custom)
+--
+-- Удаляет клуб по ID.
+--
+-- name: DeleteTrainerByID :exec
+DELETE FROM trainers
+WHERE id = $1;
+
+-- Query: #54 (custom)
+--
+-- Получает клуб по идентификатору.
+--
+-- name: GetTrainerByID :one
+SELECT
+	id,
+	name
+FROM trainers
+WHERE id = $1;
+
+-- Query: #55 (custom)
+--
+-- Создать соревнование.
+--
+-- name: InsertTournament :exec
+WITH tournament AS (
+	INSERT INTO tournaments (place_id, organizer_id, start_at)
+	VALUES ($1, $2, $3)
+	RETURNING id
+)
+INSERT INTO tournament_sports (tournament_id, sport_id)
+SELECT
+	id,
+	sport_id
+FROM
+	tournament,
+	UNNEST(@sport_ids::BIGINT[]) AS sport_id;
