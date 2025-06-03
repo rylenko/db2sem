@@ -11,6 +11,19 @@ import (
 	"github.com/jackc/pgx/v5/pgtype"
 )
 
+const deletePlaceByID = `-- name: DeletePlaceByID :exec
+DELETE FROM places
+WHERE id = $1
+`
+
+// Query: #34 (custom)
+//
+// Удаляет сооружение.
+func (q *Queries) DeletePlaceByID(ctx context.Context, id int64) error {
+	_, err := q.db.Exec(ctx, deletePlaceByID, id)
+	return err
+}
+
 const deleteSportByID = `-- name: DeleteSportByID :exec
 DELETE FROM sports
 WHERE id = $1
@@ -35,6 +48,42 @@ WHERE id = $1
 func (q *Queries) DeleteSportsmanByID(ctx context.Context, id int64) error {
 	_, err := q.db.Exec(ctx, deleteSportsmanByID, id)
 	return err
+}
+
+const getArenaByID = `-- name: GetArenaByID :one
+SELECT
+	p.id,
+	p.name,
+	p.location,
+	aa.referees_count,
+	aa.treadmill_length_cm
+FROM places p
+JOIN arena_attributes aa ON aa.place_id = p.id
+WHERE p.id = $1
+`
+
+type GetArenaByIDRow struct {
+	ID                int64
+	Name              string
+	Location          string
+	RefereesCount     int16
+	TreadmillLengthCm int64
+}
+
+// Query: #35 (custom)
+//
+// Получить арену.
+func (q *Queries) GetArenaByID(ctx context.Context, id int64) (GetArenaByIDRow, error) {
+	row := q.db.QueryRow(ctx, getArenaByID, id)
+	var i GetArenaByIDRow
+	err := row.Scan(
+		&i.ID,
+		&i.Name,
+		&i.Location,
+		&i.RefereesCount,
+		&i.TreadmillLengthCm,
+	)
+	return i, err
 }
 
 const getArenas = `-- name: GetArenas :many
@@ -1676,6 +1725,44 @@ func (q *Queries) InsertStadium(ctx context.Context, arg InsertStadiumParams) er
 		arg.MaxSpectators,
 		arg.IsOutdoor,
 		arg.Coating,
+		arg.Name,
+		arg.Location,
+	)
+	return err
+}
+
+const updateArenaByID = `-- name: UpdateArenaByID :exec
+WITH updated_attributes AS (
+	UPDATE arena_attributes
+	SET
+		referees_count = $1,
+		treadmill_length_cm = $2
+	WHERE place_id = $3
+	RETURNING place_id
+)
+UPDATE places
+SET
+	name = $4,
+	location = $5
+WHERE id = $3
+`
+
+type UpdateArenaByIDParams struct {
+	RefereesCount     int16
+	TreadmillLengthCm int64
+	ID                int64
+	Name              string
+	Location          string
+}
+
+// Query: #36 (custom)
+//
+// Обновить арену.
+func (q *Queries) UpdateArenaByID(ctx context.Context, arg UpdateArenaByIDParams) error {
+	_, err := q.db.Exec(ctx, updateArenaByID,
+		arg.RefereesCount,
+		arg.TreadmillLengthCm,
+		arg.ID,
 		arg.Name,
 		arg.Location,
 	)

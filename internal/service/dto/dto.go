@@ -16,6 +16,14 @@ type UpdateSportByIDRequest struct {
 	Name string
 }
 
+type UpdateArenaByIDRequest struct {
+	ID                int64
+	Name              string
+	Location          string
+	RefereesCount     int16
+	TreadmillLengthCm int64
+}
+
 type UpdateSportsmanByIDRequest struct {
 	ID        int64
 	Name      string

@@ -128,6 +128,25 @@ func (r *Repo) GetStadiums(ctx context.Context, req dto.GetStadiumsRequest) ([]d
 	return places, nil
 }
 
+func (r *Repo) GetArenaByID(ctx context.Context, id int64) (*domain.Arena, error) {
+	pgPlace, err := r.conn.Queries(ctx).GetArenaByID(ctx, id)
+	if err != nil {
+		if errors.Is(err, pgx.ErrNoRows) {
+			return nil, nil //nolint:nilnil // because
+		}
+
+		return nil, fmt.Errorf("query: %w", err)
+	}
+
+	return &domain.Arena{
+		ID:                pgPlace.ID,
+		Name:              pgPlace.Name,
+		Location:          pgPlace.Location,
+		RefereesCount:     pgPlace.RefereesCount,
+		TreadmillLengthCm: pgPlace.TreadmillLengthCm,
+	}, nil
+}
+
 func (r *Repo) GetArenas(ctx context.Context, req dto.GetArenasRequest) ([]domain.Arena, error) {
 	pgPlaces, err := r.conn.Queries(ctx).GetArenas(ctx, pg.GetArenasParams{
 		RefereesCount:     convertToPgInt2(req.RefereesCount),
@@ -874,6 +893,16 @@ func (r *Repo) InsertSportsman(ctx context.Context, req dto.InsertSportsmanReque
 	return nil
 }
 
+func (r *Repo) UpdateArenaByID(ctx context.Context, req dto.UpdateArenaByIDRequest) error {
+	return r.conn.Queries(ctx).UpdateArenaByID(ctx, pg.UpdateArenaByIDParams{
+		ID:                req.ID,
+		Name:              req.Name,
+		Location:          req.Location,
+		TreadmillLengthCm: req.TreadmillLengthCm,
+		RefereesCount:     req.RefereesCount,
+	})
+}
+
 func (r *Repo) UpdateSportByID(ctx context.Context, req dto.UpdateSportByIDRequest) error {
 	return r.conn.Queries(ctx).UpdateSportByID(ctx, pg.UpdateSportByIDParams{
 		ID:   req.ID,
@@ -1061,4 +1090,8 @@ func (r *Repo) GetPlacesWithTournamentDatesForPeriod(
 	}
 
 	return places, nil
+}
+
+func (r *Repo) DeletePlaceByID(ctx context.Context, placeID int64) error {
+	return r.conn.Queries(ctx).DeletePlaceByID(ctx, placeID)
 }

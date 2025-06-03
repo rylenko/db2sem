@@ -14,6 +14,28 @@
             margin: auto;
         }
 
+        form {
+margin-top: 10px;
+margin-bottom: 30px;
+}
+input, button {
+padding: 10px;
+margin: 8px 0;
+font-size: 1rem;
+width: 100%;
+box-sizing: border-box;
+}
+button {
+background-color: #007bff;
+color: white;
+border: none;
+cursor: pointer;
+border-radius: 5px;
+}
+button:hover {
+background-color: #0056b3;
+}
+
         h1 {
             color: #222;
             margin-bottom: 20px;
@@ -107,6 +129,10 @@
 		<p>Расположение: {{ .Location }}</p>
 		<p>Количество судей: {{ .RefereesCount }}</p>
 		<p>Длина беговой дорожки: {{ .TreadmillLengthCm }}</p>
+
+		<form action="/places/{{ .ID }}/delete" method="POST">
+			<button type="submit">Удалить</button>
+		</form>
 
 		<hr/>
 	{{ end }}

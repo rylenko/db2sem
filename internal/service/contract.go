@@ -18,6 +18,7 @@ type repo interface {
 	InsertSport(ctx context.Context, name string) error
 	InsertSportsman(ctx context.Context, req repodto.InsertSportsmanRequest) error
 	DeleteSportByID(ctx context.Context, sportID int64) error
+	DeletePlaceByID(ctx context.Context, placeID int64) error
 	DeleteSportsmanByID(ctx context.Context, sportsmanID int64) error
 	GetClubActiveSportsmenCountsForPeriod(
 		ctx context.Context, startAt, endAt time.Time) ([]domain.ClubSportsmenCount, error)
@@ -37,6 +38,7 @@ type repo interface {
 	GetSportsmenByTrainerID(ctx context.Context, trainerID int64, minRank *int16) ([]domain.RankedSportsman, error)
 	GetSportsmenInvolvedInSeveralSports(ctx context.Context) ([]domain.Sportsman, error)
 	GetSportByID(ctx context.Context, sportID int64) (*domain.Sport, error)
+	GetArenaByID(ctx context.Context, id int64) (*domain.Arena, error)
 	GetSports(ctx context.Context) ([]domain.Sport, error)
 	GetTournaments(ctx context.Context) ([]domain.Tournament, error)
 	GetTournamentsByPlaceID(ctx context.Context, placeID int64, sportID *int64) ([]domain.Tournament, error)
@@ -45,5 +47,6 @@ type repo interface {
 	GetTrainersBySportsmanID(ctx context.Context, sportsmanID int64) ([]domain.Trainer, error)
 	GetTrainersBySportID(ctx context.Context, sportID int64) ([]domain.Trainer, error)
 	UpdateSportByID(ctx context.Context, req repodto.UpdateSportByIDRequest) error
+	UpdateArenaByID(ctx context.Context, req repodto.UpdateArenaByIDRequest) error
 	UpdateSportsmanByID(ctx context.Context, req repodto.UpdateSportsmanByIDRequest) error
 }

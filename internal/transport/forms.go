@@ -103,3 +103,10 @@ type updateSportsmanForm struct {
 	ClubID    int64   `validate:"required" form:"club_id"`
 	SportIDs  []int64 `form:"sport_ids"`
 }
+
+type updateArenaForm struct {
+	Name              string `validate:"required" form:"name"`
+	Location          string `validate:"required" form:"location"`
+	RefereesCount     int16  `validate:"required" form:"referees_count"`
+	TreadmillLengthCm int64  `validate:"required" form:"treadmill_length_cm"`
+}

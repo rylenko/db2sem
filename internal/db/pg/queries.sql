@@ -704,3 +704,45 @@ SELECT
 	pt.name AS type_name
 FROM places p
 JOIN place_types pt ON pt.id = p.type_id;
+
+-- Query: #34 (custom)
+--
+-- Удаляет сооружение.
+--
+-- name: DeletePlaceByID :exec
+DELETE FROM places
+WHERE id = $1;
+
+-- Query: #35 (custom)
+--
+-- Получить арену.
+--
+-- name: GetArenaByID :one
+SELECT
+	p.id,
+	p.name,
+	p.location,
+	aa.referees_count,
+	aa.treadmill_length_cm
+FROM places p
+JOIN arena_attributes aa ON aa.place_id = p.id
+WHERE p.id = $1;
+
+-- Query: #36 (custom)
+--
+-- Обновить арену.
+--
+-- name: UpdateArenaByID :exec
+WITH updated_attributes AS (
+	UPDATE arena_attributes
+	SET
+		referees_count = $1,
+		treadmill_length_cm = $2
+	WHERE place_id = $3
+	RETURNING place_id
+)
+UPDATE places
+SET
+	name = $4,
+	location = $5
+WHERE id = $3;

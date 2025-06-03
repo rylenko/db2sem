@@ -25,6 +25,7 @@ type service interface {
 	CreateSport(ctx context.Context, name string) error
 	CreateSportsman(ctx context.Context, req servicedto.CreateSportsmanRequest) error
 	DeleteSportByID(ctx context.Context, sportID int64) error
+	DeletePlaceByID(ctx context.Context, placeID int64) error
 	DeleteSportsmanByID(ctx context.Context, sportsmanID int64) error
 	GetInactiveSportsmenForPeriod(ctx context.Context, startAt, endAt time.Time) ([]domain.Sportsman, error)
 	GetOrganizerTournamentCountsForPeriod(
@@ -42,6 +43,7 @@ type service interface {
 	GetSportsmenByTrainerID(ctx context.Context, trainerID int64, minRank *int16) ([]domain.RankedSportsman, error)
 	GetSportsmenInvolvedInSeveralSports(ctx context.Context) ([]domain.Sportsman, error)
 	GetSportByID(ctx context.Context, sportID int64) (*domain.Sport, error)
+	GetArenaByID(ctx context.Context, id int64) (*domain.Arena, error)
 	GetSports(ctx context.Context) ([]domain.Sport, error)
 	GetTournaments(ctx context.Context) ([]domain.Tournament, error)
 	GetTournamentsByPlaceID(ctx context.Context, placeID int64, sportID *int64) ([]domain.Tournament, error)
@@ -52,5 +54,6 @@ type service interface {
 	GetTrainersBySportsmanID(ctx context.Context, sportsmanID int64) ([]domain.Trainer, error)
 	GetTrainersBySportID(ctx context.Context, sportID int64) ([]domain.Trainer, error)
 	UpdateSportByID(ctx context.Context, req servicedto.UpdateSportByIDRequest) error
+	UpdateArenaByID(ctx context.Context, req servicedto.UpdateArenaByIDRequest) error
 	UpdateSportsmanByID(ctx context.Context, req servicedto.UpdateSportsmanByIDRequest) error
 }

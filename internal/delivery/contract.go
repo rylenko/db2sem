@@ -6,6 +6,7 @@ type transport interface {
 	CreateSport(fiberCtx *fiber.Ctx) error
 	CreateSportsman(fiberCtx *fiber.Ctx) error
 	DeleteSport(fiberCtx *fiber.Ctx) error
+	DeletePlace(fiberCtx *fiber.Ctx) error
 	DeleteSportsman(fiberCtx *fiber.Ctx) error
 	RenderIndexPage(fiberCtx *fiber.Ctx) error
 	RenderQueriesPage(fibercCtx *fiber.Ctx) error
@@ -20,6 +21,7 @@ type transport interface {
 	RenderPlacesWithTournamentDatesPostPage(fiberCtx *fiber.Ctx) error
 	RenderSportsmanTrainersGetPage(fiberCtx *fiber.Ctx) error
 	RenderSportsmanTrainersPostPage(fiberCtx *fiber.Ctx) error
+	RenderArenaPage(fiberCtx *fiber.Ctx) error
 	RenderSportPage(fiberCtx *fiber.Ctx) error
 	RenderSportsPage(fiberCtx *fiber.Ctx) error
 	RenderSportTrainersGetPage(fiberCtx *fiber.Ctx) error
@@ -40,6 +42,7 @@ type transport interface {
 	RenderSportSportsmenPostPage(fibercCtx *fiber.Ctx) error
 	RenderSportsmenPage(fibercCtx *fiber.Ctx) error
 	RenderSportsmenInvolvedInSeveralSportsPage(fibercCtx *fiber.Ctx) error
+	UpdateArena(fiberCtx *fiber.Ctx) error
 	UpdateSport(fiberCtx *fiber.Ctx) error
 	UpdateSportsman(fiberCtx *fiber.Ctx) error
 }

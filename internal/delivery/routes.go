@@ -72,4 +72,15 @@ func registerRoutes(app *fiber.App, transport transport) {
 		sportsmen.Post("/:id/update", transport.UpdateSportsman)
 		sportsmen.Post("/:id/delete", transport.DeleteSportsman)
 	}
+
+	places := app.Group("places")
+	{
+		places.Post("/:id/delete", transport.DeletePlace)
+	}
+
+	arenas := app.Group("arenas")
+	{
+		arenas.Get("/:id", transport.RenderArenaPage)
+		arenas.Post("/:id/update", transport.UpdateArena)
+	}
 }

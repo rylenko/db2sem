@@ -90,6 +90,10 @@ func (s *Service) DeleteSportByID(ctx context.Context, sportID int64) error {
 	return s.repo.DeleteSportByID(ctx, sportID)
 }
 
+func (s *Service) DeletePlaceByID(ctx context.Context, placeID int64) error {
+	return s.repo.DeletePlaceByID(ctx, placeID)
+}
+
 func (s *Service) DeleteSportsmanByID(ctx context.Context, sportsmanID int64) error {
 	return s.repo.DeleteSportsmanByID(ctx, sportsmanID)
 }
@@ -142,6 +146,10 @@ func (s *Service) GetSportByID(ctx context.Context, sportID int64) (*domain.Spor
 	return s.repo.GetSportByID(ctx, sportID)
 }
 
+func (s *Service) GetArenaByID(ctx context.Context, id int64) (*domain.Arena, error) {
+	return s.repo.GetArenaByID(ctx, id)
+}
+
 func (s *Service) GetSports(ctx context.Context) ([]domain.Sport, error) {
 	return s.repo.GetSports(ctx)
 }
@@ -191,6 +199,16 @@ func (s *Service) UpdateSportByID(ctx context.Context, req dto.UpdateSportByIDRe
 	return s.repo.UpdateSportByID(ctx, repodto.UpdateSportByIDRequest{
 		ID:   req.ID,
 		Name: req.Name,
+	})
+}
+
+func (s *Service) UpdateArenaByID(ctx context.Context, req dto.UpdateArenaByIDRequest) error {
+	return s.repo.UpdateArenaByID(ctx, repodto.UpdateArenaByIDRequest{
+		ID:                req.ID,
+		Name:              req.Name,
+		Location:          req.Location,
+		RefereesCount:     req.RefereesCount,
+		TreadmillLengthCm: req.TreadmillLengthCm,
 	})
 }
 
