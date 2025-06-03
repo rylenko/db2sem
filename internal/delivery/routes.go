@@ -87,6 +87,7 @@ func registerRoutes(app *fiber.App, transport transport) {
 
 	stadiums := app.Group("stadiums")
 	{
+		stadiums.Post("/", transport.CreateStadium)
 		stadiums.Get("/:id", transport.RenderStadiumPage)
 		stadiums.Post("/:id/update", transport.UpdateStadium)
 	}
@@ -101,5 +102,23 @@ func registerRoutes(app *fiber.App, transport transport) {
 	{
 		gyms.Get("/:id", transport.RenderGymPage)
 		gyms.Post("/:id/update", transport.UpdateGym)
+	}
+
+	organizers := app.Group("organizers")
+	{
+		organizers.Get("/", transport.RenderOrganizersPage)
+		organizers.Post("/", transport.CreateOrganizer)
+		organizers.Get("/:id", transport.RenderOrganizerPage)
+		organizers.Post("/:id/update", transport.UpdateOrganizer)
+		organizers.Post("/:id/delete", transport.DeleteOrganizer)
+	}
+
+	clubs := app.Group("clubs")
+	{
+		clubs.Get("/", transport.RenderClubsPage)
+		clubs.Post("/", transport.CreateClub)
+		clubs.Get("/:id", transport.RenderClubPage)
+		clubs.Post("/:id/update", transport.UpdateClub)
+		clubs.Post("/:id/delete", transport.DeleteClub)
 	}
 }

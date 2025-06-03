@@ -78,8 +78,17 @@ type getTrainerSportsmenForm struct {
 	MinRank   int16 `form:"min_rank"`
 }
 
+type createClubForm struct {
+	Name string `validate:"required" form:"name"`
+}
+
 type createSportForm struct {
 	Name string `validate:"required" form:"name"`
+}
+
+type createOrganizerForm struct {
+	Name     string `validate:"required" form:"name"`
+	Location string `form:"location"`
 }
 
 type createSportsmanForm struct {
@@ -91,8 +100,17 @@ type createSportsmanForm struct {
 	SportIDs  []int64 `form:"sport_ids"`
 }
 
+type updateClubForm struct {
+	Name string `validate:"required" form:"name"`
+}
+
 type updateSportForm struct {
 	Name string `validate:"required" form:"name"`
+}
+
+type updateOrganizerForm struct {
+	Name     string `validate:"required" form:"name"`
+	Location string `form:"location"`
 }
 
 type updateSportsmanForm struct {
@@ -132,6 +150,16 @@ type updateCourtForm struct {
 	WidthCm   int64  `validate:"required" form:"width_cm"`
 	LengthCm  int64  `validate:"required" form:"length_cm"`
 	IsOutdoor bool   `form:"is_outdoor"`
+}
+
+type createStadiumForm struct {
+	Name          string `validate:"required" form:"name"`
+	Location      string `validate:"required" form:"location"`
+	WidthCm       int64  `validate:"required" form:"width_cm"`
+	LengthCm      int64  `validate:"required" form:"length_cm"`
+	MaxSpectators int16  `validate:"required" form:"max_spectators"`
+	IsOutdoor     bool   `form:"is_outdoor"`
+	Coating       string `validate:"required" form:"coating"`
 }
 
 type updateStadiumForm struct {

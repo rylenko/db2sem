@@ -438,7 +438,7 @@ place_type AS (
 ),
 place AS (
 	INSERT INTO places (name, location, type_id)
-	VALUES (@name, @location, place_type.id)
+	VALUES (@name, @location, (SELECT id FROM place_type))
 	RETURNING id
 )
 INSERT INTO stadium_attributes (place_id, width_cm, length_cm, max_spectators, is_outdoor, coating)
@@ -455,7 +455,7 @@ place_type AS (
 ),
 place AS (
 	INSERT INTO places (name, location, type_id)
-	VALUES (@name, @location, place_type.id)
+	VALUES (@name, @location, (SELECT id FROM place_type))
 	RETURNING id
 )
 INSERT INTO court_attributes (place_id, width_cm, length_cm, is_outdoor)
@@ -472,7 +472,7 @@ place_type AS (
 ),
 place AS (
 	INSERT INTO places (name, location, type_id)
-	VALUES (@name, @location, place_type.id)
+	VALUES (@name, @location, (SELECT id FROM place_type))
 	RETURNING id
 )
 INSERT INTO gym_attributes (place_id, trainers_count, dumbbells_count, has_bathhouse)
@@ -858,3 +858,78 @@ SET
 	name = $5,
 	location = $6
 WHERE id = $4;
+
+-- Query: #43 (custom)
+--
+-- Создать организатора.
+--
+-- name: InsertOrganizer :exec
+INSERT INTO organizers (name, location)
+VALUES ($1, $2);
+
+-- Query: #44 (custom)
+--
+-- Обновляет организатора.
+--
+-- name: UpdateOrganizerByID :exec
+UPDATE organizers
+SET
+	name = $1,
+	location = $2
+WHERE id = $3;
+
+-- Query: #45 (custom)
+--
+-- Удаляет организатора по ID.
+--
+-- name: DeleteOrganizerByID :exec
+DELETE FROM organizers
+WHERE id = $1;
+
+-- Query: #46 (custom)
+--
+-- Получает организатора по идентификатору.
+--
+-- name: GetOrganizerByID :one
+SELECT
+	id,
+	name,
+	location
+FROM organizers
+WHERE id = $1;
+
+-- Query: #47 (custom)
+--
+-- Создать клуб.
+--
+-- name: InsertClub :exec
+INSERT INTO clubs (name)
+VALUES ($1);
+
+-- Query: #48 (custom)
+--
+-- Обновляет клуб.
+--
+-- name: UpdateClubByID :exec
+UPDATE clubs
+SET name = $1
+WHERE id = $2;
+
+-- Query: #49 (custom)
+--
+-- Удаляет клуб по ID.
+--
+-- name: DeleteClubByID :exec
+DELETE FROM clubs
+WHERE id = $1;
+
+-- Query: #50 (custom)
+--
+-- Получает клуб по идентификатору.
+--
+-- name: GetClubByID :one
+SELECT
+	id,
+	name
+FROM clubs
+WHERE id = $1;

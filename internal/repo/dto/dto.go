@@ -43,9 +43,30 @@ type InsertArenaRequest struct {
 	TreadmillLengthCm int64
 }
 
+type InsertStadiumRequest struct {
+	Name          string
+	Location      string
+	WidthCm       int64
+	LengthCm      int64
+	MaxSpectators int16
+	IsOutdoor     bool
+	Coating       string
+}
+
+type UpdateClubByIDRequest struct {
+	ID   int64
+	Name string
+}
+
 type UpdateSportByIDRequest struct {
 	ID   int64
 	Name string
+}
+
+type UpdateOrganizerByIDRequest struct {
+	ID       int64
+	Name     string
+	Location *string
 }
 
 type UpdateArenaByIDRequest struct {

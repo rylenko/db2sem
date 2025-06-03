@@ -4,11 +4,16 @@ import "github.com/gofiber/fiber/v2"
 
 type transport interface {
 	CreateArena(fiberCtx *fiber.Ctx) error
+	CreateStadium(fiberCtx *fiber.Ctx) error
 	CreateSport(fiberCtx *fiber.Ctx) error
+	CreateClub(fiberCtx *fiber.Ctx) error
+	CreateOrganizer(fiberCtx *fiber.Ctx) error
 	CreateSportsman(fiberCtx *fiber.Ctx) error
 	DeleteSport(fiberCtx *fiber.Ctx) error
+	DeleteClub(fiberCtx *fiber.Ctx) error
 	DeletePlace(fiberCtx *fiber.Ctx) error
 	DeleteSportsman(fiberCtx *fiber.Ctx) error
+	DeleteOrganizer(fiberCtx *fiber.Ctx) error
 	RenderIndexPage(fiberCtx *fiber.Ctx) error
 	RenderQueriesPage(fibercCtx *fiber.Ctx) error
 	RenderArenasPage(fiberCtx *fiber.Ctx) error
@@ -22,10 +27,14 @@ type transport interface {
 	RenderPlacesWithTournamentDatesPostPage(fiberCtx *fiber.Ctx) error
 	RenderSportsmanTrainersGetPage(fiberCtx *fiber.Ctx) error
 	RenderSportsmanTrainersPostPage(fiberCtx *fiber.Ctx) error
+	RenderClubPage(fiberCtx *fiber.Ctx) error
+	RenderClubsPage(fiberCtx *fiber.Ctx) error
 	RenderArenaPage(fiberCtx *fiber.Ctx) error
 	RenderGymPage(fiberCtx *fiber.Ctx) error
 	RenderStadiumPage(fiberCtx *fiber.Ctx) error
 	RenderCourtPage(fiberCtx *fiber.Ctx) error
+	RenderOrganizerPage(fiberCtx *fiber.Ctx) error
+	RenderOrganizersPage(fiberCtx *fiber.Ctx) error
 	RenderSportPage(fiberCtx *fiber.Ctx) error
 	RenderSportsPage(fiberCtx *fiber.Ctx) error
 	RenderSportTrainersGetPage(fiberCtx *fiber.Ctx) error
@@ -52,4 +61,6 @@ type transport interface {
 	UpdateGym(fiberCtx *fiber.Ctx) error
 	UpdateSport(fiberCtx *fiber.Ctx) error
 	UpdateSportsman(fiberCtx *fiber.Ctx) error
+	UpdateOrganizer(fiberCtx *fiber.Ctx) error
+	UpdateClub(fiberCtx *fiber.Ctx) error
 }

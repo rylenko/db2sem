@@ -23,9 +23,14 @@ type service interface {
 	GetGyms(ctx context.Context, req servicedto.GetGymsRequest) ([]domain.Gym, error)
 	GetCourts(ctx context.Context, req servicedto.GetCourtsRequest) ([]domain.Court, error)
 	CreateSport(ctx context.Context, name string) error
+	CreateClub(ctx context.Context, name string) error
+	CreateOrganizer(ctx context.Context, name string, location *string) error
 	CreateSportsman(ctx context.Context, req servicedto.CreateSportsmanRequest) error
 	CreateArena(ctx context.Context, req servicedto.CreateArenaRequest) error
+	CreateStadium(ctx context.Context, req servicedto.CreateStadiumRequest) error
+	DeleteClubByID(ctx context.Context, sportID int64) error
 	DeleteSportByID(ctx context.Context, sportID int64) error
+	DeleteOrganizerByID(ctx context.Context, sportID int64) error
 	DeletePlaceByID(ctx context.Context, placeID int64) error
 	DeleteSportsmanByID(ctx context.Context, sportsmanID int64) error
 	GetInactiveSportsmenForPeriod(ctx context.Context, startAt, endAt time.Time) ([]domain.Sportsman, error)
@@ -43,7 +48,9 @@ type service interface {
 	GetSportsmenBySportID(ctx context.Context, sportID int64, minRank *int16) ([]domain.RankedSportsman, error)
 	GetSportsmenByTrainerID(ctx context.Context, trainerID int64, minRank *int16) ([]domain.RankedSportsman, error)
 	GetSportsmenInvolvedInSeveralSports(ctx context.Context) ([]domain.Sportsman, error)
+	GetOrganizerByID(ctx context.Context, sportID int64) (*domain.Organizer, error)
 	GetSportByID(ctx context.Context, sportID int64) (*domain.Sport, error)
+	GetClubByID(ctx context.Context, sportID int64) (*domain.Club, error)
 	GetArenaByID(ctx context.Context, id int64) (*domain.Arena, error)
 	GetStadiumByID(ctx context.Context, id int64) (*domain.Stadium, error)
 	GetCourtByID(ctx context.Context, id int64) (*domain.Court, error)
@@ -58,6 +65,8 @@ type service interface {
 	GetTrainersBySportsmanID(ctx context.Context, sportsmanID int64) ([]domain.Trainer, error)
 	GetTrainersBySportID(ctx context.Context, sportID int64) ([]domain.Trainer, error)
 	UpdateSportByID(ctx context.Context, req servicedto.UpdateSportByIDRequest) error
+	UpdateClubByID(ctx context.Context, req servicedto.UpdateClubByIDRequest) error
+	UpdateOrganizerByID(ctx context.Context, req servicedto.UpdateOrganizerByIDRequest) error
 	UpdateArenaByID(ctx context.Context, req servicedto.UpdateArenaByIDRequest) error
 	UpdateStadiumByID(ctx context.Context, req servicedto.UpdateStadiumByIDRequest) error
 	UpdateCourtByID(ctx context.Context, req servicedto.UpdateCourtByIDRequest) error

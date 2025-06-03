@@ -11,6 +11,32 @@ import (
 	"github.com/jackc/pgx/v5/pgtype"
 )
 
+const deleteClubByID = `-- name: DeleteClubByID :exec
+DELETE FROM clubs
+WHERE id = $1
+`
+
+// Query: #49 (custom)
+//
+// Удаляет клуб по ID.
+func (q *Queries) DeleteClubByID(ctx context.Context, id int64) error {
+	_, err := q.db.Exec(ctx, deleteClubByID, id)
+	return err
+}
+
+const deleteOrganizerByID = `-- name: DeleteOrganizerByID :exec
+DELETE FROM organizers
+WHERE id = $1
+`
+
+// Query: #45 (custom)
+//
+// Удаляет организатора по ID.
+func (q *Queries) DeleteOrganizerByID(ctx context.Context, id int64) error {
+	_, err := q.db.Exec(ctx, deleteOrganizerByID, id)
+	return err
+}
+
 const deletePlaceByID = `-- name: DeletePlaceByID :exec
 DELETE FROM places
 WHERE id = $1
@@ -201,6 +227,29 @@ func (q *Queries) GetClubActiveSportsmenCountsForPeriod(ctx context.Context, arg
 		return nil, err
 	}
 	return items, nil
+}
+
+const getClubByID = `-- name: GetClubByID :one
+SELECT
+	id,
+	name
+FROM clubs
+WHERE id = $1
+`
+
+type GetClubByIDRow struct {
+	ID   int64
+	Name string
+}
+
+// Query: #50 (custom)
+//
+// Получает клуб по идентификатору.
+func (q *Queries) GetClubByID(ctx context.Context, id int64) (GetClubByIDRow, error) {
+	row := q.db.QueryRow(ctx, getClubByID, id)
+	var i GetClubByIDRow
+	err := row.Scan(&i.ID, &i.Name)
+	return i, err
 }
 
 const getClubs = `-- name: GetClubs :many
@@ -528,6 +577,31 @@ func (q *Queries) GetInactiveSportsmenForPeriod(ctx context.Context, arg GetInac
 		return nil, err
 	}
 	return items, nil
+}
+
+const getOrganizerByID = `-- name: GetOrganizerByID :one
+SELECT
+	id,
+	name,
+	location
+FROM organizers
+WHERE id = $1
+`
+
+type GetOrganizerByIDRow struct {
+	ID       int64
+	Name     string
+	Location pgtype.Text
+}
+
+// Query: #46 (custom)
+//
+// Получает организатора по идентификатору.
+func (q *Queries) GetOrganizerByID(ctx context.Context, id int64) (GetOrganizerByIDRow, error) {
+	row := q.db.QueryRow(ctx, getOrganizerByID, id)
+	var i GetOrganizerByIDRow
+	err := row.Scan(&i.ID, &i.Name, &i.Location)
+	return i, err
 }
 
 const getOrganizerTournamentCountsForPeriod = `-- name: GetOrganizerTournamentCountsForPeriod :many
@@ -1690,6 +1764,19 @@ func (q *Queries) InsertArena(ctx context.Context, arg InsertArenaParams) error 
 	return err
 }
 
+const insertClub = `-- name: InsertClub :exec
+INSERT INTO clubs (name)
+VALUES ($1)
+`
+
+// Query: #47 (custom)
+//
+// Создать клуб.
+func (q *Queries) InsertClub(ctx context.Context, name string) error {
+	_, err := q.db.Exec(ctx, insertClub, name)
+	return err
+}
+
 const insertCourt = `-- name: InsertCourt :exec
 WITH
 place_type AS (
@@ -1697,7 +1784,7 @@ place_type AS (
 ),
 place AS (
 	INSERT INTO places (name, location, type_id)
-	VALUES ($4, $5, place_type.id)
+	VALUES ($4, $5, (SELECT id FROM place_type))
 	RETURNING id
 )
 INSERT INTO court_attributes (place_id, width_cm, length_cm, is_outdoor)
@@ -1733,7 +1820,7 @@ place_type AS (
 ),
 place AS (
 	INSERT INTO places (name, location, type_id)
-	VALUES ($4, $5, place_type.id)
+	VALUES ($4, $5, (SELECT id FROM place_type))
 	RETURNING id
 )
 INSERT INTO gym_attributes (place_id, trainers_count, dumbbells_count, has_bathhouse)
@@ -1759,6 +1846,24 @@ func (q *Queries) InsertGym(ctx context.Context, arg InsertGymParams) error {
 		arg.Name,
 		arg.Location,
 	)
+	return err
+}
+
+const insertOrganizer = `-- name: InsertOrganizer :exec
+INSERT INTO organizers (name, location)
+VALUES ($1, $2)
+`
+
+type InsertOrganizerParams struct {
+	Name     string
+	Location pgtype.Text
+}
+
+// Query: #43 (custom)
+//
+// Создать организатора.
+func (q *Queries) InsertOrganizer(ctx context.Context, arg InsertOrganizerParams) error {
+	_, err := q.db.Exec(ctx, insertOrganizer, arg.Name, arg.Location)
 	return err
 }
 
@@ -1821,7 +1926,7 @@ place_type AS (
 ),
 place AS (
 	INSERT INTO places (name, location, type_id)
-	VALUES ($6, $7, place_type.id)
+	VALUES ($6, $7, (SELECT id FROM place_type))
 	RETURNING id
 )
 INSERT INTO stadium_attributes (place_id, width_cm, length_cm, max_spectators, is_outdoor, coating)
@@ -1889,6 +1994,25 @@ func (q *Queries) UpdateArenaByID(ctx context.Context, arg UpdateArenaByIDParams
 		arg.Name,
 		arg.Location,
 	)
+	return err
+}
+
+const updateClubByID = `-- name: UpdateClubByID :exec
+UPDATE clubs
+SET name = $1
+WHERE id = $2
+`
+
+type UpdateClubByIDParams struct {
+	Name string
+	ID   int64
+}
+
+// Query: #48 (custom)
+//
+// Обновляет клуб.
+func (q *Queries) UpdateClubByID(ctx context.Context, arg UpdateClubByIDParams) error {
+	_, err := q.db.Exec(ctx, updateClubByID, arg.Name, arg.ID)
 	return err
 }
 
@@ -1971,6 +2095,28 @@ func (q *Queries) UpdateGymByID(ctx context.Context, arg UpdateGymByIDParams) er
 		arg.Name,
 		arg.Location,
 	)
+	return err
+}
+
+const updateOrganizerByID = `-- name: UpdateOrganizerByID :exec
+UPDATE organizers
+SET
+	name = $1,
+	location = $2
+WHERE id = $3
+`
+
+type UpdateOrganizerByIDParams struct {
+	Name     string
+	Location pgtype.Text
+	ID       int64
+}
+
+// Query: #44 (custom)
+//
+// Обновляет организатора.
+func (q *Queries) UpdateOrganizerByID(ctx context.Context, arg UpdateOrganizerByIDParams) error {
+	_, err := q.db.Exec(ctx, updateOrganizerByID, arg.Name, arg.Location, arg.ID)
 	return err
 }
 

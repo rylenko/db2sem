@@ -58,6 +58,14 @@ func (s *Service) GetArenas(ctx context.Context, req dto.GetArenasRequest) ([]do
 	})
 }
 
+func (s *Service) CreateOrganizer(ctx context.Context, name string, location *string) error {
+	return s.repo.InsertOrganizer(ctx, name, location)
+}
+
+func (s *Service) CreateClub(ctx context.Context, name string) error {
+	return s.repo.InsertClub(ctx, name)
+}
+
 func (s *Service) CreateSport(ctx context.Context, name string) error {
 	return s.repo.InsertSport(ctx, name)
 }
@@ -73,6 +81,18 @@ func (s *Service) GetOrganizerTournamentCountsForPeriod(
 func (s *Service) GetInactiveSportsmenForPeriod(
 	ctx context.Context, startAt, endAt time.Time) ([]domain.Sportsman, error) {
 	return s.repo.GetInactiveSportsmenForPeriod(ctx, startAt, endAt)
+}
+
+func (s *Service) CreateStadium(ctx context.Context, req dto.CreateStadiumRequest) error {
+	return s.repo.InsertStadium(ctx, repodto.InsertStadiumRequest{
+		Name:          req.Name,
+		Location:      req.Location,
+		WidthCm:       req.WidthCm,
+		LengthCm:      req.LengthCm,
+		MaxSpectators: req.MaxSpectators,
+		IsOutdoor:     req.IsOutdoor,
+		Coating:       req.Coating,
+	})
 }
 
 func (s *Service) CreateArena(ctx context.Context, req dto.CreateArenaRequest) error {
@@ -93,6 +113,14 @@ func (s *Service) CreateSportsman(ctx context.Context, req dto.CreateSportsmanRe
 		ClubID:    req.ClubID,
 		SportIDs:  req.SportIDs,
 	})
+}
+
+func (s *Service) DeleteOrganizerByID(ctx context.Context, sportID int64) error {
+	return s.repo.DeleteOrganizerByID(ctx, sportID)
+}
+
+func (s *Service) DeleteClubByID(ctx context.Context, sportID int64) error {
+	return s.repo.DeleteClubByID(ctx, sportID)
 }
 
 func (s *Service) DeleteSportByID(ctx context.Context, sportID int64) error {
@@ -149,6 +177,14 @@ func (s *Service) GetSportsmenByTrainerID(
 
 func (s *Service) GetSportsmenInvolvedInSeveralSports(ctx context.Context) ([]domain.Sportsman, error) {
 	return s.repo.GetSportsmenInvolvedInSeveralSports(ctx)
+}
+
+func (s *Service) GetOrganizerByID(ctx context.Context, sportID int64) (*domain.Organizer, error) {
+	return s.repo.GetOrganizerByID(ctx, sportID)
+}
+
+func (s *Service) GetClubByID(ctx context.Context, clubID int64) (*domain.Club, error) {
+	return s.repo.GetClubByID(ctx, clubID)
 }
 
 func (s *Service) GetSportByID(ctx context.Context, sportID int64) (*domain.Sport, error) {
@@ -214,6 +250,21 @@ func (s *Service) GetTrainersBySportsmanID(ctx context.Context, sportsmanID int6
 
 func (s *Service) GetTrainersBySportID(ctx context.Context, sportID int64) ([]domain.Trainer, error) {
 	return s.repo.GetTrainersBySportID(ctx, sportID)
+}
+
+func (s *Service) UpdateOrganizerByID(ctx context.Context, req dto.UpdateOrganizerByIDRequest) error {
+	return s.repo.UpdateOrganizerByID(ctx, repodto.UpdateOrganizerByIDRequest{
+		ID:       req.ID,
+		Name:     req.Name,
+		Location: req.Location,
+	})
+}
+
+func (s *Service) UpdateClubByID(ctx context.Context, req dto.UpdateClubByIDRequest) error {
+	return s.repo.UpdateClubByID(ctx, repodto.UpdateClubByIDRequest{
+		ID:   req.ID,
+		Name: req.Name,
+	})
 }
 
 func (s *Service) UpdateSportByID(ctx context.Context, req dto.UpdateSportByIDRequest) error {
