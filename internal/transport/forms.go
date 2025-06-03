@@ -110,3 +110,29 @@ type updateArenaForm struct {
 	RefereesCount     int16  `validate:"required" form:"referees_count"`
 	TreadmillLengthCm int64  `validate:"required" form:"treadmill_length_cm"`
 }
+
+type updateGymForm struct {
+	Name           string `validate:"required" form:"name"`
+	Location       string `validate:"required" form:"location"`
+	TrainersCount  int16  `validate:"required" form:"trainers_count"`
+	DumbbellsCount int16  `validate:"required" form:"dumbbells_count"`
+	HasBathhouse   bool   `form:"has_bathhouse"`
+}
+
+type updateCourtForm struct {
+	Name      string `validate:"required" form:"name"`
+	Location  string `validate:"required" form:"location"`
+	WidthCm   int64  `validate:"required" form:"width_cm"`
+	LengthCm  int64  `validate:"required" form:"length_cm"`
+	IsOutdoor bool   `form:"is_outdoor"`
+}
+
+type updateStadiumForm struct {
+	Name          string `validate:"required" form:"name"`
+	Location      string `validate:"required" form:"location"`
+	WidthCm       int64  `validate:"required" form:"width_cm"`
+	LengthCm      int64  `validate:"required" form:"length_cm"`
+	MaxSpectators int16  `validate:"required" form:"max_spectators"`
+	IsOutdoor     bool   `form:"is_outdoor"`
+	Coating       string `validate:"required" form:"coating"`
+}

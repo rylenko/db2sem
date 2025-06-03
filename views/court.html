@@ -5,6 +5,15 @@
     <title>{{ .Name }}</title>
     <link href="https://fonts.googleapis.com/css2?family=Inter&display=swap" rel="stylesheet">
     <style>
+	input[type="checkbox"] {
+		width: 18px;
+		height: 18px;
+		margin-right: 8px;
+		vertical-align: middle;
+		cursor: pointer;
+		accent-color: #007bff; /* Современный способ стилизовать цвет галочки */
+	}
+
         body {
             font-family: 'Inter', sans-serif;
             background-color: #f5f7fa;
@@ -80,7 +89,7 @@
 </head>
 <body>
 	<h1><a href="/">Главная</a></h1>
-	<form action="/arenas/{{ .ID }}/update" method="POST">
+	<form action="/courts/{{ .ID }}/update" method="POST">
 		<label for="name">Имя:</label>
 		<input type="text" id="name" name="name" value="{{ .Name }}" required>
 		<br/>
@@ -89,12 +98,16 @@
 		<input type="text" id="location" name="location" value="{{ .Location }}" required>
 		<br/>
 
-		<label for="treadmill_length_cm">Длина беговой дорожки (см):</label>
-		<input type="number" id="treadmill_length_cm" name="treadmill_length_cm" min="1" value="{{ .TreadmillLengthCm }}" required>
+		<label for="width_cm">Ширина (см):</label>
+		<input type="number" id="width_cm" name="width_cm" min="1" value="{{ .WidthCm }}" required>
 		<br/>
 
-		<label for="referees_count">Количество судей:</label>
-		<input type="number" id="referees_count" name="referees_count" value="{{ .RefereesCount }}" required>
+		<label for="length_cm">Длина (см):</label>
+		<input type="number" id="length_cm" name="length_cm" min="1" value="{{ .LengthCm }}" required>
+		<br/>
+
+		<label for="is_outdoor">Уличный:</label>
+		<input type="checkbox" id="is_outdoor" name="is_outdoor" value="{{ .IsOutdoor }}" {{ if .IsOutdoor }}checked{{ end }}>
 		<br/>
 
 		<button type="submit">Сохранить</button>

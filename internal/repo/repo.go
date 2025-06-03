@@ -128,6 +128,68 @@ func (r *Repo) GetStadiums(ctx context.Context, req dto.GetStadiumsRequest) ([]d
 	return places, nil
 }
 
+func (r *Repo) GetGymByID(ctx context.Context, id int64) (*domain.Gym, error) {
+	pgPlace, err := r.conn.Queries(ctx).GetGymByID(ctx, id)
+	if err != nil {
+		if errors.Is(err, pgx.ErrNoRows) {
+			return nil, nil //nolint:nilnil // because
+		}
+
+		return nil, fmt.Errorf("query: %w", err)
+	}
+
+	return &domain.Gym{
+		ID:             pgPlace.ID,
+		Name:           pgPlace.Name,
+		Location:       pgPlace.Location,
+		TrainersCount:  pgPlace.TrainersCount,
+		DumbbellsCount: pgPlace.DumbbellsCount,
+		HasBathhouse:   pgPlace.HasBathhouse,
+	}, nil
+}
+
+func (r *Repo) GetCourtByID(ctx context.Context, id int64) (*domain.Court, error) {
+	pgPlace, err := r.conn.Queries(ctx).GetCourtByID(ctx, id)
+	if err != nil {
+		if errors.Is(err, pgx.ErrNoRows) {
+			return nil, nil //nolint:nilnil // because
+		}
+
+		return nil, fmt.Errorf("query: %w", err)
+	}
+
+	return &domain.Court{
+		ID:        pgPlace.ID,
+		Name:      pgPlace.Name,
+		Location:  pgPlace.Location,
+		WidthCm:   pgPlace.WidthCm,
+		LengthCm:  pgPlace.LengthCm,
+		IsOutdoor: pgPlace.IsOutdoor,
+	}, nil
+}
+
+func (r *Repo) GetStadiumByID(ctx context.Context, id int64) (*domain.Stadium, error) {
+	pgPlace, err := r.conn.Queries(ctx).GetStadiumByID(ctx, id)
+	if err != nil {
+		if errors.Is(err, pgx.ErrNoRows) {
+			return nil, nil //nolint:nilnil // because
+		}
+
+		return nil, fmt.Errorf("query: %w", err)
+	}
+
+	return &domain.Stadium{
+		ID:            pgPlace.ID,
+		Name:          pgPlace.Name,
+		Location:      pgPlace.Location,
+		WidthCm:       pgPlace.WidthCm,
+		LengthCm:      pgPlace.LengthCm,
+		MaxSpectators: pgPlace.MaxSpectators,
+		IsOutdoor:     pgPlace.IsOutdoor,
+		Coating:       pgPlace.Coating,
+	}, nil
+}
+
 func (r *Repo) GetArenaByID(ctx context.Context, id int64) (*domain.Arena, error) {
 	pgPlace, err := r.conn.Queries(ctx).GetArenaByID(ctx, id)
 	if err != nil {
@@ -900,6 +962,41 @@ func (r *Repo) UpdateArenaByID(ctx context.Context, req dto.UpdateArenaByIDReque
 		Location:          req.Location,
 		TreadmillLengthCm: req.TreadmillLengthCm,
 		RefereesCount:     req.RefereesCount,
+	})
+}
+
+func (r *Repo) UpdateGymByID(ctx context.Context, req dto.UpdateGymByIDRequest) error {
+	return r.conn.Queries(ctx).UpdateGymByID(ctx, pg.UpdateGymByIDParams{
+		ID:             req.ID,
+		Name:           req.Name,
+		Location:       req.Location,
+		TrainersCount:  req.TrainersCount,
+		DumbbellsCount: req.DumbbellsCount,
+		HasBathhouse:   req.HasBathhouse,
+	})
+}
+
+func (r *Repo) UpdateCourtByID(ctx context.Context, req dto.UpdateCourtByIDRequest) error {
+	return r.conn.Queries(ctx).UpdateCourtByID(ctx, pg.UpdateCourtByIDParams{
+		ID:        req.ID,
+		Name:      req.Name,
+		Location:  req.Location,
+		WidthCm:   req.WidthCm,
+		LengthCm:  req.LengthCm,
+		IsOutdoor: req.IsOutdoor,
+	})
+}
+
+func (r *Repo) UpdateStadiumByID(ctx context.Context, req dto.UpdateStadiumByIDRequest) error {
+	return r.conn.Queries(ctx).UpdateStadiumByID(ctx, pg.UpdateStadiumByIDParams{
+		ID:            req.ID,
+		Name:          req.Name,
+		Location:      req.Location,
+		WidthCm:       req.WidthCm,
+		LengthCm:      req.LengthCm,
+		MaxSpectators: req.MaxSpectators,
+		IsOutdoor:     req.IsOutdoor,
+		Coating:       req.Coating,
 	})
 }
 

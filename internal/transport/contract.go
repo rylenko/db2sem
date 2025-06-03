@@ -44,6 +44,9 @@ type service interface {
 	GetSportsmenInvolvedInSeveralSports(ctx context.Context) ([]domain.Sportsman, error)
 	GetSportByID(ctx context.Context, sportID int64) (*domain.Sport, error)
 	GetArenaByID(ctx context.Context, id int64) (*domain.Arena, error)
+	GetStadiumByID(ctx context.Context, id int64) (*domain.Stadium, error)
+	GetCourtByID(ctx context.Context, id int64) (*domain.Court, error)
+	GetGymByID(ctx context.Context, id int64) (*domain.Gym, error)
 	GetSports(ctx context.Context) ([]domain.Sport, error)
 	GetTournaments(ctx context.Context) ([]domain.Tournament, error)
 	GetTournamentsByPlaceID(ctx context.Context, placeID int64, sportID *int64) ([]domain.Tournament, error)
@@ -55,5 +58,8 @@ type service interface {
 	GetTrainersBySportID(ctx context.Context, sportID int64) ([]domain.Trainer, error)
 	UpdateSportByID(ctx context.Context, req servicedto.UpdateSportByIDRequest) error
 	UpdateArenaByID(ctx context.Context, req servicedto.UpdateArenaByIDRequest) error
+	UpdateStadiumByID(ctx context.Context, req servicedto.UpdateStadiumByIDRequest) error
+	UpdateCourtByID(ctx context.Context, req servicedto.UpdateCourtByIDRequest) error
+	UpdateGymByID(ctx context.Context, req servicedto.UpdateGymByIDRequest) error
 	UpdateSportsmanByID(ctx context.Context, req servicedto.UpdateSportsmanByIDRequest) error
 }

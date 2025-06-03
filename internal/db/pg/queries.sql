@@ -746,3 +746,115 @@ SET
 	name = $4,
 	location = $5
 WHERE id = $3;
+
+-- Query: #37 (custom)
+--
+-- Получить стадион.
+--
+-- name: GetStadiumByID :one
+SELECT
+	p.id,
+	p.name,
+	p.location,
+	sa.width_cm,
+	sa.length_cm,
+	sa.max_spectators,
+	sa.is_outdoor,
+	sa.coating
+FROM places p
+JOIN stadium_attributes sa ON sa.place_id = p.id
+WHERE p.id = $1;
+
+-- Query: #38 (custom)
+--
+-- Обновить стадион.
+--
+-- name: UpdateStadiumByID :exec
+WITH updated_attributes AS (
+	UPDATE stadium_attributes
+	SET
+		width_cm = $1,
+		length_cm = $2,
+		max_spectators = $3,
+		is_outdoor = $4,
+		coating = $5
+	WHERE place_id = $6
+	RETURNING place_id
+)
+UPDATE places
+SET
+	name = $7,
+	location = $8
+WHERE id = $6;
+
+-- Query: #39 (custom)
+--
+-- Получить корт.
+--
+-- name: GetCourtByID :one
+SELECT
+	p.id,
+	p.name,
+	p.location,
+	ca.width_cm,
+	ca.length_cm,
+	ca.is_outdoor
+FROM places p
+JOIN court_attributes ca ON ca.place_id = p.id
+WHERE p.id = $1;
+
+-- Query: #40 (custom)
+--
+-- Обновить корт.
+--
+-- name: UpdateCourtByID :exec
+WITH updated_attributes AS (
+	UPDATE court_attributes
+	SET
+		width_cm = $1,
+		length_cm = $2,
+		is_outdoor = $3
+	WHERE place_id = $4
+	RETURNING place_id
+)
+UPDATE places
+SET
+	name = $5,
+	location = $6
+WHERE id = $4;
+
+-- Query: #41 (custom)
+--
+-- Получить зал.
+--
+-- name: GetGymByID :one
+SELECT
+	p.id,
+	p.name,
+	p.location,
+	ga.trainers_count,
+	ga.dumbbells_count,
+	ga.has_bathhouse
+FROM places p
+JOIN gym_attributes ga ON ga.place_id = p.id
+WHERE p.id = $1;
+
+-- Query: #42 (custom)
+--
+-- Обновить зал.
+--
+-- name: UpdateGymByID :exec
+WITH updated_attributes AS (
+	UPDATE gym_attributes
+	SET
+		trainers_count = $1,
+		dumbbells_count = $2,
+		has_bathhouse = $3
+	WHERE place_id = $4
+	RETURNING place_id
+)
+UPDATE places
+SET
+	name = $5,
+	location = $6
+WHERE id = $4;

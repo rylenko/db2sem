@@ -22,6 +22,9 @@ type transport interface {
 	RenderSportsmanTrainersGetPage(fiberCtx *fiber.Ctx) error
 	RenderSportsmanTrainersPostPage(fiberCtx *fiber.Ctx) error
 	RenderArenaPage(fiberCtx *fiber.Ctx) error
+	RenderGymPage(fiberCtx *fiber.Ctx) error
+	RenderStadiumPage(fiberCtx *fiber.Ctx) error
+	RenderCourtPage(fiberCtx *fiber.Ctx) error
 	RenderSportPage(fiberCtx *fiber.Ctx) error
 	RenderSportsPage(fiberCtx *fiber.Ctx) error
 	RenderSportTrainersGetPage(fiberCtx *fiber.Ctx) error
@@ -43,6 +46,9 @@ type transport interface {
 	RenderSportsmenPage(fibercCtx *fiber.Ctx) error
 	RenderSportsmenInvolvedInSeveralSportsPage(fibercCtx *fiber.Ctx) error
 	UpdateArena(fiberCtx *fiber.Ctx) error
+	UpdateStadium(fiberCtx *fiber.Ctx) error
+	UpdateCourt(fiberCtx *fiber.Ctx) error
+	UpdateGym(fiberCtx *fiber.Ctx) error
 	UpdateSport(fiberCtx *fiber.Ctx) error
 	UpdateSportsman(fiberCtx *fiber.Ctx) error
 }

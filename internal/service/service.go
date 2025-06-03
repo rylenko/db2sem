@@ -150,6 +150,18 @@ func (s *Service) GetArenaByID(ctx context.Context, id int64) (*domain.Arena, er
 	return s.repo.GetArenaByID(ctx, id)
 }
 
+func (s *Service) GetStadiumByID(ctx context.Context, id int64) (*domain.Stadium, error) {
+	return s.repo.GetStadiumByID(ctx, id)
+}
+
+func (s *Service) GetCourtByID(ctx context.Context, id int64) (*domain.Court, error) {
+	return s.repo.GetCourtByID(ctx, id)
+}
+
+func (s *Service) GetGymByID(ctx context.Context, id int64) (*domain.Gym, error) {
+	return s.repo.GetGymByID(ctx, id)
+}
+
 func (s *Service) GetSports(ctx context.Context) ([]domain.Sport, error) {
 	return s.repo.GetSports(ctx)
 }
@@ -199,6 +211,41 @@ func (s *Service) UpdateSportByID(ctx context.Context, req dto.UpdateSportByIDRe
 	return s.repo.UpdateSportByID(ctx, repodto.UpdateSportByIDRequest{
 		ID:   req.ID,
 		Name: req.Name,
+	})
+}
+
+func (s *Service) UpdateGymByID(ctx context.Context, req dto.UpdateGymByIDRequest) error {
+	return s.repo.UpdateGymByID(ctx, repodto.UpdateGymByIDRequest{
+		ID:             req.ID,
+		Name:           req.Name,
+		Location:       req.Location,
+		TrainersCount:  req.TrainersCount,
+		DumbbellsCount: req.DumbbellsCount,
+		HasBathhouse:   req.HasBathhouse,
+	})
+}
+
+func (s *Service) UpdateCourtByID(ctx context.Context, req dto.UpdateCourtByIDRequest) error {
+	return s.repo.UpdateCourtByID(ctx, repodto.UpdateCourtByIDRequest{
+		ID:        req.ID,
+		Name:      req.Name,
+		Location:  req.Location,
+		WidthCm:   req.WidthCm,
+		LengthCm:  req.LengthCm,
+		IsOutdoor: req.IsOutdoor,
+	})
+}
+
+func (s *Service) UpdateStadiumByID(ctx context.Context, req dto.UpdateStadiumByIDRequest) error {
+	return s.repo.UpdateStadiumByID(ctx, repodto.UpdateStadiumByIDRequest{
+		ID:            req.ID,
+		Name:          req.Name,
+		Location:      req.Location,
+		WidthCm:       req.WidthCm,
+		LengthCm:      req.LengthCm,
+		MaxSpectators: req.MaxSpectators,
+		IsOutdoor:     req.IsOutdoor,
+		Coating:       req.Coating,
 	})
 }
 

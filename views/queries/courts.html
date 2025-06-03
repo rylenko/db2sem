@@ -122,6 +122,10 @@ input[type="checkbox"] {
 		<p>Длина (см.): {{ .LengthCm }}</p>
 		<p>Уличный: {{ if .IsOutdoor }}да{{ else }}нет{{ end }}</p>
 
+		<form action="/places/{{ .ID }}/delete" method="POST">
+			<button type="submit">Удалить</button>
+		</form>
+
 		<hr/>
 	{{ end }}
 </body>

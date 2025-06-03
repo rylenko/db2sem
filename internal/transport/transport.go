@@ -231,6 +231,66 @@ func (t *Transport) RenderSportsmenPage(fiberCtx *fiber.Ctx) error {
 	})
 }
 
+func (t *Transport) RenderGymPage(fiberCtx *fiber.Ctx) error {
+	courtID, err := strconv.ParseInt(fiberCtx.Params("id"), 10, 64)
+	if err != nil {
+		return fmt.Errorf("parse sportsman ID: %w", err)
+	}
+
+	serviceCourt, err := t.service.GetGymByID(fiberCtx.Context(), courtID)
+	if err != nil {
+		return fmt.Errorf("get sportsman: %w", err)
+	}
+
+	if serviceCourt == nil {
+		return fiberCtx.Status(fiber.StatusNotFound).SendString("Arena not found")
+	}
+
+	court := models.ConvertFromServiceGym(*serviceCourt)
+
+	return fiberCtx.Render("gym", court)
+}
+
+func (t *Transport) RenderCourtPage(fiberCtx *fiber.Ctx) error {
+	courtID, err := strconv.ParseInt(fiberCtx.Params("id"), 10, 64)
+	if err != nil {
+		return fmt.Errorf("parse sportsman ID: %w", err)
+	}
+
+	serviceCourt, err := t.service.GetCourtByID(fiberCtx.Context(), courtID)
+	if err != nil {
+		return fmt.Errorf("get sportsman: %w", err)
+	}
+
+	if serviceCourt == nil {
+		return fiberCtx.Status(fiber.StatusNotFound).SendString("Arena not found")
+	}
+
+	court := models.ConvertFromServiceCourt(*serviceCourt)
+
+	return fiberCtx.Render("court", court)
+}
+
+func (t *Transport) RenderStadiumPage(fiberCtx *fiber.Ctx) error {
+	arenaID, err := strconv.ParseInt(fiberCtx.Params("id"), 10, 64)
+	if err != nil {
+		return fmt.Errorf("parse sportsman ID: %w", err)
+	}
+
+	serviceArena, err := t.service.GetStadiumByID(fiberCtx.Context(), arenaID)
+	if err != nil {
+		return fmt.Errorf("get sportsman: %w", err)
+	}
+
+	if serviceArena == nil {
+		return fiberCtx.Status(fiber.StatusNotFound).SendString("Arena not found")
+	}
+
+	arena := models.ConvertFromServiceStadium(*serviceArena)
+
+	return fiberCtx.Render("stadium", arena)
+}
+
 func (t *Transport) RenderArenaPage(fiberCtx *fiber.Ctx) error {
 	arenaID, err := strconv.ParseInt(fiberCtx.Params("id"), 10, 64)
 	if err != nil {
@@ -837,6 +897,86 @@ func (t *Transport) RenderSportsmenInvolvedInSeveralSportsPage(fiberCtx *fiber.C
 	return fiberCtx.Render("queries/sportsmen_involved_in_several_sports", fiber.Map{
 		"Sportsmen": sportsmen,
 	})
+}
+
+func (t *Transport) UpdateGym(fiberCtx *fiber.Ctx) error {
+	stadiumID, err := strconv.ParseInt(fiberCtx.Params("id"), 10, 64)
+	if err != nil {
+		return fmt.Errorf("parse sport ID: %w", err)
+	}
+
+	var form updateGymForm
+	if err := t.requestReader.ReadAndValidateFiberBody(fiberCtx, &form); err != nil {
+		return fmt.Errorf("parse body: %w", err)
+	}
+
+	err = t.service.UpdateGymByID(fiberCtx.Context(), servicedto.UpdateGymByIDRequest{
+		ID:             stadiumID,
+		Name:           form.Name,
+		Location:       form.Location,
+		TrainersCount:  form.TrainersCount,
+		DumbbellsCount: form.DumbbellsCount,
+		HasBathhouse:   form.HasBathhouse,
+	})
+	if err != nil {
+		return fmt.Errorf("service: %w", err)
+	}
+
+	return fiberCtx.Redirect(fmt.Sprintf("/gyms/%d", stadiumID), fiber.StatusFound)
+}
+
+func (t *Transport) UpdateCourt(fiberCtx *fiber.Ctx) error {
+	stadiumID, err := strconv.ParseInt(fiberCtx.Params("id"), 10, 64)
+	if err != nil {
+		return fmt.Errorf("parse sport ID: %w", err)
+	}
+
+	var form updateCourtForm
+	if err := t.requestReader.ReadAndValidateFiberBody(fiberCtx, &form); err != nil {
+		return fmt.Errorf("parse body: %w", err)
+	}
+
+	err = t.service.UpdateCourtByID(fiberCtx.Context(), servicedto.UpdateCourtByIDRequest{
+		ID:        stadiumID,
+		Name:      form.Name,
+		Location:  form.Location,
+		WidthCm:   form.WidthCm,
+		LengthCm:  form.LengthCm,
+		IsOutdoor: form.IsOutdoor,
+	})
+	if err != nil {
+		return fmt.Errorf("service: %w", err)
+	}
+
+	return fiberCtx.Redirect(fmt.Sprintf("/courts/%d", stadiumID), fiber.StatusFound)
+}
+
+func (t *Transport) UpdateStadium(fiberCtx *fiber.Ctx) error {
+	stadiumID, err := strconv.ParseInt(fiberCtx.Params("id"), 10, 64)
+	if err != nil {
+		return fmt.Errorf("parse sport ID: %w", err)
+	}
+
+	var form updateStadiumForm
+	if err := t.requestReader.ReadAndValidateFiberBody(fiberCtx, &form); err != nil {
+		return fmt.Errorf("parse body: %w", err)
+	}
+
+	err = t.service.UpdateStadiumByID(fiberCtx.Context(), servicedto.UpdateStadiumByIDRequest{
+		ID:            stadiumID,
+		Name:          form.Name,
+		Location:      form.Location,
+		WidthCm:       form.WidthCm,
+		LengthCm:      form.LengthCm,
+		MaxSpectators: form.MaxSpectators,
+		IsOutdoor:     form.IsOutdoor,
+		Coating:       form.Coating,
+	})
+	if err != nil {
+		return fmt.Errorf("service: %w", err)
+	}
+
+	return fiberCtx.Redirect(fmt.Sprintf("/stadiums/%d", stadiumID), fiber.StatusFound)
 }
 
 func (t *Transport) UpdateArena(fiberCtx *fiber.Ctx) error {

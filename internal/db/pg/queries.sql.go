@@ -238,6 +238,45 @@ func (q *Queries) GetClubs(ctx context.Context) ([]GetClubsRow, error) {
 	return items, nil
 }
 
+const getCourtByID = `-- name: GetCourtByID :one
+SELECT
+	p.id,
+	p.name,
+	p.location,
+	ca.width_cm,
+	ca.length_cm,
+	ca.is_outdoor
+FROM places p
+JOIN court_attributes ca ON ca.place_id = p.id
+WHERE p.id = $1
+`
+
+type GetCourtByIDRow struct {
+	ID        int64
+	Name      string
+	Location  string
+	WidthCm   int64
+	LengthCm  int64
+	IsOutdoor bool
+}
+
+// Query: #39 (custom)
+//
+// Получить корт.
+func (q *Queries) GetCourtByID(ctx context.Context, id int64) (GetCourtByIDRow, error) {
+	row := q.db.QueryRow(ctx, getCourtByID, id)
+	var i GetCourtByIDRow
+	err := row.Scan(
+		&i.ID,
+		&i.Name,
+		&i.Location,
+		&i.WidthCm,
+		&i.LengthCm,
+		&i.IsOutdoor,
+	)
+	return i, err
+}
+
 const getCourts = `-- name: GetCourts :many
 SELECT
 	p.id,
@@ -308,6 +347,45 @@ func (q *Queries) GetCourts(ctx context.Context, arg GetCourtsParams) ([]GetCour
 		return nil, err
 	}
 	return items, nil
+}
+
+const getGymByID = `-- name: GetGymByID :one
+SELECT
+	p.id,
+	p.name,
+	p.location,
+	ga.trainers_count,
+	ga.dumbbells_count,
+	ga.has_bathhouse
+FROM places p
+JOIN gym_attributes ga ON ga.place_id = p.id
+WHERE p.id = $1
+`
+
+type GetGymByIDRow struct {
+	ID             int64
+	Name           string
+	Location       string
+	TrainersCount  int16
+	DumbbellsCount int16
+	HasBathhouse   bool
+}
+
+// Query: #41 (custom)
+//
+// Получить зал.
+func (q *Queries) GetGymByID(ctx context.Context, id int64) (GetGymByIDRow, error) {
+	row := q.db.QueryRow(ctx, getGymByID, id)
+	var i GetGymByIDRow
+	err := row.Scan(
+		&i.ID,
+		&i.Name,
+		&i.Location,
+		&i.TrainersCount,
+		&i.DumbbellsCount,
+		&i.HasBathhouse,
+	)
+	return i, err
 }
 
 const getGyms = `-- name: GetGyms :many
@@ -1143,6 +1221,51 @@ func (q *Queries) GetSportsmenInvolvedInSeveralSports(ctx context.Context) ([]Ge
 	return items, nil
 }
 
+const getStadiumByID = `-- name: GetStadiumByID :one
+SELECT
+	p.id,
+	p.name,
+	p.location,
+	sa.width_cm,
+	sa.length_cm,
+	sa.max_spectators,
+	sa.is_outdoor,
+	sa.coating
+FROM places p
+JOIN stadium_attributes sa ON sa.place_id = p.id
+WHERE p.id = $1
+`
+
+type GetStadiumByIDRow struct {
+	ID            int64
+	Name          string
+	Location      string
+	WidthCm       int64
+	LengthCm      int64
+	MaxSpectators int16
+	IsOutdoor     bool
+	Coating       string
+}
+
+// Query: #37 (custom)
+//
+// Получить стадион.
+func (q *Queries) GetStadiumByID(ctx context.Context, id int64) (GetStadiumByIDRow, error) {
+	row := q.db.QueryRow(ctx, getStadiumByID, id)
+	var i GetStadiumByIDRow
+	err := row.Scan(
+		&i.ID,
+		&i.Name,
+		&i.Location,
+		&i.WidthCm,
+		&i.LengthCm,
+		&i.MaxSpectators,
+		&i.IsOutdoor,
+		&i.Coating,
+	)
+	return i, err
+}
+
 const getStadiums = `-- name: GetStadiums :many
 SELECT
 	p.id,
@@ -1769,6 +1892,88 @@ func (q *Queries) UpdateArenaByID(ctx context.Context, arg UpdateArenaByIDParams
 	return err
 }
 
+const updateCourtByID = `-- name: UpdateCourtByID :exec
+WITH updated_attributes AS (
+	UPDATE court_attributes
+	SET
+		width_cm = $1,
+		length_cm = $2,
+		is_outdoor = $3
+	WHERE place_id = $4
+	RETURNING place_id
+)
+UPDATE places
+SET
+	name = $5,
+	location = $6
+WHERE id = $4
+`
+
+type UpdateCourtByIDParams struct {
+	WidthCm   int64
+	LengthCm  int64
+	IsOutdoor bool
+	ID        int64
+	Name      string
+	Location  string
+}
+
+// Query: #40 (custom)
+//
+// Обновить корт.
+func (q *Queries) UpdateCourtByID(ctx context.Context, arg UpdateCourtByIDParams) error {
+	_, err := q.db.Exec(ctx, updateCourtByID,
+		arg.WidthCm,
+		arg.LengthCm,
+		arg.IsOutdoor,
+		arg.ID,
+		arg.Name,
+		arg.Location,
+	)
+	return err
+}
+
+const updateGymByID = `-- name: UpdateGymByID :exec
+WITH updated_attributes AS (
+	UPDATE gym_attributes
+	SET
+		trainers_count = $1,
+		dumbbells_count = $2,
+		has_bathhouse = $3
+	WHERE place_id = $4
+	RETURNING place_id
+)
+UPDATE places
+SET
+	name = $5,
+	location = $6
+WHERE id = $4
+`
+
+type UpdateGymByIDParams struct {
+	TrainersCount  int16
+	DumbbellsCount int16
+	HasBathhouse   bool
+	ID             int64
+	Name           string
+	Location       string
+}
+
+// Query: #42 (custom)
+//
+// Обновить зал.
+func (q *Queries) UpdateGymByID(ctx context.Context, arg UpdateGymByIDParams) error {
+	_, err := q.db.Exec(ctx, updateGymByID,
+		arg.TrainersCount,
+		arg.DumbbellsCount,
+		arg.HasBathhouse,
+		arg.ID,
+		arg.Name,
+		arg.Location,
+	)
+	return err
+}
+
 const updateSportByID = `-- name: UpdateSportByID :exec
 UPDATE sports
 SET name = $1
@@ -1837,6 +2042,53 @@ func (q *Queries) UpdateSportsmanByID(ctx context.Context, arg UpdateSportsmanBy
 		arg.WeightKg,
 		arg.ClubID,
 		arg.SportIds,
+	)
+	return err
+}
+
+const updateStadiumByID = `-- name: UpdateStadiumByID :exec
+WITH updated_attributes AS (
+	UPDATE stadium_attributes
+	SET
+		width_cm = $1,
+		length_cm = $2,
+		max_spectators = $3,
+		is_outdoor = $4,
+		coating = $5
+	WHERE place_id = $6
+	RETURNING place_id
+)
+UPDATE places
+SET
+	name = $7,
+	location = $8
+WHERE id = $6
+`
+
+type UpdateStadiumByIDParams struct {
+	WidthCm       int64
+	LengthCm      int64
+	MaxSpectators int16
+	IsOutdoor     bool
+	Coating       string
+	ID            int64
+	Name          string
+	Location      string
+}
+
+// Query: #38 (custom)
+//
+// Обновить стадион.
+func (q *Queries) UpdateStadiumByID(ctx context.Context, arg UpdateStadiumByIDParams) error {
+	_, err := q.db.Exec(ctx, updateStadiumByID,
+		arg.WidthCm,
+		arg.LengthCm,
+		arg.MaxSpectators,
+		arg.IsOutdoor,
+		arg.Coating,
+		arg.ID,
+		arg.Name,
+		arg.Location,
 	)
 	return err
 }

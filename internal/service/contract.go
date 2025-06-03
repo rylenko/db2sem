@@ -39,6 +39,9 @@ type repo interface {
 	GetSportsmenInvolvedInSeveralSports(ctx context.Context) ([]domain.Sportsman, error)
 	GetSportByID(ctx context.Context, sportID int64) (*domain.Sport, error)
 	GetArenaByID(ctx context.Context, id int64) (*domain.Arena, error)
+	GetStadiumByID(ctx context.Context, id int64) (*domain.Stadium, error)
+	GetCourtByID(ctx context.Context, id int64) (*domain.Court, error)
+	GetGymByID(ctx context.Context, id int64) (*domain.Gym, error)
 	GetSports(ctx context.Context) ([]domain.Sport, error)
 	GetTournaments(ctx context.Context) ([]domain.Tournament, error)
 	GetTournamentsByPlaceID(ctx context.Context, placeID int64, sportID *int64) ([]domain.Tournament, error)
@@ -48,5 +51,8 @@ type repo interface {
 	GetTrainersBySportID(ctx context.Context, sportID int64) ([]domain.Trainer, error)
 	UpdateSportByID(ctx context.Context, req repodto.UpdateSportByIDRequest) error
 	UpdateArenaByID(ctx context.Context, req repodto.UpdateArenaByIDRequest) error
+	UpdateStadiumByID(ctx context.Context, req repodto.UpdateStadiumByIDRequest) error
+	UpdateCourtByID(ctx context.Context, req repodto.UpdateCourtByIDRequest) error
+	UpdateGymByID(ctx context.Context, req repodto.UpdateGymByIDRequest) error
 	UpdateSportsmanByID(ctx context.Context, req repodto.UpdateSportsmanByIDRequest) error
 }

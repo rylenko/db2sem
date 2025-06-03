@@ -24,6 +24,35 @@ type UpdateArenaByIDRequest struct {
 	TreadmillLengthCm int64
 }
 
+type UpdateGymByIDRequest struct {
+	ID             int64
+	Name           string
+	Location       string
+	TrainersCount  int16
+	DumbbellsCount int16
+	HasBathhouse   bool
+}
+
+type UpdateCourtByIDRequest struct {
+	ID        int64
+	Name      string
+	Location  string
+	WidthCm   int64
+	LengthCm  int64
+	IsOutdoor bool
+}
+
+type UpdateStadiumByIDRequest struct {
+	ID            int64
+	Name          string
+	Location      string
+	WidthCm       int64
+	LengthCm      int64
+	MaxSpectators int16
+	IsOutdoor     bool
+	Coating       string
+}
+
 type UpdateSportsmanByIDRequest struct {
 	ID        int64
 	Name      string

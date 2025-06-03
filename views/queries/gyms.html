@@ -122,6 +122,10 @@
 		<p>Количество гантель: {{ .DumbbellsCount }}</p>
 		<p>Есть сауна: {{ if .HasBathhouse }}да{{ else }}нет{{ end }}</p>
 
+		<form action="/places/{{ .ID }}/delete" method="POST">
+			<button type="submit">Удалить</button>
+		</form>
+
 		<hr/>
 	{{ end }}
 </body>
