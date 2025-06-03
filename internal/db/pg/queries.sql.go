@@ -105,13 +105,14 @@ const getClubActiveSportsmenCountsForPeriod = `-- name: GetClubActiveSportsmenCo
 SELECT
 	c.id,
 	c.name,
-	COUNT(s.id) AS active_sportsmen_count
+	COUNT(DISTINCT s.id)
+		FILTER (WHERE t.start_at BETWEEN $1 AND $2)
+		AS active_sportsmen_count
 FROM clubs c
 LEFT JOIN sportsmen s ON s.club_id = c.id
 LEFT JOIN participations p ON p.sportsman_id = s.id
 LEFT JOIN tournament_sports ts ON ts.id = p.tournament_sport_id
 LEFT JOIN tournaments t ON t.id = ts.tournament_id
-WHERE t.start_at BETWEEN $1 AND $2
 GROUP BY
 	c.id,
 	c.name
