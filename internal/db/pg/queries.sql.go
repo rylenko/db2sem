@@ -713,6 +713,58 @@ func (q *Queries) GetOrganizers(ctx context.Context) ([]GetOrganizersRow, error)
 	return items, nil
 }
 
+const getParticipations = `-- name: GetParticipations :many
+SELECT
+	ts.tournament_id,
+	s.name AS sport_name,
+	sm.name AS sportsman_name,
+	p.rank,
+	p.results
+FROM participations p
+JOIN tournament_sports ts ON ts.id = p.tournament_sport_id
+JOIN tournaments t ON t.id = ts.tournament_id
+JOIN sports s ON s.id = ts.sport_id
+JOIN sportsmen sm ON sm.id = p.sportsman_id
+ORDER BY t.id DESC
+`
+
+type GetParticipationsRow struct {
+	TournamentID  int64
+	SportName     string
+	SportsmanName string
+	Rank          int16
+	Results       pgtype.Text
+}
+
+// Query: #57 (custom)
+//
+// Получает все участия.
+func (q *Queries) GetParticipations(ctx context.Context) ([]GetParticipationsRow, error) {
+	rows, err := q.db.Query(ctx, getParticipations)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	var items []GetParticipationsRow
+	for rows.Next() {
+		var i GetParticipationsRow
+		if err := rows.Scan(
+			&i.TournamentID,
+			&i.SportName,
+			&i.SportsmanName,
+			&i.Rank,
+			&i.Results,
+		); err != nil {
+			return nil, err
+		}
+		items = append(items, i)
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
+}
+
 const getPlaces = `-- name: GetPlaces :many
 SELECT
 	p.id,
@@ -1447,15 +1499,63 @@ func (q *Queries) GetStadiums(ctx context.Context, arg GetStadiumsParams) ([]Get
 	return items, nil
 }
 
+const getTournamentSports = `-- name: GetTournamentSports :many
+SELECT
+	ts.id,
+	ts.tournament_id,
+	s.name AS sport_name
+FROM tournament_sports ts
+JOIN sports s ON s.id = ts.sport_id
+JOIN tournaments t ON t.id = ts.tournament_id
+ORDER BY t.id DESC
+`
+
+type GetTournamentSportsRow struct {
+	ID           int64
+	TournamentID int64
+	SportName    string
+}
+
+// Query: #58 (custom)
+//
+// Получает все соревнования с их видами спорта.
+func (q *Queries) GetTournamentSports(ctx context.Context) ([]GetTournamentSportsRow, error) {
+	rows, err := q.db.Query(ctx, getTournamentSports)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	var items []GetTournamentSportsRow
+	for rows.Next() {
+		var i GetTournamentSportsRow
+		if err := rows.Scan(&i.ID, &i.TournamentID, &i.SportName); err != nil {
+			return nil, err
+		}
+		items = append(items, i)
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
+}
+
 const getTournaments = `-- name: GetTournaments :many
 SELECT
 	t.id,
 	t.start_at,
 	p.name AS place_name,
-	o.name AS organizer_name
+	o.name AS organizer_name,
+	ARRAY_AGG(s.name)::TEXT[] as sport_names
 FROM tournaments t
+JOIN tournament_sports ts ON ts.tournament_id = t.id
+JOIN sports s ON s.id = ts.sport_id
 JOIN organizers o ON o.id = t.organizer_id
 JOIN places p ON p.id = t.place_id
+GROUP BY
+	t.id,
+	t.start_at,
+	p.name,
+	o.name
 ORDER BY t.id DESC
 `
 
@@ -1464,6 +1564,7 @@ type GetTournamentsRow struct {
 	StartAt       pgtype.Timestamptz
 	PlaceName     string
 	OrganizerName string
+	SportNames    []string
 }
 
 // Query: #26 (custom)
@@ -1483,6 +1584,7 @@ func (q *Queries) GetTournaments(ctx context.Context) ([]GetTournamentsRow, erro
 			&i.StartAt,
 			&i.PlaceName,
 			&i.OrganizerName,
+			&i.SportNames,
 		); err != nil {
 			return nil, err
 		}
@@ -1900,6 +2002,31 @@ type InsertOrganizerParams struct {
 // Создать организатора.
 func (q *Queries) InsertOrganizer(ctx context.Context, arg InsertOrganizerParams) error {
 	_, err := q.db.Exec(ctx, insertOrganizer, arg.Name, arg.Location)
+	return err
+}
+
+const insertParticipation = `-- name: InsertParticipation :exec
+INSERT INTO participations (tournament_sport_id, sportsman_id, rank, results)
+VALUES ($1, $2, $3, $4)
+`
+
+type InsertParticipationParams struct {
+	TournamentSportID int64
+	SportsmanID       int64
+	Rank              int16
+	Results           pgtype.Text
+}
+
+// Query: #56 (custom)
+//
+// Добавляет участие.
+func (q *Queries) InsertParticipation(ctx context.Context, arg InsertParticipationParams) error {
+	_, err := q.db.Exec(ctx, insertParticipation,
+		arg.TournamentSportID,
+		arg.SportsmanID,
+		arg.Rank,
+		arg.Results,
+	)
 	return err
 }
 

@@ -111,8 +111,9 @@ func (s *Service) CreateArena(ctx context.Context, req dto.CreateArenaRequest) e
 func (s *Service) CreateTournament(ctx context.Context, req dto.CreateTournamentRequest) error {
 	return s.repo.InsertTournament(ctx, repodto.InsertTournamentRequest{
 		PlaceID:     req.PlaceID,
-		OrganizerID: req.PlaceID,
+		OrganizerID: req.OrganizerID,
 		StartAt:     req.StartAt,
+		SportIDs:    req.SportIDs,
 	})
 }
 
@@ -356,4 +357,21 @@ func (s *Service) UpdateSportsmanByID(ctx context.Context, req dto.UpdateSportsm
 		ClubID:    req.ClubID,
 		SportIDs:  req.SportIDs,
 	})
+}
+
+func (s *Service) CreateParticipation(ctx context.Context, req dto.CreateParticipationRequest) error {
+	return s.repo.InsertParticipation(ctx, repodto.InsertParticipationRequest{
+		TournamentSportID: req.TournamentSportID,
+		SportsmanID:       req.SportsmanID,
+		Rank:              req.Rank,
+		Results:           req.Results,
+	})
+}
+
+func (s *Service) GetParticipations(ctx context.Context) ([]domain.Participation, error) {
+	return s.repo.GetParticipations(ctx)
+}
+
+func (s *Service) GetTournamentSports(ctx context.Context) ([]domain.TournamentSport, error) {
+	return s.repo.GetTournamentSports(ctx)
 }

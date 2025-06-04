@@ -131,7 +131,7 @@ func (t *Transport) CreateTournament(fiberCtx *fiber.Ctx) error {
 		return fmt.Errorf("parse body: %w", err)
 	}
 
-	startAt, err := time.Parse("02.01.2006 15:04:05", form.StartAt)
+	startAt, err := time.Parse("2006-01-02T15:04", form.StartAt)
 	if err != nil {
 		return fmt.Errorf("parse birth date: %w", err)
 	}
@@ -140,12 +140,37 @@ func (t *Transport) CreateTournament(fiberCtx *fiber.Ctx) error {
 		OrganizerID: form.OrganizerID,
 		PlaceID:     form.PlaceID,
 		StartAt:     startAt,
+		SportIDs:    form.SportIDs,
 	})
 	if err != nil {
 		return fmt.Errorf("service: %w", err)
 	}
 
 	return fiberCtx.Redirect("/tournaments/", fiber.StatusFound)
+}
+
+func (t *Transport) CreateParticipation(fiberCtx *fiber.Ctx) error {
+	var form createParticipationForm
+	if err := t.requestReader.ReadAndValidateFiberBody(fiberCtx, &form); err != nil {
+		return fmt.Errorf("parse body: %w", err)
+	}
+
+	var results *string
+	if form.Results != "" {
+		results = &form.Results
+	}
+
+	err := t.service.CreateParticipation(fiberCtx.Context(), servicedto.CreateParticipationRequest{
+		TournamentSportID: form.TournamentSportID,
+		SportsmanID:       form.SportsmanID,
+		Rank:              form.Rank,
+		Results:           results,
+	})
+	if err != nil {
+		return fmt.Errorf("service: %w", err)
+	}
+
+	return fiberCtx.Redirect("/participations/", fiber.StatusFound)
 }
 
 func (t *Transport) CreateSportsman(fiberCtx *fiber.Ctx) error {
@@ -386,6 +411,31 @@ func (t *Transport) RenderTournamentsPage(fiberCtx *fiber.Ctx) error {
 		"Organizers":  organizers,
 		"Places":      places,
 		"Sports":      sports,
+	})
+}
+
+func (t *Transport) RenderParticipationsPage(fiberCtx *fiber.Ctx) error {
+	participations, err := t.service.GetParticipations(fiberCtx.Context())
+	if err != nil {
+		return fmt.Errorf("service: %w", err)
+	}
+
+	tournamentSports, err := t.service.GetTournamentSports(fiberCtx.Context())
+	if err != nil {
+		return fmt.Errorf("get sport names: %w", err)
+	}
+
+	serviceSportsmen, err := t.service.GetSportsmen(fiberCtx.Context())
+	if err != nil {
+		return fmt.Errorf("get clubs: %w", err)
+	}
+
+	sportsmen := models.ConvertFromServiceSportsmen(serviceSportsmen)
+
+	return fiberCtx.Render("participations", fiber.Map{
+		"Sportsmen":        sportsmen,
+		"TournamentSports": tournamentSports,
+		"Participations":   participations,
 	})
 }
 

@@ -77,4 +77,7 @@ type service interface {
 	UpdateCourtByID(ctx context.Context, req servicedto.UpdateCourtByIDRequest) error
 	UpdateGymByID(ctx context.Context, req servicedto.UpdateGymByIDRequest) error
 	UpdateSportsmanByID(ctx context.Context, req servicedto.UpdateSportsmanByIDRequest) error
+	CreateParticipation(ctx context.Context, req servicedto.CreateParticipationRequest) error
+	GetParticipations(ctx context.Context) ([]domain.Participation, error)
+	GetTournamentSports(ctx context.Context) ([]domain.TournamentSport, error)
 }

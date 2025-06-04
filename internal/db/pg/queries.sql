@@ -628,10 +628,18 @@ SELECT
 	t.id,
 	t.start_at,
 	p.name AS place_name,
-	o.name AS organizer_name
+	o.name AS organizer_name,
+	ARRAY_AGG(s.name)::TEXT[] as sport_names
 FROM tournaments t
+JOIN tournament_sports ts ON ts.tournament_id = t.id
+JOIN sports s ON s.id = ts.sport_id
 JOIN organizers o ON o.id = t.organizer_id
 JOIN places p ON p.id = t.place_id
+GROUP BY
+	t.id,
+	t.start_at,
+	p.name,
+	o.name
 ORDER BY t.id DESC;
 
 -- Query: #27 (custom)
@@ -987,3 +995,43 @@ SELECT
 FROM
 	tournament,
 	UNNEST(@sport_ids::BIGINT[]) AS sport_id;
+
+-- Query: #56 (custom)
+--
+-- Добавляет участие.
+--
+-- name: InsertParticipation :exec
+INSERT INTO participations (tournament_sport_id, sportsman_id, rank, results)
+VALUES ($1, $2, $3, $4);
+
+-- Query: #57 (custom)
+--
+-- Получает все участия.
+--
+-- name: GetParticipations :many
+SELECT
+	ts.tournament_id,
+	s.name AS sport_name,
+	sm.name AS sportsman_name,
+	p.rank,
+	p.results
+FROM participations p
+JOIN tournament_sports ts ON ts.id = p.tournament_sport_id
+JOIN tournaments t ON t.id = ts.tournament_id
+JOIN sports s ON s.id = ts.sport_id
+JOIN sportsmen sm ON sm.id = p.sportsman_id
+ORDER BY t.id DESC;
+
+-- Query: #58 (custom)
+--
+-- Получает все соревнования с их видами спорта.
+--
+-- name: GetTournamentSports :many
+SELECT
+	ts.id,
+	ts.tournament_id,
+	s.name AS sport_name
+FROM tournament_sports ts
+JOIN sports s ON s.id = ts.sport_id
+JOIN tournaments t ON t.id = ts.tournament_id
+ORDER BY t.id DESC;

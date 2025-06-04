@@ -136,4 +136,10 @@ func registerRoutes(app *fiber.App, transport transport) {
 		tournaments.Get("/", transport.RenderTournamentsPage)
 		tournaments.Post("/", transport.CreateTournament)
 	}
+
+	participations := app.Group("participations")
+	{
+		participations.Get("/", transport.RenderParticipationsPage)
+		participations.Post("/", transport.CreateParticipation)
+	}
 }

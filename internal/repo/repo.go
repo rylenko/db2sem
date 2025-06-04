@@ -917,6 +917,7 @@ func (r *Repo) GetTournaments(ctx context.Context) ([]domain.Tournament, error) 
 			OrganizerName: pgTournament.OrganizerName,
 			PlaceName:     pgTournament.PlaceName,
 			StartAt:       startAt,
+			SportNames:    pgTournament.SportNames,
 		}
 
 		tournaments = append(tournaments, tournament)
@@ -1209,6 +1210,54 @@ func (r *Repo) GetOrganizerTournamentCountsForPeriod(
 	return organizers, nil
 }
 
+func (r *Repo) GetTournamentSports(ctx context.Context) ([]domain.TournamentSport, error) {
+	pgParticipations, err := r.conn.Queries(ctx).GetTournamentSports(ctx)
+	if err != nil {
+		if errors.Is(err, pgx.ErrNoRows) {
+			return nil, nil
+		}
+
+		return nil, fmt.Errorf("query: %w", err)
+	}
+
+	participations := make([]domain.TournamentSport, 0, len(pgParticipations))
+
+	for _, pgParticipation := range pgParticipations {
+		participations = append(participations, domain.TournamentSport{
+			ID:           pgParticipation.ID,
+			TournamentID: pgParticipation.TournamentID,
+			SportName:    pgParticipation.SportName,
+		})
+	}
+
+	return participations, nil
+}
+
+func (r *Repo) GetParticipations(ctx context.Context) ([]domain.Participation, error) {
+	pgParticipations, err := r.conn.Queries(ctx).GetParticipations(ctx)
+	if err != nil {
+		if errors.Is(err, pgx.ErrNoRows) {
+			return nil, nil
+		}
+
+		return nil, fmt.Errorf("query: %w", err)
+	}
+
+	participations := make([]domain.Participation, 0, len(pgParticipations))
+
+	for _, pgParticipation := range pgParticipations {
+		participations = append(participations, domain.Participation{
+			TournamentID:  pgParticipation.TournamentID,
+			SportName:     pgParticipation.SportName,
+			SportsmanName: pgParticipation.SportsmanName,
+			Rank:          pgParticipation.Rank,
+			Results:       convertFromPgText(pgParticipation.Results),
+		})
+	}
+
+	return participations, nil
+}
+
 func (r *Repo) GetOrganizers(ctx context.Context) ([]domain.Organizer, error) {
 	pgOrganizers, err := r.conn.Queries(ctx).GetOrganizers(ctx)
 	if err != nil {
@@ -1329,5 +1378,14 @@ func (r *Repo) InsertStadium(ctx context.Context, req dto.InsertStadiumRequest) 
 		MaxSpectators: req.MaxSpectators,
 		IsOutdoor:     req.IsOutdoor,
 		Coating:       req.Coating,
+	})
+}
+
+func (r *Repo) InsertParticipation(ctx context.Context, req dto.InsertParticipationRequest) error {
+	return r.conn.Queries(ctx).InsertParticipation(ctx, pg.InsertParticipationParams{
+		TournamentSportID: req.TournamentSportID,
+		SportsmanID:       req.SportsmanID,
+		Rank:              req.Rank,
+		Results:           convertToPgText(req.Results),
 	})
 }

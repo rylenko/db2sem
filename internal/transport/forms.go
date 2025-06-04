@@ -1,5 +1,12 @@
 package transport
 
+type createParticipationForm struct {
+	TournamentSportID int64  `validate:"required" form:"tournament_sport_id"`
+	SportsmanID       int64  `validate:"required" form:"sportsman_id"`
+	Rank              int16  `validate:"required" form:"rank"`
+	Results           string `form:"results"`
+}
+
 type getArenasForm struct {
 	RefereesCount     int16 `query:"referees_count"`
 	TreadmillLengthCm int64 `query:"treadmill_length_cm"`
@@ -98,7 +105,7 @@ type createOrganizerForm struct {
 type createTournamentForm struct {
 	OrganizerID int64   `validate:"required" form:"organizer_id"`
 	PlaceID     int64   `validate:"required" form:"place_id"`
-	StartAt     string  `validate:"reqired" form:"birth_date"`
+	StartAt     string  `validate:"required" form:"start_at"`
 	SportIDs    []int64 `form:"sport_ids"`
 }
 

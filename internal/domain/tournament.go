@@ -9,3 +9,9 @@ type Tournament struct {
 	SportNames    []string
 	StartAt       time.Time
 }
+
+type TournamentSport struct {
+	ID           int64
+	TournamentID int64
+	SportName    string
+}

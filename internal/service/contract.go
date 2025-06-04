@@ -70,4 +70,7 @@ type repo interface {
 	UpdateCourtByID(ctx context.Context, req repodto.UpdateCourtByIDRequest) error
 	UpdateGymByID(ctx context.Context, req repodto.UpdateGymByIDRequest) error
 	UpdateSportsmanByID(ctx context.Context, req repodto.UpdateSportsmanByIDRequest) error
+	InsertParticipation(ctx context.Context, req repodto.InsertParticipationRequest) error
+	GetParticipations(ctx context.Context) ([]domain.Participation, error)
+	GetTournamentSports(ctx context.Context) ([]domain.TournamentSport, error)
 }

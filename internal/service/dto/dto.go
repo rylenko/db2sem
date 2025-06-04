@@ -127,3 +127,10 @@ type GetCourtsRequest struct {
 	LengthCm  *int64
 	IsOutdoor *bool
 }
+
+type CreateParticipationRequest struct {
+	TournamentSportID int64
+	SportsmanID       int64
+	Rank              int16
+	Results           *string
+}

@@ -127,3 +127,10 @@ type UpdateSportsmanByIDRequest struct {
 	ClubID    int64
 	SportIDs  []int64
 }
+
+type InsertParticipationRequest struct {
+	TournamentSportID int64
+	SportsmanID       int64
+	Rank              int16
+	Results           *string
+}

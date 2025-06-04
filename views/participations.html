@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html>
 <head>
-	<title>Соревнования</title>
+	<title>Участия</title>
 
 	<meta charset="UTF-8">
 	<link href="https://fonts.googleapis.com/css2?family=Inter&display=swap" rel="stylesheet">
@@ -92,54 +92,45 @@
 <body>
 	<h1><a href="/">Главная</a></h1>
 
-	<h1>Создать соревнования</h1>
+	<h1>Создать участие</h1>
 
 	<form method="POST">
-		<label for="start_at">Время проведения:</label>
-		<input type="datetime-local" id="start_at" name="start_at" required>
+		<label for="tournament_sport_id">Спорт соревнования:</label>
+		<select id="tournament_sport_id" name="tournament_sport_id">
+			{{ range .TournamentSports }}
+				<option value="{{ .ID }}">Соревнование #{{ .TournamentID }}, {{ .SportName }}</option>
+			{{ end }}
+		</select>
 
 		<br/>
 
-		<label for="organizer_id">Организатор:</label>
-		<select id="organizer_id" name="organizer_id">
-			{{ range .Organizers }}
+		<label for="sportsman_id">Спортсмен:</label>
+		<select id="sportsman_id" name="sportsman_id">
+			{{ range .Sportsmen }}
 				<option value="{{ .ID }}">{{ .Name }}</option>
 			{{ end }}
 		</select>
-
 		<br/>
 
-		<label for="place_id">Место:</label>
-		<select id="place_id" name="place_id">
-			{{ range .Places }}
-				<option value="{{ .ID }}">{{ .Name }} ({{ .TypeName }}), {{ .Location }}</option>
-			{{ end }}
-		</select>
-
+		<label for="rank">Место:</label>
+		<input type="number" id="rank" name="rank" min="1" step="1" required>
 		<br/>
 
-		<label for="sport_ids">Виды спорта:</label>
-		<select id="sport_ids" name="sport_ids" multiple>
-			{{ range .Sports }}
-				<option value="{{ .ID }}">{{ .Name }}</option>
-			{{ end }}
-		</select>
-
+		<label for="results">Дополнительные результаты:</label>
+		<input type="text" id="results" name="results">
 		<br/>
 
 		<button type="submit">Создать</button>
 	</form>
 
-	<h1>Список соревнований</h1>
+	<h1>Список участий</h1>
 
-	{{ range .Tournaments }}
-		<p>* <a href="/tournaments/{{ .ID }}">Соревнование #{{ .ID }}</a></p>
-		<p>Организатор: {{ .OrganizerName }}</p>
-		<p>Место: {{ .PlaceName }}</p>
-		<p>Виды спорта: {{ JoinStringsWithComma .SportNames }}</p>
-		<p>Время начала: {{ .StartAtString }}</p>
+	{{ range .Participations }}
+		<p>* <a href="/participations/id">Соревнование #{{ .TournamentID }}, {{ .SportName }}, {{ .SportsmanName }}</a></p>
+		<p>Место: {{ .Rank }}</p>
+		<p>Дополнительные результаты: {{ if .Results }}{{ .Results }}{{ else }}-{{ end }}</p>
 
-		<form action="/tournaments/{{ .ID }}/delete" method="POST">
+		<form action="/participations/id/delete" method="POST">
 			<button type="submit">Удалить</button>
 		</form>
 

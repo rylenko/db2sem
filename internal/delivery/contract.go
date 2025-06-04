@@ -4,6 +4,8 @@ import "github.com/gofiber/fiber/v2"
 
 type transport interface {
 	CreateArena(fiberCtx *fiber.Ctx) error
+	CreateParticipation(fiberCtx *fiber.Ctx) error
+	RenderParticipationsPage(fiberCtx *fiber.Ctx) error
 	CreateStadium(fiberCtx *fiber.Ctx) error
 	CreateSport(fiberCtx *fiber.Ctx) error
 	CreateTournament(fiberCtx *fiber.Ctx) error
